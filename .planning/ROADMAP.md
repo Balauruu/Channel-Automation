@@ -34,9 +34,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Directory scaffold, CLAUDE.md with agent reference table, channel docs migration from V5, skill crafting guide, agent-protocols shared skill
-- [ ] 01-02-PLAN.md — Researcher and writer agent definitions with fat bodies, MEMORY.md seeds from V5 expertise YAML
-- [ ] 01-03-PLAN.md — Windows path smoke test script, human verification of agent invocation
+- [x] 01-01-PLAN.md — Directory scaffold, CLAUDE.md with agent reference table, channel docs migration from V5, skill crafting guide, agent-protocols shared skill
+- [x] 01-02-PLAN.md — Researcher and writer agent definitions with fat bodies, MEMORY.md seeds from V5 expertise YAML
+- [x] 01-03-PLAN.md — Windows path smoke test script, human verification of agent invocation
 
 ### Phase 2: Skills Library
 **Goal**: Every domain skill is built as an independently usable Claude Code skill with consistent structure, reflection loops, and context-loading patterns
