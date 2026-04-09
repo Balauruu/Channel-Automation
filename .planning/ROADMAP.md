@@ -31,12 +31,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can ask the orchestrator to delegate a writing task and the writer subagent produces output with voice profile awareness
   4. Researcher and writer agents read their MEMORY.md at session start and update it after completing work (mental model lifecycle validated)
   5. A smoke test script confirms that file operations work correctly in the project path (spaces and periods in path: "D. Mysteries Channel", "V0.6")
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md — Directory scaffold, CLAUDE.md with agent reference table, channel docs migration from V5, skill crafting guide, agent-protocols shared skill
+- [ ] 01-02-PLAN.md — Researcher and writer agent definitions with fat bodies, MEMORY.md seeds from V5 expertise YAML
+- [ ] 01-03-PLAN.md — Windows path smoke test script, human verification of agent invocation
 
 ### Phase 2: Skills Library
 **Goal**: Every domain skill is built as an independently usable Claude Code skill with consistent structure, reflection loops, and context-loading patterns
@@ -123,7 +123,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Architecture Validation | 0/3 | Not started | - |
+| 1. Foundation & Architecture Validation | 0/3 | Planning complete | - |
 | 2. Skills Library | 0/2 | Not started | - |
 | 3. Agent Migration & Memory | 0/3 | Not started | - |
 | 4. Pipeline Triggers & Hooks | 0/3 | Not started | - |
