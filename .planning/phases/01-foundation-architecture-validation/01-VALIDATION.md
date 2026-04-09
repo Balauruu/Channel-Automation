@@ -19,16 +19,16 @@ created: 2026-04-09
 |----------|-------|
 | **Framework** | Node.js built-in test runner + assert |
 | **Config file** | none — Wave 0 installs |
-| **Quick run command** | `node tests/smoke-test.js` |
-| **Full suite command** | `node tests/smoke-test.js && node tests/agent-validation.js` |
+| **Quick run command** | `node tests/smoke-test-paths.js` |
+| **Full suite command** | `node tests/smoke-test-paths.js` |
 | **Estimated runtime** | ~5 seconds |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `node tests/smoke-test.js`
-- **After every plan wave:** Run `node tests/smoke-test.js && node tests/agent-validation.js`
+- **After every task commit:** Run `node tests/smoke-test-paths.js` (after Plan 03 creates it)
+- **After every plan wave:** Run `node tests/smoke-test-paths.js`
 - **Before `/gsd-verify-work`:** Full suite must be green
 - **Max feedback latency:** 5 seconds
 
@@ -38,18 +38,22 @@ created: 2026-04-09
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 01-01-01 | 01 | 1 | FOUND-01 | — | N/A | integration | `node tests/smoke-test.js` | ❌ W0 | ⬜ pending |
-| 01-02-01 | 02 | 1 | FOUND-02, FOUND-03 | — | N/A | integration | `node tests/agent-validation.js` | ❌ W0 | ⬜ pending |
-| 01-03-01 | 03 | 2 | AGNT-01, AGNT-03 | — | N/A | integration | `node tests/agent-validation.js` | ❌ W0 | ⬜ pending |
+| 01-01-T1 | 01 | 1 | FOUND-01, FOUND-02, FOUND-04 | T-01-03 | N/A | inline | `node -e "..."` (inline verify in plan) | Yes (inline) | pending |
+| 01-01-T2 | 01 | 1 | FOUND-03, FOUND-06 | — | N/A | inline | `node -e "..."` (inline verify in plan) | Yes (inline) | pending |
+| 01-01-T3 | 01 | 1 | AGNT-13 | T-01-01, T-01-02 | N/A | inline | `node -e "..."` (inline verify in plan) | Yes (inline) | pending |
+| 01-02-T1 | 02 | 2 | AGNT-03 | T-02-03 | N/A | inline | `node -e "..."` (inline verify in plan) | Yes (inline) | pending |
+| 01-02-T2 | 02 | 2 | AGNT-04 | T-02-03 | N/A | inline | `node -e "..."` (inline verify in plan) | Yes (inline) | pending |
+| 01-02-T3 | 02 | 2 | AGNT-13 | T-02-04 | N/A | inline | `node -e "..."` (inline verify in plan) | Yes (inline) | pending |
+| 01-03-T1 | 03 | 3 | FOUND-05 | T-03-01 | N/A | script | `node tests/smoke-test-paths.js` | Wave 0 | pending |
+| 01-03-T2 | 03 | 3 | AGNT-03, AGNT-04, AGNT-13 | — | N/A | manual | Human verification of agent invocation | N/A | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending -- ✅ green -- ❌ red -- ⚠️ flaky*
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `tests/smoke-test.js` — Windows path validation (spaces, periods in path)
-- [ ] `tests/agent-validation.js` — Agent file structure and delegation validation
+- [ ] `tests/smoke-test-paths.js` — Windows path validation + Phase 1 file existence checks (created by Plan 03 Task 1)
 - [ ] Node.js assert module — built-in, no install needed
 
 *Existing Node.js runtime covers framework requirements.*
@@ -60,9 +64,9 @@ created: 2026-04-09
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Orchestrator loads as default agent | FOUND-04 | Requires Claude Code session | Open project in Claude Code, verify CLAUDE.md routing table visible |
-| Researcher subagent dispatches and returns | AGNT-03 | Requires live Claude Code delegation | Ask orchestrator to delegate research task, verify results return |
-| Writer subagent produces voice-aware output | AGNT-04 | Requires live Claude Code delegation | Ask orchestrator to delegate writing task, verify voice profile applied |
+| CLAUDE.md loads as project entry point | FOUND-04 | Requires Claude Code session | Open project in Claude Code, verify CLAUDE.md agent reference table visible |
+| Researcher agent dispatches and returns | AGNT-03 | Requires live Claude Code delegation | Type @researcher, ask it to describe its role, verify research persona and channel context |
+| Writer agent produces voice-aware output | AGNT-04 | Requires live Claude Code delegation | Type @writer, ask it to describe voice rules, verify voice profile awareness |
 | Memory lifecycle (read at start, update after work) | AGNT-13 | Requires agent session observation | Run agent, check MEMORY.md timestamps before/after |
 
 ---

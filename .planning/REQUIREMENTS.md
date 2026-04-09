@@ -11,8 +11,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **FOUND-01**: CLAUDE.md contains project context, folder map, architecture rules, and pipeline routing table
 - [ ] **FOUND-02**: Directory structure created (`.claude/agents/`, `.claude/skills/`, `.claude/rules/`, `.claude/hooks/`, `.claude/scripts/`)
-- [ ] **FOUND-03**: Channel identity docs (channel.md, voice profile, visual style guide) integrated as `.claude/rules/` files
-- [ ] **FOUND-04**: Project settings configure orchestrator as default agent (`"agent": "orchestrator"` in settings.json)
+- [ ] **FOUND-03**: Channel identity docs (channel.md, voice profile, visual style guide) integrated as `channel/` files at project root (per D-10)
+- [ ] **FOUND-04**: CLAUDE.md serves as project entry point with documentation-only agent reference table (per D-01 -- no orchestrator agent, no `"agent"` field in settings.json)
 - [ ] **FOUND-05**: Windows path handling validated with smoke tests (project path has spaces and periods)
 - [ ] **FOUND-06**: Skill crafting guide included as reference at `.claude/references/skill-crafting-guide.md`
 

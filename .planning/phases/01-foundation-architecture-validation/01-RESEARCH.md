@@ -580,22 +580,25 @@ Security enforcement is not explicitly set to `false` in config. However, this p
 | A2 | CLAUDE.md agent reference table format (exact columns/layout) | Code Example 3 | Low risk -- purely cosmetic, easily adjusted |
 | A3 | The `<project_context>` block pattern (telling agent to Read ./CLAUDE.md) actually causes the agent to read it | Pattern 1, Pitfall 1 | Agent ignores project rules; mitigation is to include critical rules directly in agent body |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **@file resolution in agent bodies**
+1. **@file resolution in agent bodies** (RESOLVED)
    - What we know: `@file` imports work in CLAUDE.md with paths relative to the containing file. [VERIFIED: official docs]
    - What's unclear: How `@file` references in `.claude/agents/*.md` bodies resolve -- relative to agent file or project root?
    - Recommendation: Test during first agent creation. If it fails, adjust paths or inline the content.
+   - **Resolution:** Plans 02 Tasks 1-2 use `@channel/channel.md` and `@channel/voice-profile.md` in agent bodies. Plan 03 Task 2 (human-verify checkpoint) validates agent invocation including channel context loading. If @file paths fail to resolve, the checkpoint catches it and paths are adjusted before Phase 1 closes.
 
-2. **Does `<project_context>` actually trigger agent to Read CLAUDE.md?**
+2. **Does `<project_context>` actually trigger agent to Read CLAUDE.md?** (RESOLVED)
    - What we know: GSD framework uses this pattern successfully.
    - What's unclear: Whether a subagent reliably reads CLAUDE.md when instructed in its system prompt. It may decide not to if other instructions are more pressing.
    - Recommendation: Include this block AND also duplicate the most critical rules (platform, GPU env, path handling) in the agent body.
+   - **Resolution:** Plans 02 Tasks 1-2 include `<project_context>` blocks in both agent bodies. Plan 01 Task 1 embeds the most critical platform rules directly in CLAUDE.md Platform section (Windows 11, path.resolve, GPU env). Plan 03 Task 2 (human-verify checkpoint) validates agents read CLAUDE.md during invocation testing.
 
-3. **settings.json initial content**
+3. **settings.json initial content** (RESOLVED)
    - What we know: settings.json can hold hooks, permissions, env vars. Phase 1 creates no hooks.
    - What's unclear: Whether an empty or minimal settings.json is needed for Claude Code to recognize the project.
    - Recommendation: Create a minimal `settings.json` with empty hooks. Claude Code works without it, but having the file establishes the convention.
+   - **Resolution:** Plan 01 Task 1 creates `settings.json` with `{"hooks": {}}` -- a minimal valid placeholder. This establishes the convention for Phase 4 (hooks) while being harmless if Claude Code ignores it.
 
 ## Environment Availability
 
