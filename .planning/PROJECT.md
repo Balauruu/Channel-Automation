@@ -12,7 +12,9 @@ Every agent must retain its specialized expertise and accumulate knowledge acros
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Channel identity docs integrated as agent context — Validated in Phase 1: Foundation & Architecture Validation
+- [x] Migrate expertise YAML files to appropriate Claude Code format — Validated in Phase 1 (MEMORY.md seeds from V5 YAML structure)
+- [x] Map Pi delegation workflow to Claude Code subagent dispatch (flat or 2-tier) — Validated in Phase 1 (2-tier flat delegation, user-invoked agents)
 
 ### Active
 
@@ -107,4 +109,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-09 after initialization*
+*Last updated: 2026-04-09 after Phase 1 completion*
