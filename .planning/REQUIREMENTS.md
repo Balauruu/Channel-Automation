@@ -139,20 +139,20 @@ Deferred to future release. Tracked but not in current roadmap.
 | FOUND-05 | Phase 1 | Pending |
 | FOUND-06 | Phase 1 | Pending |
 | AGNT-01 | Phase 1 | Pending |
-| AGNT-02 | Phase 2 | Pending |
+| AGNT-02 | Phase 3 | Pending |
 | AGNT-03 | Phase 1 | Pending |
 | AGNT-04 | Phase 1 | Pending |
-| AGNT-05 | Phase 2 | Pending |
-| AGNT-06 | Phase 2 | Pending |
-| AGNT-07 | Phase 2 | Pending |
-| AGNT-08 | Phase 2 | Pending |
-| AGNT-09 | Phase 2 | Pending |
-| AGNT-10 | Phase 2 | Pending |
-| AGNT-11 | Phase 2 | Pending |
-| AGNT-12 | Phase 2 | Pending |
-| AGNT-13 | Phase 2 | Pending |
-| AGNT-14 | Phase 4 | Pending |
-| AGNT-15 | Phase 2 | Pending |
+| AGNT-05 | Phase 3 | Pending |
+| AGNT-06 | Phase 3 | Pending |
+| AGNT-07 | Phase 3 | Pending |
+| AGNT-08 | Phase 3 | Pending |
+| AGNT-09 | Phase 3 | Pending |
+| AGNT-10 | Phase 3 | Pending |
+| AGNT-11 | Phase 3 | Pending |
+| AGNT-12 | Phase 3 | Pending |
+| AGNT-13 | Phase 1 | Pending |
+| AGNT-14 | Phase 5 | Pending |
+| AGNT-15 | Phase 3 | Pending |
 | SKIL-01 | Phase 2 | Pending |
 | SKIL-02 | Phase 2 | Pending |
 | SKIL-03 | Phase 2 | Pending |
@@ -165,40 +165,40 @@ Deferred to future release. Tracked but not in current roadmap.
 | SKIL-10 | Phase 2 | Pending |
 | SKIL-11 | Phase 2 | Pending |
 | SKIL-12 | Phase 2 | Pending |
-| SKIL-13 | Phase 4 | Pending |
-| PIPE-01 | Phase 3 | Pending |
-| PIPE-02 | Phase 3 | Pending |
-| PIPE-03 | Phase 3 | Pending |
-| PIPE-04 | Phase 3 | Pending |
-| PIPE-05 | Phase 3 | Pending |
-| PIPE-06 | Phase 3 | Pending |
-| PIPE-07 | Phase 3 | Pending |
-| PIPE-08 | Phase 3 | Pending |
-| MEMO-01 | Phase 2 | Pending |
-| MEMO-02 | Phase 2 | Pending |
-| MEMO-03 | Phase 2 | Pending |
-| MEMO-04 | Phase 2 | Pending |
-| MEMO-05 | Phase 2 | Pending |
-| MEMO-06 | Phase 2 | Pending |
-| MEMO-07 | Phase 2 | Pending |
-| MEMO-08 | Phase 4 | Pending |
-| MEMO-09 | Phase 4 | Pending |
-| MEMO-10 | Phase 4 | Pending |
-| HOOK-01 | Phase 3 | Pending |
-| HOOK-02 | Phase 3 | Pending |
-| HOOK-03 | Phase 3 | Pending |
-| HOOK-04 | Phase 3 | Pending |
-| INTG-01 | Phase 5 | Pending |
-| INTG-02 | Phase 5 | Pending |
-| INTG-03 | Phase 5 | Pending |
-| INTG-04 | Phase 5 | Pending |
-| INTG-05 | Phase 5 | Pending |
+| SKIL-13 | Phase 5 | Pending |
+| PIPE-01 | Phase 4 | Pending |
+| PIPE-02 | Phase 4 | Pending |
+| PIPE-03 | Phase 4 | Pending |
+| PIPE-04 | Phase 4 | Pending |
+| PIPE-05 | Phase 4 | Pending |
+| PIPE-06 | Phase 4 | Pending |
+| PIPE-07 | Phase 4 | Pending |
+| PIPE-08 | Phase 4 | Pending |
+| MEMO-01 | Phase 3 | Pending |
+| MEMO-02 | Phase 3 | Pending |
+| MEMO-03 | Phase 3 | Pending |
+| MEMO-04 | Phase 3 | Pending |
+| MEMO-05 | Phase 3 | Pending |
+| MEMO-06 | Phase 3 | Pending |
+| MEMO-07 | Phase 3 | Pending |
+| MEMO-08 | Phase 5 | Pending |
+| MEMO-09 | Phase 5 | Pending |
+| MEMO-10 | Phase 5 | Pending |
+| HOOK-01 | Phase 4 | Pending |
+| HOOK-02 | Phase 4 | Pending |
+| HOOK-03 | Phase 4 | Pending |
+| HOOK-04 | Phase 4 | Pending |
+| INTG-01 | Phase 6 | Pending |
+| INTG-02 | Phase 6 | Pending |
+| INTG-03 | Phase 6 | Pending |
+| INTG-04 | Phase 6 | Pending |
+| INTG-05 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 55 total
-- Mapped to phases: 55
+- v1 requirements: 61 total
+- Mapped to phases: 61
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-09*
-*Last updated: 2026-04-09 after initial definition*
+*Last updated: 2026-04-09 after roadmap creation (phase assignments updated, count corrected from 55 to 61)*
