@@ -15,6 +15,7 @@ Every agent must retain its specialized expertise and accumulate knowledge acros
 - [x] Channel identity docs integrated as agent context — Validated in Phase 1: Foundation & Architecture Validation
 - [x] Migrate expertise YAML files to appropriate Claude Code format — Validated in Phase 1 (MEMORY.md seeds from V5 YAML structure)
 - [x] Map Pi delegation workflow to Claude Code subagent dispatch (flat or 2-tier) — Validated in Phase 1 (2-tier flat delegation, user-invoked agents)
+- [x] Migrate skill procedures to Claude Code skills or CLAUDE.md instructions — Validated in Phase 2: Skills Library (8 domain skills with consistent structure, reflection loops, context-loading)
 
 ### Active
 
@@ -23,7 +24,6 @@ Every agent must retain its specialized expertise and accumulate knowledge acros
 - [ ] Implement feedback propagation system (downstream agent insights adjust upstream agent behavior)
 - [ ] Map Pi delegation workflow to Claude Code subagent dispatch (flat or 2-tier)
 - [ ] Migrate expertise YAML files to appropriate Claude Code format
-- [ ] Migrate skill procedures to Claude Code skills or CLAUDE.md instructions
 - [ ] All Python scripts (strategy, editorial, media) invocable by Claude Code agents
 - [ ] Pipeline stages triggerable by user commands (slash commands or equivalent)
 - [ ] Channel identity docs (channel.md, voice profile, visual style guide) integrated as agent context
@@ -109,4 +109,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-09 after Phase 1 completion*
+*Last updated: 2026-04-10 after Phase 2 completion*
