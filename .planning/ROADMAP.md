@@ -64,12 +64,13 @@ Plans:
   2. Each agent's tools field restricts it to only the capabilities relevant to its domain (e.g., asset-processor can invoke CLIP scripts but not strategy scripts)
   3. Every agent has a MEMORY.md at `.claude/agent-memory/<name>/MEMORY.md` seeded with converted V5 YAML expertise content, structured with key_files, decisions, patterns, observations, open_questions
   4. Per-skill insights.md files accumulate entries across runs and trigger merge at 20+ entries, with promotion to SKILL.md when 3+ entries converge
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01-PLAN.md — Smoke test scaffold, strategy/style-extractor/editorial-lead agents with seeded MEMORY.md
+- [ ] 03-02-PLAN.md — Visual-researcher/visual-planner/asset-processor agents with seeded MEMORY.md
+- [ ] 03-03-PLAN.md — Asset-curator/meta/code-reviewer/compiler agents with seeded MEMORY.md
+- [ ] 03-04-PLAN.md — Update researcher/writer skills + reseed memory, config.json update, CLAUDE.md update, full validation
 
 ### Phase 4: Pipeline Triggers & Hooks
 **Goal**: Users can run every pipeline stage via slash commands, domain enforcement prevents agents from writing outside their scope, and delegations are logged
@@ -127,7 +128,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Foundation & Architecture Validation | 0/3 | Planning complete | - |
 | 2. Skills Library | 1/4 | In Progress|  |
-| 3. Agent Migration & Memory | 0/3 | Not started | - |
+| 3. Agent Migration & Memory | 0/4 | Planning complete | - |
 | 4. Pipeline Triggers & Hooks | 0/3 | Not started | - |
 | 5. Feedback Propagation | 0/2 | Not started | - |
 | 6. Integration & End-to-End Validation | 0/2 | Not started | - |
