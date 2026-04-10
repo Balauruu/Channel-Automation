@@ -16,24 +16,19 @@ Every agent must retain its specialized expertise and accumulate knowledge acros
 - [x] Migrate expertise YAML files to appropriate Claude Code format — Validated in Phase 1 (MEMORY.md seeds from V5 YAML structure)
 - [x] Map Pi delegation workflow to Claude Code subagent dispatch (flat or 2-tier) — Validated in Phase 1 (2-tier flat delegation, user-invoked agents)
 - [x] Migrate skill procedures to Claude Code skills or CLAUDE.md instructions — Validated in Phase 2: Skills Library (8 domain skills with consistent structure, reflection loops, context-loading)
+- [x] Migrate all 17 agent personas to Claude Code agent definitions — Validated in Phase 3: Agent Migration & Memory (12 agents: 10 new + 2 updated, consolidated from 17 V5 agents per design decisions D-01 through D-08)
+- [x] Preserve agent mental models (persistent cross-session memory per agent) — Validated in Phase 3 (12 MEMORY.md files seeded with V5 expertise, agent-protocols skill manages lifecycle)
+- [x] Domain enforcement equivalent (agents scoped to their functional area) — Validated in Phase 3 (tools: field restricts each agent; editorial-lead read-only, style-extractor no Bash)
 
 ### Active
-
-- [ ] Migrate all 17 agent personas (orchestrator + 4 leads + 12 workers) to Claude Code agent definitions
-- [ ] Preserve agent mental models (persistent cross-session memory per agent)
 - [ ] Implement feedback propagation system (downstream agent insights adjust upstream agent behavior)
-- [ ] Map Pi delegation workflow to Claude Code subagent dispatch (flat or 2-tier)
-- [ ] Migrate expertise YAML files to appropriate Claude Code format
 - [ ] All Python scripts (strategy, editorial, media) invocable by Claude Code agents
 - [ ] Pipeline stages triggerable by user commands (slash commands or equivalent)
-- [ ] Channel identity docs (channel.md, voice profile, visual style guide) integrated as agent context
 - [ ] Strategy pipeline: competitor scraping, analysis, topic generation, project init
 - [ ] Editorial pipeline: 3-pass research, script generation, style extraction
 - [ ] Media pipeline: visual research, visual planning, asset processing (CLIP), asset curation, compilation
 - [ ] Meta pipeline: pipeline observation, code review, UX improvement
-- [ ] Domain enforcement equivalent (agents scoped to their functional area)
 - [ ] Session/conversation logging for pipeline runs
-- [ ] Research Claude Code custom agents, hooks, MCP servers, and existing community solutions
 - [ ] Use Claude Code's latest features (custom agent types, hooks, skills system)
 - [ ] Clean up and consolidate content files (channel/, strategy/) for new system structure
 
@@ -109,4 +104,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-10 after Phase 2 completion*
+*Last updated: 2026-04-10 after Phase 3 completion*
