@@ -44,7 +44,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SKIL-06**: Data analysis skill for statistical analysis and trend detection
 - [x] **SKIL-07**: Autoresearch skill (Karpathy-style iterative research loop)
 - [x] **SKIL-08**: Structured output skill for reports and JSON formatting
-- [x] **SKIL-09**: All skills follow crafting guide structure: SKILL.md < 200 lines, prompts/, scripts/, references/exemplar_*.md, insights.md
+- [x] **SKIL-09**: All skills follow crafting guide structure: SKILL.md (no line cap), prompts/, scripts/ (where applicable), insights.md, references/ (optional)
 - [x] **SKIL-10**: All skills include reflection phase (re-read output, evaluate, append one-line insight to insights.md)
 - [x] **SKIL-11**: All skills include Phase 0 context loading (read insights.md + exemplars before starting)
 - [x] **SKIL-12**: Heuristic vs deterministic sections explicitly tagged in all skills
@@ -69,7 +69,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **MEMO-04**: Seed initial MEMORY.md files by converting existing V5 YAML expertise files to markdown
 - [ ] **MEMO-05**: Per-skill insights.md learning loop — each skill appends one-line insights per run, reads at next run start
 - [ ] **MEMO-06**: Insight lifecycle management — merge duplicates at 20+ entries, promote to SKILL.md when 3+ entries point at same issue
-- [ ] **MEMO-07**: Exemplar curation slots in each skill's references/ directory (2-3 max per skill)
+- [ ] **MEMO-07**: Exemplar curation slots in each skill's references/ directory (2-3 max per skill) (exemplar curation is optional per D-13; 2-3 max is guidance when exemplars are used)
 - [ ] **MEMO-08**: SIGNALS.md — single shared cross-agent insights file for durable pipeline patterns
 - [ ] **MEMO-09**: SIGNALS.md read by orchestrator (passes relevant insights in delegation prompts) and by agents when directly invoked
 - [ ] **MEMO-10**: SIGNALS.md writable by any agent after work — structured by source agent with timestamped one-line entries
