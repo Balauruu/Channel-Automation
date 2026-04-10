@@ -38,10 +38,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **SKIL-01**: Documentary research skill (`.claude/skills/documentary-research/`) with 3-memory-layer structure (SKILL.md, insights.md, references/)
 - [x] **SKIL-02**: Archive search skill for Internet Archive/Prelinger navigation and YouTube search
-- [ ] **SKIL-03**: Visual narrative skill for shot planning and visual storytelling
-- [ ] **SKIL-04**: Media evaluation skill for asset quality scoring and relevance grading
+- [x] **SKIL-03**: Visual narrative skill for shot planning and visual storytelling
+- [x] **SKIL-04**: Media evaluation skill for asset quality scoring and relevance grading
 - [x] **SKIL-05**: Crawl4ai scraping skill for web research with browser automation
-- [ ] **SKIL-06**: Data analysis skill for statistical analysis and trend detection
+- [x] **SKIL-06**: Data analysis skill for statistical analysis and trend detection
 - [ ] **SKIL-07**: Autoresearch skill (Karpathy-style iterative research loop)
 - [ ] **SKIL-08**: Structured output skill for reports and JSON formatting
 - [x] **SKIL-09**: All skills follow crafting guide structure: SKILL.md < 200 lines, prompts/, scripts/, references/exemplar_*.md, insights.md
@@ -155,10 +155,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | AGNT-15 | Phase 3 | Pending |
 | SKIL-01 | Phase 2 | Complete |
 | SKIL-02 | Phase 2 | Complete |
-| SKIL-03 | Phase 2 | Pending |
-| SKIL-04 | Phase 2 | Pending |
+| SKIL-03 | Phase 2 | Complete |
+| SKIL-04 | Phase 2 | Complete |
 | SKIL-05 | Phase 2 | Complete |
-| SKIL-06 | Phase 2 | Pending |
+| SKIL-06 | Phase 2 | Complete |
 | SKIL-07 | Phase 2 | Pending |
 | SKIL-08 | Phase 2 | Pending |
 | SKIL-09 | Phase 2 | Complete |
