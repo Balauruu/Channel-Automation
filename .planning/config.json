@@ -35,7 +35,16 @@
   },
   "project_code": null,
   "phase_naming": "sequential",
-  "agent_skills": {},
+  "agent_skills": {
+    "researcher": ["agent-protocols", "documentary-research", "archive-search", "crawl4ai-scraping"],
+    "writer": ["agent-protocols", "documentary-research", "structured-output"],
+    "visual-researcher": ["agent-protocols", "visual-narrative", "archive-search", "crawl4ai-scraping"],
+    "visual-planner": ["agent-protocols", "visual-narrative", "archive-search", "media-evaluation"],
+    "asset-processor": ["agent-protocols", "media-evaluation"],
+    "asset-curator": ["agent-protocols", "media-evaluation"],
+    "strategy": ["agent-protocols", "data-analysis", "structured-output"],
+    "meta": ["agent-protocols", "autoresearch", "structured-output"]
+  },
   "mode": "yolo",
   "granularity": "standard"
 }
