@@ -568,22 +568,21 @@ const VALID_TOOLS = [
 
 **Note on A4:** The CLAUDE.md rule about colon-free timestamps applies to filenames. Inside JSONL values, standard ISO 8601 with colons is perfectly valid. The code examples use dash-replacement for consistency with project conventions but standard `new Date().toISOString()` would also work for log entries.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Agent tool `tool_input` schema for custom agents**
+1. **Agent tool `tool_input` schema for custom agents** — RESOLVED
    - What we know: Official docs confirm PreToolUse input includes `tool_input` with the Agent tool parameters. The `subagent_type` field appears in examples. [VERIFIED: code.claude.com/docs/en/hooks]
    - What's unclear: Whether `subagent_type` contains the custom agent `name` from frontmatter or the filename/directory name.
-   - Recommendation: Test with a simple hook script during implementation. Log the full `tool_input` JSON for an Agent call to confirm field names.
+   - Resolution: Plans use `data.tool_input?.subagent_type || 'unknown'` with null coalescing fallback. Works regardless of exact field value.
 
-2. **`agent_id` availability in PreToolUse for Agent tool**
+2. **`agent_id` availability in PreToolUse for Agent tool** — RESOLVED
    - What we know: SubagentStop has `agent_id`. SubagentStart has `agent_id`. PreToolUse for other tools has `tool_use_id`.
    - What's unclear: Whether PreToolUse for the Agent tool also has `agent_id` in the hook input before the agent starts.
-   - Recommendation: If `agent_id` is not available at PreToolUse time, use `tool_use_id` as correlation key, or fall back to timestamp + agent_name matching.
+   - Resolution: Plans use `data.agent_id || null` with graceful fallback. Duration tracking uses timestamp-based matching when agent_id unavailable.
 
-3. **Granular sub-command naming: `/strategy-scrape` vs `/strategy scrape`**
+3. **Granular sub-command naming: `/strategy-scrape` vs `/strategy scrape`** — RESOLVED
    - What we know: Claude Code skills use the directory name or `name` field as the slash command. There is no built-in sub-command routing.
-   - What's unclear: Whether users prefer hyphenated names (`/strategy-scrape`) or would want a single `/strategy` with argument-based routing.
-   - Recommendation: Use separate skills with hyphenated names per D-06 decision. This gives the clearest `/` menu listing. The unified `/strategy` command runs the full pipeline.
+   - Resolution: Separate skills with hyphenated names per D-06 decision. Gives the clearest `/` menu listing. The unified `/strategy` command runs the full pipeline.
 
 ## Environment Availability
 
