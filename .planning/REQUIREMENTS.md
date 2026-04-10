@@ -36,18 +36,18 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Skills
 
-- [ ] **SKIL-01**: Documentary research skill (`.claude/skills/documentary-research/`) with 3-memory-layer structure (SKILL.md, insights.md, references/)
-- [ ] **SKIL-02**: Archive search skill for Internet Archive/Prelinger navigation and YouTube search
+- [x] **SKIL-01**: Documentary research skill (`.claude/skills/documentary-research/`) with 3-memory-layer structure (SKILL.md, insights.md, references/)
+- [x] **SKIL-02**: Archive search skill for Internet Archive/Prelinger navigation and YouTube search
 - [ ] **SKIL-03**: Visual narrative skill for shot planning and visual storytelling
 - [ ] **SKIL-04**: Media evaluation skill for asset quality scoring and relevance grading
-- [ ] **SKIL-05**: Crawl4ai scraping skill for web research with browser automation
+- [x] **SKIL-05**: Crawl4ai scraping skill for web research with browser automation
 - [ ] **SKIL-06**: Data analysis skill for statistical analysis and trend detection
 - [ ] **SKIL-07**: Autoresearch skill (Karpathy-style iterative research loop)
 - [ ] **SKIL-08**: Structured output skill for reports and JSON formatting
-- [ ] **SKIL-09**: All skills follow crafting guide structure: SKILL.md < 200 lines, prompts/, scripts/, references/exemplar_*.md, insights.md
-- [ ] **SKIL-10**: All skills include reflection phase (re-read output, evaluate, append one-line insight to insights.md)
-- [ ] **SKIL-11**: All skills include Phase 0 context loading (read insights.md + exemplars before starting)
-- [ ] **SKIL-12**: Heuristic vs deterministic sections explicitly tagged in all skills
+- [x] **SKIL-09**: All skills follow crafting guide structure: SKILL.md < 200 lines, prompts/, scripts/, references/exemplar_*.md, insights.md
+- [x] **SKIL-10**: All skills include reflection phase (re-read output, evaluate, append one-line insight to insights.md)
+- [x] **SKIL-11**: All skills include Phase 0 context loading (read insights.md + exemplars before starting)
+- [x] **SKIL-12**: Heuristic vs deterministic sections explicitly tagged in all skills
 - [ ] **SKIL-13**: Inter-skill verification gates at pipeline stage boundaries (research→script, script→visual plan, visual plan→assets)
 
 ### Pipeline Triggers
@@ -153,18 +153,18 @@ Deferred to future release. Tracked but not in current roadmap.
 | AGNT-13 | Phase 1 | Pending |
 | AGNT-14 | Phase 5 | Pending |
 | AGNT-15 | Phase 3 | Pending |
-| SKIL-01 | Phase 2 | Pending |
-| SKIL-02 | Phase 2 | Pending |
+| SKIL-01 | Phase 2 | Complete |
+| SKIL-02 | Phase 2 | Complete |
 | SKIL-03 | Phase 2 | Pending |
 | SKIL-04 | Phase 2 | Pending |
-| SKIL-05 | Phase 2 | Pending |
+| SKIL-05 | Phase 2 | Complete |
 | SKIL-06 | Phase 2 | Pending |
 | SKIL-07 | Phase 2 | Pending |
 | SKIL-08 | Phase 2 | Pending |
-| SKIL-09 | Phase 2 | Pending |
-| SKIL-10 | Phase 2 | Pending |
-| SKIL-11 | Phase 2 | Pending |
-| SKIL-12 | Phase 2 | Pending |
+| SKIL-09 | Phase 2 | Complete |
+| SKIL-10 | Phase 2 | Complete |
+| SKIL-11 | Phase 2 | Complete |
+| SKIL-12 | Phase 2 | Complete |
 | SKIL-13 | Phase 5 | Pending |
 | PIPE-01 | Phase 4 | Pending |
 | PIPE-02 | Phase 4 | Pending |

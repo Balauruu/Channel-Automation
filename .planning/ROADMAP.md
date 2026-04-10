@@ -50,7 +50,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Editorial/web research skills: documentary-research, archive-search, crawl4ai-scraping
+- [x] 02-01-PLAN.md — Editorial/web research skills: documentary-research, archive-search, crawl4ai-scraping
 - [ ] 02-02-PLAN.md — Visual/analytical skills: visual-narrative, media-evaluation, data-analysis
 - [ ] 02-03-PLAN.md — Process skills: autoresearch, structured-output
 - [ ] 02-04-PLAN.md — Validation, crafting guide update, REQUIREMENTS update, config agent_skills mapping
@@ -126,7 +126,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Architecture Validation | 0/3 | Planning complete | - |
-| 2. Skills Library | 0/4 | Planning complete | - |
+| 2. Skills Library | 1/4 | In Progress|  |
 | 3. Agent Migration & Memory | 0/3 | Not started | - |
 | 4. Pipeline Triggers & Hooks | 0/3 | Not started | - |
 | 5. Feedback Propagation | 0/2 | Not started | - |
