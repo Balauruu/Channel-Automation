@@ -525,17 +525,19 @@ The following V5-specific content MUST be removed during adaptation:
 | A3 | Color assignments for 12 agents with only 8 available colors | Color Assignments | None -- colors are visual only, reuse is acceptable |
 | A4 | MEMORY.md seeds should come from V5 agent bodies + read-only expertise, not empty YAMLs | MEMORY.md Seeding | Medium -- if user expected YAML-to-markdown conversion as specified in D-09/D-13, they may question the approach. But empty YAML conversion produces empty MEMORY.md which violates the spirit of seeding |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **MEMORY.md seeding from empty YAMLs**
    - What we know: D-09 says "Merge all V5 expertise YAMLs for each agent, dedupe." D-13 says researcher/writer "reseeded from V5 expertise YAML using the same merge-all-dedupe-strip strategy."
    - What's unclear: All 17 expertise YAMLs are empty. The decisions reference YAMLs, but the YAMLs have no content to merge. The read-only expertise files and agent body content are the actual knowledge sources.
    - Recommendation: Interpret D-09/D-13 as "seed MEMORY.md from all available V5 domain knowledge" rather than literally "convert empty YAML to empty markdown." The user's intent was clearly to preserve V5 expertise in MEMORY.md -- the expertise just happens to live in agent bodies and read-only files rather than the mental model YAMLs. Proceed with seeding from all V5 sources. Flag this interpretation to the user during planning.
+   - **RESOLVED:** Plans 01-04 seed MEMORY.md from V5 agent bodies + read-only expertise files (the actual knowledge sources). Empty YAMLs are acknowledged but not used as source material. Each agent's MEMORY.md is seeded with key_files, decisions, and patterns extracted from the corresponding V5 agent body and relevant read-only expertise files, with V5-specific artifacts stripped per D-10.
 
 2. **Editorial-lead write access**
    - What we know: D-03 says editorial-lead is "quality gating only." V5 editorial-lead had only read + delegate tools.
    - What's unclear: Should editorial-lead be able to write revision notes or quality reports to project directories?
    - Recommendation: Start read-only (Read, Grep, Glob). If the user needs it to write, adding tools is a one-line frontmatter change.
+   - **RESOLVED:** Plan 01 Task 3 creates editorial-lead with read-only tools (Read, Grep, Glob). Editorial-lead provides verbal feedback only, does not produce artifacts. This aligns with D-03 quality gating role and assumption A1. Write access can be added trivially if needed later.
 
 ## Environment Availability
 
