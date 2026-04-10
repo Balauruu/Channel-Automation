@@ -44,14 +44,16 @@ Plans:
 **Requirements**: SKIL-01, SKIL-02, SKIL-03, SKIL-04, SKIL-05, SKIL-06, SKIL-07, SKIL-08, SKIL-09, SKIL-10, SKIL-11, SKIL-12
 **Success Criteria** (what must be TRUE):
   1. User can invoke any skill via its slash command (e.g., `/documentary-research`, `/archive-search`) and it produces structured domain-specific output
-  2. Every skill directory contains SKILL.md under 200 lines, prompts/, scripts/ (where applicable), references/ with exemplars, and insights.md
-  3. Every skill reads insights.md and exemplars at start (Phase 0 context loading) and appends a one-line insight after completion (reflection phase)
+  2. Every skill directory contains SKILL.md (no line cap per D-08), insights.md, and optional prompts/, scripts/, references/ directories
+  3. Every skill reads insights.md at start (Phase 0 context loading) and appends a one-line insight after completion (reflection phase)
   4. Each skill explicitly tags heuristic vs. deterministic sections in its procedure
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — Editorial/web research skills: documentary-research, archive-search, crawl4ai-scraping
+- [ ] 02-02-PLAN.md — Visual/analytical skills: visual-narrative, media-evaluation, data-analysis
+- [ ] 02-03-PLAN.md — Process skills: autoresearch, structured-output
+- [ ] 02-04-PLAN.md — Validation, crafting guide update, REQUIREMENTS update, config agent_skills mapping
 
 ### Phase 3: Agent Migration & Memory
 **Goal**: All consolidated agents exist with specialized personas, tool scoping restricts each agent to its domain, and every agent has persistent memory seeded from V5 expertise
@@ -124,7 +126,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Architecture Validation | 0/3 | Planning complete | - |
-| 2. Skills Library | 0/2 | Not started | - |
+| 2. Skills Library | 0/4 | Planning complete | - |
 | 3. Agent Migration & Memory | 0/3 | Not started | - |
 | 4. Pipeline Triggers & Hooks | 0/3 | Not started | - |
 | 5. Feedback Propagation | 0/2 | Not started | - |
