@@ -53,7 +53,7 @@ Plans:
 - [x] 02-01-PLAN.md — Editorial/web research skills: documentary-research, archive-search, crawl4ai-scraping
 - [x] 02-02-PLAN.md — Visual/analytical skills: visual-narrative, media-evaluation, data-analysis
 - [x] 02-03-PLAN.md — Process skills: autoresearch, structured-output
-- [ ] 02-04-PLAN.md — Validation, crafting guide update, REQUIREMENTS update, config agent_skills mapping
+- [x] 02-04-PLAN.md — Validation, crafting guide update, REQUIREMENTS update, config agent_skills mapping
 
 ### Phase 3: Agent Migration & Memory
 **Goal**: All consolidated agents exist with specialized personas, tool scoping restricts each agent to its domain, and every agent has persistent memory seeded from V5 expertise
