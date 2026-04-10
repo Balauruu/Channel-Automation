@@ -9,6 +9,16 @@ memory: project
 color: blue
 skills:
   - agent-protocols
+  - documentary-research
+  - archive-search
+  - crawl4ai-scraping
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
 ---
 
 <project_context>
