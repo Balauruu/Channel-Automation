@@ -52,7 +52,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Editorial/web research skills: documentary-research, archive-search, crawl4ai-scraping
 - [x] 02-02-PLAN.md — Visual/analytical skills: visual-narrative, media-evaluation, data-analysis
-- [ ] 02-03-PLAN.md — Process skills: autoresearch, structured-output
+- [x] 02-03-PLAN.md — Process skills: autoresearch, structured-output
 - [ ] 02-04-PLAN.md — Validation, crafting guide update, REQUIREMENTS update, config agent_skills mapping
 
 ### Phase 3: Agent Migration & Memory

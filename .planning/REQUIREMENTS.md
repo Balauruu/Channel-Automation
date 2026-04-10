@@ -42,8 +42,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SKIL-04**: Media evaluation skill for asset quality scoring and relevance grading
 - [x] **SKIL-05**: Crawl4ai scraping skill for web research with browser automation
 - [x] **SKIL-06**: Data analysis skill for statistical analysis and trend detection
-- [ ] **SKIL-07**: Autoresearch skill (Karpathy-style iterative research loop)
-- [ ] **SKIL-08**: Structured output skill for reports and JSON formatting
+- [x] **SKIL-07**: Autoresearch skill (Karpathy-style iterative research loop)
+- [x] **SKIL-08**: Structured output skill for reports and JSON formatting
 - [x] **SKIL-09**: All skills follow crafting guide structure: SKILL.md < 200 lines, prompts/, scripts/, references/exemplar_*.md, insights.md
 - [x] **SKIL-10**: All skills include reflection phase (re-read output, evaluate, append one-line insight to insights.md)
 - [x] **SKIL-11**: All skills include Phase 0 context loading (read insights.md + exemplars before starting)
@@ -159,8 +159,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | SKIL-04 | Phase 2 | Complete |
 | SKIL-05 | Phase 2 | Complete |
 | SKIL-06 | Phase 2 | Complete |
-| SKIL-07 | Phase 2 | Pending |
-| SKIL-08 | Phase 2 | Pending |
+| SKIL-07 | Phase 2 | Complete |
+| SKIL-08 | Phase 2 | Complete |
 | SKIL-09 | Phase 2 | Complete |
 | SKIL-10 | Phase 2 | Complete |
 | SKIL-11 | Phase 2 | Complete |
