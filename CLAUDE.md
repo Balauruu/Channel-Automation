@@ -26,17 +26,16 @@ Dark mysteries documentary video production pipeline. Phase 1 vertical slice: re
 |-------|--------|-------------|
 | @researcher | Editorial | Research a documentary topic |
 | @writer | Editorial | Generate a script from research |
-| @strategy-lead | Strategy | Competitor analysis, topics (Phase 3) |
-| @editorial-lead | Editorial | Complex editorial coordination (Phase 3) |
-| @style-extractor | Editorial | Extract narrator voice (Phase 3) |
-| @visual-researcher | Media | Visual intent and reference gathering (Phase 3) |
-| @visual-planner | Media | Shotlist generation (Phase 3) |
-| @asset-processor | Media | CLIP embeddings, downloads (Phase 3) |
-| @asset-curator | Media | Asset evaluation and library management (Phase 3) |
-| @meta | Meta | Pipeline health and code quality (Phase 3) |
-| @compiler | Media | Edit sheet compilation (Phase 3) |
-
-Agents marked "(Phase 3)" are not yet created. They appear here for reference.
+| @strategy | Strategy | Competitor analysis, topic generation, project init |
+| @style-extractor | Editorial | Extract or refine channel narrator voice |
+| @editorial-lead | Editorial | Quality gate research dossiers and scripts |
+| @visual-researcher | Media | Visual intent definition and resource gathering |
+| @visual-planner | Media | Shotlist generation and b-roll curation |
+| @asset-processor | Media | CLIP embeddings, asset downloads, semantic search |
+| @asset-curator | Media | Global video library management |
+| @meta | Meta | Pipeline health, UX review, improvement proposals |
+| @code-reviewer | Meta | Code quality review and fixes |
+| @compiler | Media | Edit sheet compilation for DaVinci Resolve |
 
 ## Architecture Rules
 

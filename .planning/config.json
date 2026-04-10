@@ -43,7 +43,11 @@
     "asset-processor": ["agent-protocols", "media-evaluation"],
     "asset-curator": ["agent-protocols", "media-evaluation"],
     "strategy": ["agent-protocols", "data-analysis", "structured-output"],
-    "meta": ["agent-protocols", "autoresearch", "structured-output"]
+    "meta": ["agent-protocols", "autoresearch", "structured-output"],
+    "editorial-lead": ["agent-protocols", "documentary-research"],
+    "style-extractor": ["agent-protocols"],
+    "code-reviewer": ["agent-protocols", "autoresearch"],
+    "compiler": ["agent-protocols", "structured-output"]
   },
   "mode": "yolo",
   "granularity": "standard"
