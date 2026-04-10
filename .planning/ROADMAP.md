@@ -67,9 +67,9 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Smoke test scaffold, strategy/style-extractor/editorial-lead agents with seeded MEMORY.md
-- [ ] 03-02-PLAN.md — Visual-researcher/visual-planner/asset-processor agents with seeded MEMORY.md
-- [ ] 03-03-PLAN.md — Asset-curator/meta/code-reviewer/compiler agents with seeded MEMORY.md
+- [x] 03-01-PLAN.md — Smoke test scaffold, strategy/style-extractor/editorial-lead agents with seeded MEMORY.md
+- [x] 03-02-PLAN.md — Visual-researcher/visual-planner/asset-processor agents with seeded MEMORY.md
+- [x] 03-03-PLAN.md — Asset-curator/meta/code-reviewer/compiler agents with seeded MEMORY.md
 - [ ] 03-04-PLAN.md — Update researcher/writer skills + reseed memory, config.json update, CLAUDE.md update, full validation
 
 ### Phase 4: Pipeline Triggers & Hooks
