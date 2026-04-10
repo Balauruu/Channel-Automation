@@ -73,21 +73,21 @@ Plans:
 - [x] 03-04-PLAN.md — Update researcher/writer skills + reseed memory, config.json update, CLAUDE.md update, full validation
 
 ### Phase 4: Pipeline Triggers & Hooks
-**Goal**: Users can run every pipeline stage via slash commands, domain enforcement prevents agents from writing outside their scope, and delegations are logged
+**Goal**: Users can run every pipeline stage via slash commands, session logging captures agent dispatches, and an audit skill validates system health. Domain enforcement hooks deferred per D-10.
 **Depends on**: Phase 3
 **Requirements**: PIPE-01, PIPE-02, PIPE-03, PIPE-04, PIPE-05, PIPE-06, PIPE-07, PIPE-08, HOOK-01, HOOK-02, HOOK-03, HOOK-04
 **Success Criteria** (what must be TRUE):
-  1. User can run `/strategy`, `/research`, `/write-script`, `/visual-plan`, `/process-assets`, and `/compile` and each triggers the correct agent(s) invoking existing Python scripts via Bash
+  1. User can run `/strategy`, `/research`, `/write-script`, `/visual-plan`, `/process-assets`, and `/compile` and each triggers the correct agent(s) using Claude's native capabilities (Python script invocations deferred to Phase 6)
   2. Human checkpoints pause the pipeline after `/strategy` (topic selection) and after `/process-assets` (asset review) requiring user approval before continuing
-  3. An agent attempting to write outside its allowed directory is blocked by the PreToolUse domain enforcement hook with a clear error message
-  4. Agent delegations are captured in a project-local JSONL session log by the PostToolUse hook
-  5. User can run `/audit-agents` and it validates all agent definitions for required fields, valid tool scoping, skill references, and memory setup
-**Plans**: TBD
+  3. Agent delegations are captured in a project-local JSONL session log by dual-event hooks (PreToolUse + SubagentStop)
+  4. User can run `/audit-agents` and it validates all agent definitions for required fields, valid tool scoping, skill references, and memory setup with auto-fix capability
+  5. Domain enforcement hooks (HOOK-01, HOOK-02) are deferred -- tools: field + agent body instructions provide sufficient scoping
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
-- [ ] 04-03: TBD
+- [ ] 04-01-PLAN.md — 13 pipeline trigger slash-command skills (6 primary + 7 granular sub-commands) and Wave 0 smoke test
+- [ ] 04-02-PLAN.md — Dual-event session logging hooks (PreToolUse + SubagentStop) writing to logs/sessions.jsonl
+- [ ] 04-03-PLAN.md — /audit-agents validation skill with 4-dimension checks, cross-consistency, and auto-fix
 
 ### Phase 5: Feedback Propagation
 **Goal**: Downstream agent insights flow back to influence upstream agent behavior in subsequent pipeline runs -- the pipeline gets smarter over time
@@ -129,6 +129,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Foundation & Architecture Validation | 0/3 | Planning complete | - |
 | 2. Skills Library | 1/4 | In Progress|  |
 | 3. Agent Migration & Memory | 0/4 | Planning complete | - |
-| 4. Pipeline Triggers & Hooks | 0/3 | Not started | - |
+| 4. Pipeline Triggers & Hooks | 0/3 | Planning complete | - |
 | 5. Feedback Propagation | 0/2 | Not started | - |
 | 6. Integration & End-to-End Validation | 0/2 | Not started | - |
