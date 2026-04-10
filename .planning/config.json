@@ -76,6 +76,21 @@
       "agent-protocols",
       "autoresearch",
       "structured-output"
+    ],
+    "editorial-lead": [
+      "agent-protocols",
+      "documentary-research"
+    ],
+    "style-extractor": [
+      "agent-protocols"
+    ],
+    "code-reviewer": [
+      "agent-protocols",
+      "autoresearch"
+    ],
+    "compiler": [
+      "agent-protocols",
+      "structured-output"
     ]
   },
   "mode": "yolo",
