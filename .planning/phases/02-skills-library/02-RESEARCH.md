@@ -521,22 +521,25 @@ Note: Phase 2 builds the skills and defines the mapping. Phase 3 updates agent f
 | A3 | Skills should adapt V5 domain knowledge rather than being written from scratch | V5 to V0.6 Mapping | Low -- V5 content is battle-tested, but some content may need significant rework for the Claude Code context |
 | A4 | The `superpowers:writing-skills` reference maps to Anthropic's `skill-creator` in the official skills repo | Skill Creation Methodology | Medium -- if user has a different tool in mind, the methodology section would need revision |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Config mapping enforcement timing**
    - What we know: D-02 says "config-based mechanism (agent_skills mapping in config)"
    - What's unclear: Should the agent_skills config be enforced at runtime (via a hook that validates agent-skill pairings), or is it purely a planning reference?
    - Recommendation: Treat as planning reference for Phase 2. If runtime enforcement is desired, add a validation hook in Phase 4 (along with `/audit-agents`).
+   - **RESOLVED:** Plan 02-04 Task 3 populates `agent_skills` in config.json as a planning reference. No runtime enforcement in Phase 2. Phase 4 adds `/audit-agents` validation hook.
 
 2. **Should Phase 2 update existing agent frontmatter?**
    - What we know: Researcher and writer agents currently only reference `agent-protocols` in their `skills:` field.
    - What's unclear: Should Phase 2 also update these agents to reference the new domain skills, or is that Phase 3's job?
    - Recommendation: Phase 2 builds skills. Phase 3 updates agent frontmatter. Keep the phases focused. However, the planner may include a final task to update researcher and writer as a validation step.
+   - **RESOLVED:** Phase 2 plans build skills only (Plans 01-03). Agent frontmatter updates deferred to Phase 3. Plan 02-04 documents the agent_skills mapping as a Phase 3 reference.
 
 3. **Skill naming: hyphens vs underscores**
    - What we know: Claude Code skill names must be "lowercase letters, numbers, and hyphens only (max 64 characters)" per official docs.
    - What's unclear: Whether slash-command UX is better with short names (`/research`) or descriptive names (`/documentary-research`).
    - Recommendation: Use descriptive names (`documentary-research`, `archive-search`) for domain skills. Short names (`/research`, `/write-script`) are reserved for Phase 4 pipeline trigger skills.
+   - **RESOLVED:** All 8 skills use descriptive hyphenated names (documentary-research, archive-search, crawl4ai-scraping, visual-narrative, media-evaluation, data-analysis, autoresearch, structured-output). Matches Claude Code naming rules and reserves short names for Phase 4 pipeline skills.
 
 ## Validation Architecture
 
