@@ -12,7 +12,29 @@ Run the complete visual planning pipeline with sequential two-agent chaining.
 
 ## Instructions
 
-1. Verify `projects/$ARGUMENTS/script/Script.md` exists. If not, tell the user: "Script not found. Run `/write-script $ARGUMENTS` first."
+1. **Verification Gate: Script Completeness**
+
+   Before dispatching visual research, verify the script stage is complete. Check each item in order -- if ANY check fails, STOP and show the failure message. Do not dispatch any agents.
+
+   a. Check `projects/$ARGUMENTS/script/Script.md` exists.
+      If not: "Script not found. Run `/write-script $ARGUMENTS` first."
+
+   b. Check `projects/$ARGUMENTS/script/metadata.json` exists.
+      If not: "Script metadata not found at `projects/$ARGUMENTS/script/metadata.json`. Re-run `/write-script $ARGUMENTS`."
+
+   c. Check `projects/$ARGUMENTS/research/entity_index.json` exists.
+      If not: "Entity index not found. Visual research needs entity context. Run `/research $ARGUMENTS` first."
+
+   d. Read Script.md and verify it contains a `## Hook` heading.
+      If not: "Script is missing the Hook section. The script may be incomplete."
+
+   e. Read Script.md and count headings matching `## Chapter`. Verify there are at least 2.
+      If not: "Script has fewer than 2 chapters. The script may be incomplete. Re-run `/write-script $ARGUMENTS`."
+
+   f. Verify Script.md is at least 1000 words long (rough count).
+      If not: "Script appears too short (under 1000 words). The script may be incomplete."
+
+   If ALL checks pass, proceed to step 2.
 
 2. Dispatch @visual-researcher with the following task:
 

@@ -13,7 +13,23 @@ Run the complete asset processing pipeline.
 
 ## Instructions
 
-1. Verify `projects/$ARGUMENTS/visuals/shotlist.json` exists. If not, tell the user: "Shotlist not found. Run `/visual-plan $ARGUMENTS` first."
+1. **Verification Gate: Visual Plan Completeness**
+
+   Before dispatching asset processing, verify the visual planning stage is complete. Check each item in order -- if ANY check fails, STOP and show the failure message. Do not dispatch the asset processor.
+
+   a. Check `projects/$ARGUMENTS/visuals/shotlist.json` exists.
+      If not: "Shotlist not found. Run `/visual-plan $ARGUMENTS` first."
+
+   b. Check `projects/$ARGUMENTS/visuals/visual_brief.json` exists.
+      If not: "Visual brief not found. Run `/visual-plan $ARGUMENTS` first."
+
+   c. Check `projects/$ARGUMENTS/visuals/media_leads.json` exists.
+      If not: "Media leads not found. Run `/visual-plan $ARGUMENTS` first."
+
+   d. Read shotlist.json and verify it contains a non-empty array (check that the file contains at least one `"chapter"` key or is longer than 50 characters).
+      If not: "Shotlist appears empty or malformed. Re-run `/visual-plan $ARGUMENTS`."
+
+   If ALL checks pass, proceed to step 2.
 
 2. Dispatch @asset-processor with the following task:
 
