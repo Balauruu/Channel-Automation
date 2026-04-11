@@ -20,16 +20,17 @@ Every agent must retain its specialized expertise and accumulate knowledge acros
 - [x] Preserve agent mental models (persistent cross-session memory per agent) — Validated in Phase 3 (12 MEMORY.md files seeded with V5 expertise, agent-protocols skill manages lifecycle)
 - [x] Domain enforcement equivalent (agents scoped to their functional area) — Validated in Phase 3 (tools: field restricts each agent; editorial-lead read-only, style-extractor no Bash)
 
+- [x] Pipeline stages triggerable by user commands (slash commands or equivalent) — Validated in Phase 4: Pipeline Triggers & Hooks (13 slash-command skills covering all 6 pipeline stages + 7 granular sub-commands)
+- [x] Strategy pipeline: competitor scraping, analysis, topic generation, project init — Validated in Phase 4 (/strategy, /strategy-scrape, /strategy-analyze, /strategy-topics skills dispatch @strategy agent)
+- [x] Editorial pipeline: 3-pass research, script generation, style extraction — Validated in Phase 4 (/research, /write-script skills dispatch @researcher, @writer agents)
+- [x] Media pipeline: visual research, visual planning, asset processing (CLIP), asset curation, compilation — Validated in Phase 4 (/visual-plan, /process-assets, /compile skills dispatch appropriate agents)
+- [x] Meta pipeline: pipeline observation, code review, UX improvement — Validated in Phase 4 (/audit-agents skill validates system health)
+- [x] Session/conversation logging for pipeline runs — Validated in Phase 4 (dual-event PreToolUse + SubagentStop hooks write to logs/sessions.jsonl)
+- [x] Use Claude Code's latest features (custom agent types, hooks, skills system) — Validated in Phase 4 (hooks for logging, skills for pipeline triggers, agent definitions for domain experts)
+
 ### Active
 - [ ] Implement feedback propagation system (downstream agent insights adjust upstream agent behavior)
 - [ ] All Python scripts (strategy, editorial, media) invocable by Claude Code agents
-- [ ] Pipeline stages triggerable by user commands (slash commands or equivalent)
-- [ ] Strategy pipeline: competitor scraping, analysis, topic generation, project init
-- [ ] Editorial pipeline: 3-pass research, script generation, style extraction
-- [ ] Media pipeline: visual research, visual planning, asset processing (CLIP), asset curation, compilation
-- [ ] Meta pipeline: pipeline observation, code review, UX improvement
-- [ ] Session/conversation logging for pipeline runs
-- [ ] Use Claude Code's latest features (custom agent types, hooks, skills system)
 - [ ] Clean up and consolidate content files (channel/, strategy/) for new system structure
 
 ### Out of Scope
@@ -104,4 +105,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-10 after Phase 3 completion*
+*Last updated: 2026-04-11 after Phase 4 completion*
