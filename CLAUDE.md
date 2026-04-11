@@ -13,11 +13,10 @@ Dark mysteries documentary video production pipeline. Phase 1 vertical slice: re
 - `.claude/references/` -- Reference guides (skill crafting)
 - `.claude/rules/` -- Path-scoped rules (Phase 4)
 - `.claude/hooks/` -- Pre/PostToolUse hooks (Phase 4)
-- `.claude/scripts/` -- Utility scripts (Phase 4)
+- `.claude/scripts/` -- Python scripts and utility scripts (strategy/, editorial/, media/ subdirs + audit-agents.js)
+- `data/` -- SQLite databases (channel_assistant.db, asset_catalog.db)
+- `strategy/competitors/` -- Competitor channel registry (competitors.json)
 - `projects/` -- Per-documentary outputs
-- `strategy/` -- Strategy Python scripts
-- `editorial/` -- Editorial Python scripts
-- `media/` -- Media Python scripts
 - `tests/` -- Smoke tests and validation scripts
 
 ## Agent Reference
