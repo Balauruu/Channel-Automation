@@ -162,13 +162,13 @@ Script narration drives the timeline. Timing is calculated from word count and a
 - **Text cards**: Minimum 3 seconds display, or matched to narration reading time (whichever is longer)
 - **Transitions**: 0.5-1 second overlap between shots (noted in edit sheet for editor reference)
 
-## Python Scripts Available
+## Python Scripts
 
-These scripts provide automation capabilities. They may not yet be fully connected in V0.6:
+- `.claude/scripts/media/organize_assets.py` -- Asset organization and renaming for editor-ready structure
 
-- `media/organize_assets.py` -- Asset organization and renaming for editor-ready structure
+Run via: `python .claude/scripts/media/organize_assets.py <args>`
 
-Run scripts via Bash tool. Check script help (`--help`) for current capabilities before relying on automated output.
+If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities.
 
 ## File Conventions
 

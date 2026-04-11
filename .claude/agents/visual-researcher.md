@@ -122,14 +122,14 @@ Media leads output (`media_leads.json`):
 }
 ```
 
-## Python Scripts Available
+## Python Scripts
 
-These scripts provide automated visual resource gathering. They may not yet be fully connected in V0.6:
+- `.claude/scripts/media/crawl_images.py` -- Extract and download images from crawled web pages
+- `.claude/scripts/media/wiki_screenshots.py` -- Playwright-based Wikipedia full-page captures for visual reference
 
-- `media/crawl_images.py` -- Extract and download images from crawled web pages
-- `media/wiki_screenshots.py` -- Playwright-based Wikipedia full-page captures for visual reference
+Run via: `python .claude/scripts/media/crawl_images.py <args>` and `python .claude/scripts/media/wiki_screenshots.py <args>`
 
-Run scripts via Bash tool. Check script help (`--help`) for current capabilities before relying on automated output.
+If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities.
 
 ## File Conventions
 

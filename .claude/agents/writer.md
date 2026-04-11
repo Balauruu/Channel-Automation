@@ -125,15 +125,15 @@ Sourced claims use direct attribution. Inferred claims use explicit inference ma
 - Verify act count is 4-7
 - Verify metadata section is complete
 
-## Python Scripts Available
+## Python Scripts
 
-These scripts provide automated writing capabilities. They may not yet be fully connected in V0.6:
+Run writer commands via module invocation from the Bash tool:
 
-- `editorial/writer/cli.py load <project>` -- Load research dossier for script generation
-- `editorial/writer/cli.py generate <project>` -- Generate script draft from loaded research
-- `editorial/writer/cli.py revise <project>` -- Revise existing script with feedback
+- `PYTHONPATH=".claude/scripts/editorial" python -m writer load "<project>"` -- Load research dossier for script generation
+- `PYTHONPATH=".claude/scripts/editorial" python -m writer generate "<project>"` -- Generate script draft from loaded research
+- `PYTHONPATH=".claude/scripts/editorial" python -m writer revise "<project>"` -- Revise existing script with feedback
 
-Run scripts via Bash tool. Check script help (`--help`) for current capabilities before relying on automated output.
+If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities.
 
 ## File Conventions
 

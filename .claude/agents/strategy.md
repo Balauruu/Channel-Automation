@@ -45,13 +45,13 @@ Registration criteria:
 - Active upload schedule (at least 1 video in the last 90 days)
 - Channels with fewer than 1,000 subscribers AND high upload frequency are likely content farms -- flag but still track for saturation analysis
 
-Register channels via the strategy CLI: `strategy/cli.py add <channel_url>`
+Register channels via the strategy CLI: `PYTHONPATH=".claude/scripts/strategy" python -m channel_assistant add <channel_url>`
 
 ### Scraping Pipeline
 
 Run the scraping pipeline to collect video metadata from all registered competitor channels. The pipeline extracts titles, descriptions, view counts, upload dates, durations, and engagement metrics.
 
-Execute scraping: `strategy/cli.py scrape`
+Execute scraping: `PYTHONPATH=".claude/scripts/strategy" python -m channel_assistant scrape`
 
 Rate limiting: The scraper respects YouTube's rate limits. If scraping fails mid-run, resume from the last successful channel. Track rate limiting incidents in your memory for future reference.
 
@@ -66,7 +66,7 @@ After scraping, run statistical analysis across these dimensions:
 5. **Content Gap Detection** -- Cross-reference competitor coverage against channel pillars. Identify topics with proven audience demand (search signals) but low competitor supply.
 6. **Convergence Detection** -- Identify topic clusters where 3+ competitors published within a 30-day window. Frame as opportunity (trending + underserved by us), saturation warning, or neutral flag.
 
-Execute analysis: `strategy/cli.py analyze`
+Execute analysis: `PYTHONPATH=".claude/scripts/strategy" python -m channel_assistant analyze`
 
 ## Topic Generation
 
@@ -98,7 +98,7 @@ Generate topic candidates from three sources:
 - Check every candidate against `channel/past_topics.md` for near-duplicates
 - Near-duplicates are tagged (`[Similar to: past_topic]` or `[DIFFERENT ANGLE: past_topic]`) and included, never silently dropped
 
-Execute topic generation: `strategy/cli.py topics`
+Execute topic generation: `PYTHONPATH=".claude/scripts/strategy" python -m channel_assistant topics`
 
 ### Near-Duplicate Handling
 
@@ -122,19 +122,20 @@ projects/<project-name>/
 
 The project name is lowercase with hyphens for spaces. The metadata file includes the topic brief, scoring rationale, estimated runtime, and selected pillar.
 
-Execute initialization: `strategy/cli.py init <project-name>`
+## Python Scripts
 
-## Python Scripts Available
+Run strategy commands via module invocation from the Bash tool:
 
-All strategy scripts are invoked through the strategy CLI. These scripts may not yet be fully connected in V0.6:
+- `PYTHONPATH=".claude/scripts/strategy" python -m channel_assistant add <url>` -- Register a competitor channel for tracking
+- `PYTHONPATH=".claude/scripts/strategy" python -m channel_assistant scrape` -- Scrape video metadata from all registered channels
+- `PYTHONPATH=".claude/scripts/strategy" python -m channel_assistant analyze` -- Run statistical analysis on scraped data
+- `PYTHONPATH=".claude/scripts/strategy" python -m channel_assistant topics` -- Generate scored topic briefs
 
-- `strategy/cli.py add <url>` -- Register a competitor channel for tracking
-- `strategy/cli.py scrape` -- Scrape video metadata from all registered channels
-- `strategy/cli.py analyze` -- Run statistical analysis on scraped data
-- `strategy/cli.py topics` -- Generate scored topic briefs
-- `strategy/cli.py init <project-name>` -- Initialize a new project directory
+Note: `project_init.py` provides project initialization functions but is not wired as a CLI subcommand. Use the project initialization procedure in the agent body instead.
 
-Run scripts via the Bash tool. Check script help (`--help`) for current capabilities before relying on automated output. Store competitor data in the SQLite database at `data/channel_assistant.db`.
+Store competitor data in the SQLite database at `data/channel_assistant.db`. The competitor channel registry is at `strategy/competitors/competitors.json`.
+
+If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities.
 
 ## File Conventions
 

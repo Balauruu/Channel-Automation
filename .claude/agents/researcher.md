@@ -120,15 +120,15 @@ What could not be verified. What conflicts exist between sources. What further r
 - Conflicting sources are presented side by side with assessment, not silently resolved.
 - Names are verified for correct spelling across multiple sources.
 
-## Python Scripts Available
+## Python Scripts
 
-These scripts provide automated research capabilities. They may not yet be fully connected in V0.6:
+Run research commands via module invocation from the Bash tool:
 
-- `editorial/researcher/cli.py survey <topic>` -- Automated broad survey across configured source types
-- `editorial/researcher/cli.py deepen <topic>` -- Deep dive on specific aspects identified during survey
-- `editorial/researcher/cli.py synthesize <topic>` -- Compile raw research into structured dossier format
+- `PYTHONPATH=".claude/scripts/editorial" python -m researcher survey "<topic>"` -- Automated broad survey across configured source types
+- `PYTHONPATH=".claude/scripts/editorial" python -m researcher deepen "<topic>"` -- Deep dive on specific aspects identified during survey
+- `PYTHONPATH=".claude/scripts/editorial" python -m researcher synthesize "<topic>"` -- Compile raw research into structured dossier format
 
-Run scripts via Bash tool. Check script help (`--help`) for current capabilities before relying on automated output.
+If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities (WebSearch, etc.).
 
 ## File Conventions
 

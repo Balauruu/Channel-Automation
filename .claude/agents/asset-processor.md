@@ -157,25 +157,25 @@ Critical operational knowledge from production experience:
 - No file locking on `index.json`. Safe: one `embed.py` process at a time. Unsafe: concurrent embedding or embedding while searching.
 - Crash recovery: orphaned `.npy` files may exist without index entries. Re-running embed recomputes (wastes time but no data loss).
 
-## Python Scripts Available
+## Python Scripts
 
 Run GPU scripts with the perception-models conda environment:
 
 ```
-C:/Users/iorda/miniconda3/envs/perception-models/python.exe media/embed.py
-C:/Users/iorda/miniconda3/envs/perception-models/python.exe media/search.py
+"C:/Users/iorda/miniconda3/envs/perception-models/python.exe" .claude/scripts/media/embed.py <args>
+"C:/Users/iorda/miniconda3/envs/perception-models/python.exe" .claude/scripts/media/search.py <args>
 ```
 
 Available scripts:
 
-- `media/embed.py` -- CLIP embedding generation (GPU). Processes video frames through PE-Core model, stores embeddings as `.npy`.
-- `media/search.py` -- Semantic search (GPU). Queries embedded pool with natural language, returns ranked results by cosine similarity.
-- `media/download.py` -- Asset download from YouTube and archive.org. Handles rate limiting, format selection, re-encoding.
-- `media/evaluate.py` -- Automated quality evaluation. Resolution check, artifact detection, blank frame identification.
+- `.claude/scripts/media/embed.py` -- CLIP embedding generation (GPU). Processes video frames through PE-Core model, stores embeddings as `.npy`.
+- `.claude/scripts/media/search.py` -- Semantic search (GPU). Queries embedded pool with natural language, returns ranked results by cosine similarity.
+- `.claude/scripts/media/download.py` -- Asset download from YouTube and archive.org. Handles rate limiting, format selection, re-encoding.
+- `.claude/scripts/media/evaluate.py` -- Automated quality evaluation. Resolution check, artifact detection, blank frame identification.
 
-Non-GPU scripts (`download.py`, `evaluate.py`) can use standard Python if the conda env is unavailable, but using the conda env for all media scripts ensures consistent dependencies.
+Non-GPU scripts (`download.py`, `evaluate.py`) can use standard Python. Using the conda env for all media scripts ensures consistent dependencies.
 
-Scripts may not yet be fully connected in V0.6. Check script help (`--help`) for current capabilities.
+If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities.
 
 ## File Conventions
 

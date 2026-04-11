@@ -128,13 +128,13 @@ An asset qualifies for promotion when it meets ALL of the following:
 - Atmospheric and environmental footage has the highest reuse rate across documentary topics
 - Cartoon/illustrated assets are almost always reusable -- low specificity by nature
 
-## Python Scripts Available
+## Python Scripts
 
-These scripts provide automation capabilities. They may not yet be fully connected in V0.6:
+- `.claude/scripts/media/promote.py` -- Asset promotion to global library (copy, catalog insertion, metadata update)
 
-- `media/promote.py` -- Asset promotion to global library (copy, catalog insertion, metadata update)
+Run via: `python .claude/scripts/media/promote.py <args>`
 
-Run scripts via Bash tool. Check script help (`--help`) for current capabilities before relying on automated output.
+If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities.
 
 ## File Conventions
 
@@ -142,7 +142,7 @@ Run scripts via Bash tool. Check script help (`--help`) for current capabilities
 - Asset catalog database: `data/asset_catalog.db` (SQLite)
 - Project assets: `projects/<name>/assets/`
 - LanceDB vectors: `data/vectors/` (if applicable for semantic search)
-- Promotion script: `media/promote.py`
+- Promotion script: `.claude/scripts/media/promote.py`
 
 Create directories as needed when promoting assets. Use the taxonomy category structure for organization.
 

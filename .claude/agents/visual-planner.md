@@ -154,13 +154,13 @@ Enforce these rules to prevent visual monotony:
 5. Cartoon b-roll (`broll_cartoon`) at least 10% of shots
 6. Opening shot should use `find` or `curate` (atmospheric) when possible
 
-## Python Scripts Available
+## Python Scripts
 
-These scripts provide automated archive search capabilities. They may not yet be fully connected in V0.6:
+- `.claude/scripts/media/ia_search.py` -- Internet Archive search with metadata extraction and filtering
 
-- `media/ia_search.py` -- Internet Archive search with metadata extraction and filtering
+Run via: `python .claude/scripts/media/ia_search.py <args>`
 
-Run scripts via Bash tool. Check script help (`--help`) for current capabilities before relying on automated output.
+If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities.
 
 ## File Conventions
 
