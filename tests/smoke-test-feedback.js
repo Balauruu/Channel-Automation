@@ -172,7 +172,117 @@ testCases.push({
   }
 });
 
-// Note: Verification gate checks for SKIL-13 will be added in Plan 02 after gates are implemented.
+// --- Verification gate checks (SKIL-13) ---
+
+// 16. write-script has Verification Gate heading
+testCases.push({
+  name: 'write-script/has_verification_gate',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'write-script', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('Verification Gate');
+  }
+});
+
+// 17. write-script checks entity_index.json
+testCases.push({
+  name: 'write-script/checks_entity_index',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'write-script', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('entity_index.json');
+  }
+});
+
+// 18. write-script checks source_manifest.json
+testCases.push({
+  name: 'write-script/checks_source_manifest',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'write-script', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('source_manifest.json');
+  }
+});
+
+// 19. write-script checks Executive Summary heading
+testCases.push({
+  name: 'write-script/checks_executive_summary',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'write-script', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('Executive Summary');
+  }
+});
+
+// 20. visual-plan has Verification Gate heading
+testCases.push({
+  name: 'visual-plan/has_verification_gate',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'visual-plan', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('Verification Gate');
+  }
+});
+
+// 21. visual-plan checks metadata.json
+testCases.push({
+  name: 'visual-plan/checks_metadata_json',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'visual-plan', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('metadata.json');
+  }
+});
+
+// 22. visual-plan checks Hook section
+testCases.push({
+  name: 'visual-plan/checks_hook_section',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'visual-plan', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('Hook');
+  }
+});
+
+// 23. process-assets has Verification Gate heading
+testCases.push({
+  name: 'process-assets/has_verification_gate',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'process-assets', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('Verification Gate');
+  }
+});
+
+// 24. process-assets checks visual_brief.json
+testCases.push({
+  name: 'process-assets/checks_visual_brief',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'process-assets', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('visual_brief.json');
+  }
+});
+
+// 25. process-assets checks media_leads.json
+testCases.push({
+  name: 'process-assets/checks_media_leads',
+  check: () => {
+    const content = fs.readFileSync(
+      path.join(projectRoot, '.claude', 'skills', 'process-assets', 'SKILL.md'), 'utf8'
+    );
+    return content.includes('media_leads.json');
+  }
+});
 
 // --- Run all tests ---
 let passed = 0;
