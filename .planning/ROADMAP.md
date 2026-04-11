@@ -101,8 +101,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Signal system (feedback/signals.yaml) and agent-protocols upgrade with full signal processing logic
-- [ ] 05-02-PLAN.md — Verification gates in write-script, visual-plan, process-assets pipeline skills
+- [x] 05-01-PLAN.md — Signal system (feedback/signals.yaml) and agent-protocols upgrade with full signal processing logic
+- [x] 05-02-PLAN.md — Verification gates in write-script, visual-plan, process-assets pipeline skills
 
 ### Phase 6: Integration & End-to-End Validation
 **Goal**: The complete pipeline runs end-to-end from topic selection through DaVinci Resolve edit sheet, with all Python scripts, GPU operations, databases, and video library accessible
@@ -139,5 +139,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Skills Library | 1/4 | In Progress|  |
 | 3. Agent Migration & Memory | 0/4 | Planning complete | - |
 | 4. Pipeline Triggers & Hooks | 0/3 | Planning complete | - |
-| 5. Feedback Propagation | 0/2 | Planning complete | - |
+| 5. Feedback Propagation | 2/2 | Complete | 2026-04-11 |
 | 6. Integration & End-to-End Validation | 0/2 | Not started | - |
