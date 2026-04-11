@@ -94,15 +94,15 @@ Plans:
 **Depends on**: Phase 4
 **Requirements**: AGNT-14, MEMO-08, MEMO-09, MEMO-10, SKIL-13
 **Success Criteria** (what must be TRUE):
-  1. After an agent completes work, it writes structured timestamped insights to SIGNALS.md that are tagged by source agent
-  2. The orchestrator reads SIGNALS.md at delegation time and passes relevant insights to the target agent's delegation prompt
-  3. Agents invoked directly (not via orchestrator) read SIGNALS.md themselves at session start
-  4. Verification gates at pipeline stage boundaries (research-to-script, script-to-visual-plan, visual-plan-to-assets) check cross-stage quality before proceeding
-**Plans**: TBD
+  1. After an agent completes work, it writes structured timestamped insights to signals.yaml that are tagged by source agent and domain
+  2. Agents read signals for their domain at task start via agent-protocols and promote actionable insights to MEMORY.md
+  3. Agents invoked directly (not via orchestrator) use the same signal processing path via agent-protocols
+  4. Verification gates at pipeline stage boundaries (research-to-script, script-to-visual-plan, visual-plan-to-assets) check structural completeness before proceeding
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md — Signal system (feedback/signals.yaml) and agent-protocols upgrade with full signal processing logic
+- [ ] 05-02-PLAN.md — Verification gates in write-script, visual-plan, process-assets pipeline skills
 
 ### Phase 6: Integration & End-to-End Validation
 **Goal**: The complete pipeline runs end-to-end from topic selection through DaVinci Resolve edit sheet, with all Python scripts, GPU operations, databases, and video library accessible
@@ -139,5 +139,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Skills Library | 1/4 | In Progress|  |
 | 3. Agent Migration & Memory | 0/4 | Planning complete | - |
 | 4. Pipeline Triggers & Hooks | 0/3 | Planning complete | - |
-| 5. Feedback Propagation | 0/2 | Not started | - |
+| 5. Feedback Propagation | 0/2 | Planning complete | - |
 | 6. Integration & End-to-End Validation | 0/2 | Not started | - |
