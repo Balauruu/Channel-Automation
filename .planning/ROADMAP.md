@@ -85,9 +85,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — 13 pipeline trigger slash-command skills (6 primary + 7 granular sub-commands) and Wave 0 smoke test
-- [ ] 04-02-PLAN.md — Dual-event session logging hooks (PreToolUse + SubagentStop) writing to logs/sessions.jsonl
-- [ ] 04-03-PLAN.md — /audit-agents validation skill with 4-dimension checks, cross-consistency, and auto-fix
+- [x] 04-01-PLAN.md — 13 pipeline trigger slash-command skills (6 primary + 7 granular sub-commands) and Wave 0 smoke test
+- [x] 04-02-PLAN.md — Dual-event session logging hooks (PreToolUse + SubagentStop) writing to logs/sessions.jsonl
+- [x] 04-03-PLAN.md — /audit-agents validation skill with 4-dimension checks, cross-consistency, and auto-fix
 
 ### Phase 5: Feedback Propagation
 **Goal**: Downstream agent insights flow back to influence upstream agent behavior in subsequent pipeline runs -- the pipeline gets smarter over time
@@ -118,6 +118,15 @@ Plans:
 Plans:
 - [ ] 06-01: TBD
 - [ ] 06-02: TBD
+
+## Backlog
+
+Items discovered during execution, deferred for future phases.
+
+- **999.1** Move `projects/strategy/` to `channel/` — strategy artifacts (analysis, competitor_data, topics) are channel-level, not per-documentary project outputs
+- **999.2** Fix skill insight vs agent-memory boundary — skills' Reflection Phase instructions produce project-specific insights (e.g., "institutional corruption is strongest gap") instead of methodology insights; redirect project-specific learnings to agent-memory, keep only generalizable method patterns in skill insights.md
+- **999.3** Repurpose `metadata.md` — currently a passive topic brief created by @strategy but read by no downstream agent; transform into active input with competitor pattern analysis, title variations, YouTube description templates, and SEO metadata for @writer and @compiler
+- **999.4** Remove empty `research/sources/` dir — researcher creates it speculatively but `source_manifest.json` is sufficient; update researcher agent scaffold to not create empty dir
 
 ## Progress
 
