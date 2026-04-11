@@ -264,10 +264,8 @@ Shot duration and cut rhythm directly affect how the audience processes informat
 
 ## Script References
 
-> Scripts below are documented for reference. Available after Phase 6 integration.
-
-- `media/discover.py` -- Visual source discovery across archive collections
-- `media/organize_assets.py` -- Asset organization by visual role and narrative function
+- `.claude/scripts/media/discover.py` -- Visual source discovery across archive collections
+- `.claude/scripts/media/organize_assets.py` -- Asset organization by visual role and narrative function
 
 ## Reflection Phase
 

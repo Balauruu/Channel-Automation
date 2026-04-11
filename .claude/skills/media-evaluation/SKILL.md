@@ -226,11 +226,9 @@ Use when the current source cannot serve the need:
 
 ## Script References
 
-> Scripts below are documented for reference. Available after Phase 6 integration.
-
-- `media/evaluate.py` -- Automated technical quality scoring (resolution, artifacts, blank frame detection)
-- `media/search.py` -- CLIP semantic search across embedded asset library
-- `media/embed.py` -- CLIP embedding generation for visual assets
+- `.claude/scripts/media/evaluate.py` -- Automated technical quality scoring (resolution, artifacts, blank frame detection)
+- `.claude/scripts/media/search.py` -- CLIP semantic search across embedded asset library
+- `.claude/scripts/media/embed.py` -- CLIP embedding generation for visual assets
 
 ## Reflection Phase
 

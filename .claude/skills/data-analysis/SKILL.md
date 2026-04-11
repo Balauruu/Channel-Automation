@@ -241,11 +241,9 @@ Score each component 1-5 (1 = heavily saturated, 5 = wide open):
 
 ## Script References
 
-> Scripts below are documented for reference. Available after Phase 6 integration.
-
-- `strategy/analyzer.py` -- Competitor channel analysis (metrics extraction, benchmarking, trend detection)
-- `strategy/topics.py` -- Topic generation and saturation scoring against competitor landscape
-- `strategy/scraper.py` -- YouTube data collection (channel metadata, video metrics, comments)
+- `.claude/scripts/strategy/channel_assistant/analyzer.py` -- Competitor channel analysis (metrics extraction, benchmarking, trend detection)
+- `.claude/scripts/strategy/channel_assistant/topics.py` -- Topic generation and saturation scoring against competitor landscape
+- `.claude/scripts/strategy/channel_assistant/scraper.py` -- YouTube data collection (channel metadata, video metrics, comments)
 
 ## Reflection Phase
 

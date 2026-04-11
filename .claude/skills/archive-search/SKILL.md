@@ -132,10 +132,8 @@ Score every search result on a 1-4 scale across four dimensions:
 
 ## Script References
 
-> Scripts below are documented for reference. Available after Phase 6 integration.
-
-- `media/ia_search.py` -- Internet Archive search with metadata extraction and filtering
-- `media/discover.py` -- Multi-source discovery across archives, YouTube, and web sources
+- `.claude/scripts/media/ia_search.py` -- Internet Archive search with metadata extraction and filtering
+- `.claude/scripts/media/discover.py` -- Multi-source discovery across archives, YouTube, and web sources
 
 ## Reflection Phase
 
