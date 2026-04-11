@@ -113,11 +113,12 @@ Plans:
   2. CLIP embedding and semantic search operations run successfully on the RTX 4070 via the conda perception-models environment
   3. Strategy and editorial agents can read/write the SQLite databases (channel_assistant.db, asset_catalog.db)
   4. Asset Curator agent can access and manage the global video library at D:/VideoLibrary/
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 06-01-PLAN.md — Copy V5 Python scripts to .claude/scripts/, databases to data/, create D:/VideoLibrary/, update CLAUDE.md folder map
+- [ ] 06-02-PLAN.md — Update all agent body script paths and domain skill references from old paths to .claude/scripts/ locations
+- [ ] 06-03-PLAN.md — Integration smoke test (INTG-01 through INTG-05) and human verification checkpoint
 
 ## Backlog
 
@@ -140,4 +141,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Agent Migration & Memory | 0/4 | Planning complete | - |
 | 4. Pipeline Triggers & Hooks | 0/3 | Planning complete | - |
 | 5. Feedback Propagation | 2/2 | Complete | 2026-04-11 |
-| 6. Integration & End-to-End Validation | 0/2 | Not started | - |
+| 6. Integration & End-to-End Validation | 0/3 | Planning complete | - |
