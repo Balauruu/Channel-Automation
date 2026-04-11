@@ -49,27 +49,53 @@ Behavioral protocols shared by all agents in the Channel-Automation pipeline. Th
 
 ## Feedback Signal Protocol
 
-### At Task Start
+Cross-agent insights are stored in `feedback/signals.yaml` at the project root. This file is the feedback inbox -- a staging area where insights land, then get promoted into permanent agent changes. Signals permanently alter agent behavior; they are NOT ephemeral prompt injections.
 
-1. Check if `feedback/SIGNALS.md` exists in the project root
-2. If it exists, read it and look for entries where `to_agent` matches your agent name
-3. Apply high-severity signals to your current work
-4. Note medium-severity signals for awareness
+### Domain Mapping
+
+Identify your domain by matching your agent name:
+
+| Domain | Agents |
+|--------|--------|
+| editorial | researcher, writer, style-extractor, editorial-lead |
+| visual | visual-researcher, visual-planner, asset-processor, asset-curator |
+| strategy | strategy |
+| meta | meta, code-reviewer, compiler |
+
+### At Task Start (after reading MEMORY.md)
+
+1. Read `feedback/signals.yaml` from the project root using the Read tool
+   - If the file or directory does not exist, skip signal processing (no signals yet)
+2. Identify your domain from the mapping above
+3. Filter for signals where `domain` matches your domain AND `resolved: false`
+4. For each unresolved signal in your domain:
+   - If `promotion: memory` -- evaluate whether the insight is actionable for your current or future tasks. If actionable:
+     a. Add a corresponding entry to your MEMORY.md in the appropriate section (patterns, decisions, or observations) with format: `- [YYYY-MM-DD] [From SIG-NNN] insight text`
+     b. Update signals.yaml: set `resolved: true`, add `resolved_by: your-agent-name`, add `resolved_date: "YYYY-MM-DD"`
+   - If `promotion: definition` -- do NOT self-promote. Note it for your task completion summary.
+5. If signals.yaml has more than 50 entries, remove the oldest `resolved: true` entries to keep the file manageable. Never remove unresolved entries.
 
 ### At Task End
 
-1. If you noticed quality issues or insights that would help OTHER agents, write a signal
-2. Append to `feedback/SIGNALS.md` (create file and directory if they do not exist)
-3. Signal entry format:
-
+1. Review your work for cross-agent insights -- observations that would help agents in OTHER domains
+   - Self-only learnings go to your MEMORY.md, NOT to signals
+   - Focus on insights that would change how another agent works
+2. If you have cross-agent insights, read the current `feedback/signals.yaml`
+3. Find the highest existing SIG-NNN ID number and increment for your new entries
+4. Append new signal entries to the `signals:` array with these fields:
+   ```yaml
+   - id: SIG-NNN           # Next sequential ID
+     date: "YYYY-MM-DD"    # Today's date, no colons
+     source_agent: your-agent-name
+     domain: target-domain  # editorial | visual | strategy | meta
+     type: category         # quality | content | technical | process
+     promotion: memory      # memory (default) | definition (only for procedure/guardrail changes)
+     resolved: false
+     insight: "One-line actionable insight"
    ```
-   ### [YYYY-MM-DD] from:your-name to:target-agent severity:high|medium|low
-
-   One-line insight with evidence.
-   ```
-
-4. Only write signals that are actionable by the target agent
-5. Do NOT write signals to yourself -- use your MEMORY.md instead
+5. Write the complete updated signals.yaml file (read full file first, append entries, write back)
+6. If any `promotion: definition` signals were noted during task start, report them in your completion message:
+   "Flagged for review: [SIG-NNN] insight text -- needs @meta or human review for agent definition change"
 
 ## Project Context
 
