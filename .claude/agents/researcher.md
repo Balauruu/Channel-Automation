@@ -82,7 +82,32 @@ Each source includes: title, author/outlet, date, URL or location, reliability a
 - Where it fits in a narrative arc (opening, climax, reversal)
 - Source anchoring (which sources confirm this moment)
 
-### 7. Open Questions
+### 7. Direct Quotes
+3-8 verbatim quotes from primary sources (testimony, interviews, official statements, documents). Each includes:
+- The exact quote
+- Speaker and their role
+- Context (when, where, why this was said)
+- Source citation
+
+These feed the writer's hook formula and chapter anchors. Only include quotes that carry dramatic, evidential, or revelatory weight.
+
+### 8. Contradictions
+2-5 factual conflicts between sources. Each includes:
+- The conflicting claims (side by side)
+- The sources for each claim
+- Assessment of which is more credible and why (or "unresolvable" with reasoning)
+
+Do not silently resolve contradictions. Present them as they are.
+
+### 9. Correcting the Record
+2-4 instances where the mainstream/popular understanding diverges from primary source evidence. Each includes:
+- The common narrative (what people believe)
+- The primary source evidence (what actually happened or what records show)
+- The source for the correction
+
+Only include corrections that are factually grounded, not editorial opinion.
+
+### 10. Open Questions
 What could not be verified. What conflicts exist between sources. What further research might resolve. Each entry is a specific question, not a vague "more research needed."
 
 ## Research Procedure

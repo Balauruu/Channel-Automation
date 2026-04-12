@@ -100,6 +100,19 @@ Generate topic candidates from three sources:
 
 Execute topic generation: `PYTHONPATH=".claude/scripts/strategy" python -m channel_assistant topics`
 
+### Trend Interpretation
+
+When interpreting competitor analysis trends, apply these structured analyses:
+
+1. **Content Gap Detection** -- Cross-reference autocomplete suggestion breadth with competitor coverage density. Score each gap by demand (suggestion count) x opportunity (inverse of competitor density). Gaps with high demand and low supply are the top generation targets.
+
+2. **Trending Topics** -- Identify topics with recent upload surges (3+ competitor uploads within 30 days). Cross-reference with search trend data to distinguish genuinely trending topics from coincidental clustering.
+
+3. **Convergence Alerts** -- When 3+ competitors publish on the same topic within a 30-day window, classify as:
+   - **Opportunity:** Topic is trending with proven demand, competitors have not yet produced a definitive treatment
+   - **Saturation Warning:** Multiple high-quality treatments already exist, differentiation would require a significantly different angle
+   - **Neutral:** Coincidental overlap without demand signal
+
 ### Near-Duplicate Handling
 
 When a candidate overlaps with a past topic:
@@ -109,18 +122,66 @@ When a candidate overlaps with a past topic:
 
 ## Project Initialization
 
-After the user selects a topic, initialize the project directory structure:
+After the user selects a topic, initialize the project:
+
+### 1. Directory Structure
 
 ```
 projects/<project-name>/
-  metadata.md          # Topic brief, selected scores, target runtime
+  metadata.json        # Structured project metadata (see below)
   research/            # For researcher agent
   script/              # For writer agent
   visuals/             # For visual planning agents
   assets/              # For asset processing agents
 ```
 
-The project name is lowercase with hyphens for spaces. The metadata file includes the topic brief, scoring rationale, estimated runtime, and selected pillar.
+The project name is lowercase with hyphens for spaces.
+
+### 2. Title Variant Generation
+
+Generate exactly 5 YouTube title variants for the selected topic. Each title:
+- Maximum 70 characters
+- Mark one as RECOMMENDED with reasoning based on competitor title pattern analysis from `channel/strategy/analysis.md`
+
+### 3. YouTube Description
+
+Write a 2-3 sentence description optimized for YouTube:
+- First ~200 characters must hook (visible before "Show more" fold)
+- Include the topic, the key tension, and the scope
+- No clickbait, no spoilers, no emojis
+
+### 4. Metadata File
+
+Write `metadata.json` (not metadata.md) with:
+
+```json
+{
+  "title": "<selected topic title>",
+  "slug": "<project-name>",
+  "date_selected": "YYYY-MM-DD",
+  "scores": {
+    "obscurity": 0,
+    "complexity": 0,
+    "shock_factor": 0,
+    "pillar_fit": 0,
+    "total": 0
+  },
+  "pillars": {
+    "primary": "<pillar name>",
+    "secondary": "<pillar name or null>"
+  },
+  "production": {
+    "estimated_runtime_min": 0
+  },
+  "youtube": {
+    "title_variants": [
+      {"title": "...", "hook_type": "...", "recommended": false},
+      {"title": "...", "hook_type": "...", "recommended": true, "recommendation_reason": "..."}
+    ],
+    "description": "..."
+  },
+}
+```
 
 ## Python Scripts
 

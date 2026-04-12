@@ -64,6 +64,18 @@ Use `ia_search.py` for structured archive.org searches. Target collections by er
 
 Prelinger coverage is excellent for 1940s-1970s, moderate for 1930s-1940s, poor pre-1930s and post-1980s. Search by decade first, then by category.
 
+### YouTube Search and Gathering
+
+For each chapter in the shotlist that needs `curate` (b-roll) shots, search YouTube for relevant documentary footage:
+
+1. **Formulate search queries** from the chapter's narrative beats and entity names. Use combinations: topic + "documentary", entity + "interview", location + "footage", event + "news report".
+2. **Execute searches** via WebSearch or crawl4ai. Target 3-5 queries per chapter.
+3. **Apply hard filters** (below) to eliminate unsuitable results.
+4. **Score surviving results** 1-4 (below).
+5. **Attach scored leads** to the relevant shotlist entries as `broll_leads` with `relevance_score`.
+
+Score 1 leads are always kept and marked for download. Score 2 leads are included. Score 3-4 leads are included only when they fill a gap with no better option.
+
 ### YouTube Evaluation
 
 Evaluate YouTube search results with hard filters and scoring:
@@ -88,6 +100,12 @@ Evaluate YouTube search results with hard filters and scoring:
 - Score 4: Marginal -- minimal usable footage, could fill a specific gap.
 
 Score 1 requires ALL of: primarily about the topic, original footage, credible producer, meaningful view count.
+
+### Score-Based Filtering
+
+- **Score 1 (Primary):** Always kept and included in the shotlist. These are downloaded by both the visual planner and the asset processor. Never filtered.
+- **Score 2 (Strong):** Included in the shotlist. Downloaded during asset processing.
+- **Score 3-4 (Supplementary/Marginal):** Included in broll_leads only when they fill a specific gap with no better option. May be dropped during asset processing if bandwidth is limited.
 
 ## B-Roll Curation
 
@@ -126,6 +144,7 @@ Output structure for the shotlist (`shotlist.json`):
             {
               "url": "<URL>",
               "title": "<source title>",
+              "relevance_score": 1,
               "match_reasoning": "<why this fits>"
             }
           ]

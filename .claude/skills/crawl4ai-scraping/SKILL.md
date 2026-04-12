@@ -148,6 +148,19 @@ content_complete: [true | false -- note if paywalled or truncated]
 - If the same content appears on multiple URLs, keep the canonical version (check `rel="canonical"`)
 - Track all URLs that point to the same content for provenance
 
+## Rate Limit Budgets by Source Type
+
+When agents use web scraping for media gathering, apply these per-session budgets:
+
+| Source | Budget | Delay | Notes |
+|--------|--------|-------|-------|
+| YouTube (via yt-dlp) | 50 calls/session | 3-8s jittered between calls, 15s pause every 10 calls | Stop on first 429. Report remaining budget on completion. |
+| Archive.org | 200 calls/session | 1.5s between requests | Parallel OK (5 workers max). Respect robots.txt. |
+| Wikimedia Commons API | 100 calls/session | 1s between requests | Use API, not scraping. |
+| General web (crawl4ai) | 50 pages/domain/session | 1.5s minimum between same-domain requests | Stop on 429 or 403. |
+
+Agents consuming rate-limited resources (visual-planner for YouTube, visual-researcher for web pages) should track and report their usage so downstream agents know the remaining budget.
+
 ## Platform Notes
 
 - **Operating system:** Windows 11

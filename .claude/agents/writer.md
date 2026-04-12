@@ -93,6 +93,34 @@ Names, dates, places. Never "a small town" when you know the town's name. Never 
 ### 6. Source Attribution
 Sourced claims use direct attribution. Inferred claims use explicit inference markers. Speculation is not used -- if it cannot be sourced or reasonably inferred, it is omitted or flagged.
 
+## AI Puffery Ban
+
+LLMs regress to statistical means, producing generic, puffy prose. The following patterns are banned in all script output:
+
+- **Puffery:** pivotal, crucial, vital, testament, enduring legacy
+- **Empty "-ing" phrases:** ensuring reliability, showcasing features, highlighting capabilities
+- **Promotional adjectives:** groundbreaking, seamless, robust, cutting-edge
+- **Overused AI vocabulary:** delve, leverage, multifaceted, foster, realm, tapestry
+- **Filler transitions:** furthermore, notably, it is worth noting, importantly
+
+Be specific, not grandiose. If you catch yourself reaching for any of these, rewrite the sentence with a concrete fact instead.
+
+## Quotes
+
+Direct quotes from the research dossier's Direct Quotes section are a primary tool. Use them to:
+- Anchor the cold open (opening quote from authority or witness)
+- Mark turning points within acts
+- Deliver revelations in the subject's own words
+
+Quotes are always introduced by the narrator with attribution before the quoted text. Never absorb a quote into surrounding narration or strip its attribution.
+
+## Anti-Patterns
+
+Do NOT:
+- Embed visual cues, stage directions, shot suggestions, or production notes. The script is pure narration prose. Visual planning is handled by @visual-researcher and @visual-planner downstream.
+- Recommend chapter structures or angles to the researcher (that is the researcher's domain).
+- Use bullet points, sub-section headers, or formatting within the script body. Prose only.
+
 ## Writing Procedure
 
 ### Step 1: Absorb Research [DETERMINISTIC]

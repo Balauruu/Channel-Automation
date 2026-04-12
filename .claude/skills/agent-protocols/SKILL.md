@@ -71,7 +71,7 @@ Identify your domain by matching your agent name:
 | editorial | researcher, writer, style-extractor, editorial-lead |
 | visual | visual-researcher, visual-planner, asset-processor, asset-curator |
 | strategy | strategy |
-| meta | meta, code-reviewer, compiler |
+| meta | code-reviewer, compiler |
 
 ### At Task Start (after reviewing MEMORY.md)
 

@@ -75,6 +75,37 @@ Every asset in the global library is tracked in `data/asset_catalog.db` (SQLite)
 - Perceptual hash (for deduplication)
 - Description and tags
 
+## Pre-Download Check
+
+Before asset-processor downloads new assets, search the global library for existing clips that match shotlist queries. This prevents redundant downloads.
+
+### Check Procedure
+
+1. Read `projects/<name>/visuals/shotlist.json`
+2. For each shot with `broll_leads`, formulate a search query from the `visual_notes` and `match_reasoning` fields
+3. Search the global library catalog (`data/asset_catalog.db`) by:
+   - Category match (shot mood_register → taxonomy category)
+   - Tag similarity (visual_notes keywords → asset tags)
+   - Source URL match (if the broll_lead URL matches an existing asset)
+4. Produce `projects/<name>/assets/library_matches.json`:
+
+```json
+{
+  "matches": [
+    {
+      "shot_id": "ch1_s03",
+      "library_asset": "D:/VideoLibrary/atmospheric/urban/dim-corridor.mp4",
+      "match_type": "category+tag",
+      "quality_score": 4,
+      "recommendation": "use_existing"
+    }
+  ],
+  "unmatched_shots": ["ch1_s01", "ch1_s05"]
+}
+```
+
+5. Report matches to the user. Matched shots can skip download. Unmatched shots proceed to asset-processor.
+
 ## Deduplication
 
 Cross-project duplicate detection prevents redundant downloads and embeddings.

@@ -47,11 +47,7 @@ Analyze the documentary script to define visual intent per act or chapter:
    - Emotional trajectory (does the chapter build tension? release it?)
    - Color temperature direction (warm/cool/shifting)
 
-3. **Visual Brief Generation** -- Compile findings into a structured visual brief:
-   - Per-chapter visual intent with mood tags
-   - Suggested visual approaches (framing, pacing, format distribution)
-   - Asset category priorities (which format types dominate each chapter)
-   - Resource leads with context for why each is relevant
+3. **Visual Brief Generation** -- Compile findings into `visual_brief.json` following the schema below exactly. Output is per-chapter only -- no top-level summary sections.
 
 ## Resource Discovery
 
@@ -87,7 +83,6 @@ Output structure for the visual brief (`visual_brief.json`):
       "title": "<chapter title>",
       "primary_mood": "<mood tag>",
       "secondary_mood": "<mood tag or null>",
-      "color_temperature": "<warm|cool|neutral|shifting>",
       "emotional_trajectory": "<description>",
       "key_visual_moments": ["<moment 1>", "<moment 2>"],
       "format_priorities": {
@@ -114,13 +109,44 @@ Media leads output (`media_leads.json`):
       "source_url": "<URL>",
       "source_type": "<wikimedia|archive_org|web|newspaper>",
       "media_type": "<photo|document|portrait|map|newspaper>",
-      "estimated_quality": "<high|medium|low>",
-      "rights_status": "<public_domain|cc_by|unknown>",
       "relevance_note": "<why this matters to the documentary>"
     }
   ]
 }
 ```
+
+## Image Acquisition
+
+After producing `media_leads.json`, systematically download all image leads. Asset-processor handles videos only -- images must be acquired here.
+
+### Acquisition Procedure
+
+For each lead in `media_leads.json` where `media_type` is photo, document, portrait, map, or newspaper:
+
+1. **Attempt download** using the appropriate method:
+   - Wikimedia Commons URLs: direct download via API
+   - Archive.org URLs: direct download
+   - Web pages: use `crawl_images.py` for JS-heavy sites, direct fetch for static pages
+   - Wikipedia articles: use `wiki_screenshots.py` for full-page captures
+
+2. **On failure, retry with fallback:**
+   - Retry up to 3 times with 5-second delays
+   - If the URL fails, attempt alternate search: search for the entity name + "photo" or "document" on Wikimedia Commons
+   - If alternate search fails, mark as `"status": "unfulfilled"` in the manifest
+
+3. **Organize downloaded images:**
+   - Photos, portraits → `projects/<name>/assets/archival/`
+   - Documents, maps, newspapers → `projects/<name>/assets/documents/`
+
+4. **Produce acquisition manifest** at `projects/<name>/visuals/image_manifest.json`:
+   ```json
+   {
+     "acquired": [{"entity": "...", "local_path": "...", "source_url": "..."}],
+     "unfulfilled": [{"entity": "...", "source_url": "...", "failure_reason": "..."}]
+   }
+   ```
+
+Score 1 (primary) media leads are always acquired. Score 2+ leads are acquired on best-effort basis.
 
 ## Python Scripts
 

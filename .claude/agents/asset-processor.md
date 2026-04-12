@@ -128,6 +128,51 @@ Multi-dimensional scoring for asset-to-shot matching:
 
 Combined scores determine whether an asset reaches the editor review stage.
 
+## User Review
+
+After downloading and embedding assets, present candidates for user approval before proceeding to clip export or compiler handoff.
+
+### Review Output
+
+Produce `projects/<name>/assets/asset_review.json`:
+
+```json
+{
+  "project": "<name>",
+  "review_date": "YYYY-MM-DD",
+  "shots": [
+    {
+      "shot_id": "ch1_s01",
+      "candidates": [
+        {
+          "asset_path": "<local path>",
+          "source_url": "<original URL>",
+          "relevance_score": 0.28,
+          "duration_seconds": 45,
+          "suggested_timestamp": "00:12-00:18",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Review Checkpoint
+
+Present the review to the user with:
+- Total assets downloaded vs shotlist requirements
+- Coverage percentage (shots with at least one candidate vs total shots)
+- Quality distribution (strong/good/ambiguous match counts)
+- Top unfulfilled shots (shots with no candidates)
+
+Wait for user approval. User can:
+- **Approve** individual assets (status → "approved")
+- **Reject** individual assets (status → "rejected")
+- **Adjust timestamps** for approved assets
+
+Log approval/rejection decisions for future calibration of relevance scoring thresholds.
+
 ## Known Issues
 
 Critical operational knowledge from production experience:
