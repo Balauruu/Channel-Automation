@@ -15,15 +15,8 @@ node_modules/
 # ── GSD planning scaffolding (internal build artifacts) ───────────────────────
 .planning/
 
-# ── Strategy & competitor data (local working data) ───────────────────────────
-channel/strategy/
-strategy/
-
-# ── Topic history (accumulates per user) ──────────────────────────────────────
-channel/past_topics.md
-
-# ── Reference script corpus (local voice analysis source material) ─────────────
-channel/voice-analysis/
+# ── Channel identity & working data (local, user-configured) ─────────────────
+channel/
 
 # ── Feedback signal files (cross-agent state, regenerated per session) ─────────
 feedback/
