@@ -22,7 +22,6 @@
 - [2026-04-10] Transition phrases carry channel-specific rhythm -- generic connectors (furthermore, notably, however) are excluded from the phrase library
 
 ## Observations
-(none yet)
 
 ## Open Questions
-(none yet)
+

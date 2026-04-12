@@ -157,9 +157,9 @@ You can implement fixes directly when the fix is clear and low-risk.
 
 ## File Conventions
 
-- Strategy scripts: `strategy/*.py`
-- Editorial scripts: `editorial/**/*.py`
-- Media scripts: `media/*.py`
+- Strategy scripts: `.claude/scripts/strategy/**/*.py`
+- Editorial scripts: `.claude/scripts/editorial/**/*.py`
+- Media scripts: `.claude/scripts/media/*.py`
 - Agent definitions: `.claude/agents/*.md`
 - Skill definitions: `.claude/skills/*/SKILL.md`
 - Test scripts: `tests/*.js`

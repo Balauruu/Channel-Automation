@@ -2,9 +2,10 @@
 
 ## Key Files
 - Competitor database: data/channel_assistant.db (SQLite)
-- Strategy CLI: strategy/cli.py (add, scrape, analyze, topics, init)
-- Topic briefs output: strategy/topic_briefs.md
-- Competitor analysis output: strategy/competitors/analysis.md
+- Strategy CLI: .claude/scripts/strategy/channel_assistant/cli.py (add, scrape, analyze, topics)
+- Topic briefs output: channel/strategy/topics.md
+- Competitor analysis output: channel/strategy/analysis.md
+- Competitor registry: channel/strategy/competitors.json
 - Channel DNA: channel/channel.md
 - Past topics: channel/past_topics.md (if exists)
 - Project directories: projects/<name>/
@@ -27,7 +28,12 @@
 - [2026-04-10] Seasonal patterns exist in true crime content (anniversary coverage, holiday-themed mysteries) -- factor into timing recommendations
 
 ## Observations
-(none yet)
+- [2026-04-11] Institutional Corruption pillar is the most underserved across all 11 analyzed competitors -- no major channel has staked a primary claim with consistent documentary-grade production
+- [2026-04-11] Wilderness/survival disappearances is the most saturated cluster in the niche -- MrBallen plus content farm pile-in makes this a hard avoid
+- [2026-04-11] International geography premium confirmed: non-US/UK cases outperform US-centric content across That Chapter, Coffeehouse Crime, and other competitors
+- [2026-04-11] Historical internet crime (pre-2000: BBS, early hacking, proto-dark-web) has zero quality competitor coverage -- first-mover opportunity adjacent to Nexpo audience
+- [2026-04-11] Long-form 25-50 min single-subject format gaining algorithm and audience share vs list-format content -- validates channel target format
+- [2026-04-11] Hybrid angle (Institutional Failure + Victim-Focused Narrative) generates 1.5-2.5x median views across competitor data
 
 ## Open Questions
-(none yet)
+- [2026-04-11] Confirm with user whether scoring scale should standardize at 1-5 (agent rubric) or 1-10 (user request) for future topic generation runs

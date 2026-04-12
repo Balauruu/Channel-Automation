@@ -14,7 +14,7 @@ Generate and score topic candidates for the documentary channel.
 
 1. Dispatch @strategy with the following task:
 
-   "Generate 5 scored topic candidates based on analysis at `projects/strategy/analysis.md`. Score each on obscurity, complexity, shock_factor, verifiability, pillar_fit (1-5 scale each). Rank by total score descending. Check against `channel/past_topics.md` for near-duplicates. Write topics to `projects/strategy/topics.md`."
+   "Generate 5 scored topic candidates based on analysis at `channel/strategy/analysis.md`. Score each on obscurity, complexity, shock_factor, verifiability, pillar_fit (1-5 scale each). Rank by total score descending. Check against `channel/past_topics.md` for near-duplicates. Write topics to `channel/strategy/topics.md`."
 
 2. Present topics to the user in a table with individual scores and total score.
 

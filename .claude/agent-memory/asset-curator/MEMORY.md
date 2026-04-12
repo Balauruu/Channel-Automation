@@ -5,7 +5,7 @@
 - Asset catalog: data/asset_catalog.db (SQLite)
 - Project assets: projects/*/assets/
 - Promotion script: media/promote.py
-- LanceDB vectors: data/vectors/ (if applicable)
+- LanceDB vectors: data/vectors/ (planned -- not yet created)
 - Taxonomy reference: atmospheric/, environment/, cartoon/, archival_video/, landscape/, skip/
 - Channel visual style guide: channel/VISUAL_STYLE_GUIDE.md
 
@@ -23,7 +23,6 @@
 - [2026-04-10] Cartoon/illustrated assets are almost always reusable due to low specificity
 
 ## Observations
-- Awaiting first pipeline run for observation data
 
 ## Open Questions
-- Awaiting first pipeline run for open questions
+

@@ -27,7 +27,10 @@
 - [2026-04-10] QUOTEs always introduced by narrator with attribution pattern before the quoted text -- never absorbed into surrounding narration
 
 ## Observations
-(none yet)
+- [2026-04-11] Institutional corruption scripts do not map onto the Cult arc template -- built arc from scratch: context -> mechanism -> harm -> silence -> accountability failure -> unresolved present -> resolution. This structure fits state/Church co-perpetrator stories well.
+- [2026-04-11] Word count target for 35-45 min requires ~5,250-6,750 narration words (source/visual cues excluded). First draft at 3,075 words was half the needed length -- always measure narration-only words early in drafting.
+- [2026-04-11] The open ending template triggers when case has clear factual resolution but unresolved criminal accountability and unanswered physical questions (cemetery, criminal complaints) -- partial resolution, not clean resolution.
+- [2026-04-11] "Without blaming or imputing legal responsibility to anyone" is the kind of legally precise real-world quote that does more work than any narrator intensifier -- find and deploy these in every institutional corruption script.
 
 ## Open Questions
-(none yet)
+

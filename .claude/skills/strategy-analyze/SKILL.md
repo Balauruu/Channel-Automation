@@ -14,6 +14,6 @@ Analyze competitor data for strategic insights.
 
 1. Dispatch @strategy with the following task:
 
-   "Analyze competitor data at `projects/strategy/competitor_data.md`. Identify trend patterns, content gaps, and opportunities. Evaluate topic saturation, upload frequency trends, and performance outliers. Write analysis to `projects/strategy/analysis.md`."
+   "Analyze competitor data at `channel/strategy/competitor_data.md`. Identify trend patterns, content gaps, and opportunities. Evaluate topic saturation, upload frequency trends, and performance outliers. Write analysis to `channel/strategy/analysis.md`."
 
 2. Present key findings (top trends, biggest gaps, notable opportunities).

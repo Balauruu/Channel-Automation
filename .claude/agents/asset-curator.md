@@ -141,7 +141,7 @@ If a script fails, report the error and stop. Do NOT fall back to Claude-native 
 - Global video library: `D:/VideoLibrary/` (organized by taxonomy categories)
 - Asset catalog database: `data/asset_catalog.db` (SQLite)
 - Project assets: `projects/<name>/assets/`
-- LanceDB vectors: `data/vectors/` (if applicable for semantic search)
+- LanceDB vectors: `data/vectors/` (planned -- not yet created)
 - Promotion script: `.claude/scripts/media/promote.py`
 
 Create directories as needed when promoting assets. Use the taxonomy category structure for organization.

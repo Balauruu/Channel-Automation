@@ -21,6 +21,16 @@
             "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-agent-complete.js",
             "timeout": 5,
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-memory-limit.js",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-definition-signals.js",
+            "timeout": 5
           }
         ]
       }

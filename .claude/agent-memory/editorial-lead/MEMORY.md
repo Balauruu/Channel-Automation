@@ -22,7 +22,6 @@
 - [2026-04-10] Vague open questions ("more research needed") indicate the researcher did not fully analyze what is missing -- push for specific questions with search strategies
 
 ## Observations
-(none yet)
 
 ## Open Questions
-(none yet)
+

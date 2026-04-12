@@ -44,7 +44,7 @@ def _get_project_root() -> Path:
 
 
 def _default_registry_path(root: Path) -> Path:
-    return root / "strategy" / "competitors" / "competitors.json"
+    return root / "channel" / "strategy" / "competitors.json"
 
 
 def _default_db_path(root: Path) -> Path:
@@ -366,7 +366,7 @@ def cmd_analyze(args: argparse.Namespace, db: Database, root: Path) -> None:
         f"{total_video_count} videos analyzed. "
         f"{len(all_outliers)} outliers found."
     )
-    print(f"Report: strategy/competitors/analysis.md")
+    print(f"Report: channel/strategy/analysis.md")
     print(f"Video data: .pi/multi-team/scratch/video_data_for_analysis.md")
     print()
 
@@ -389,7 +389,7 @@ def cmd_topics(args: argparse.Namespace, root: Path) -> None:
         inputs = load_topic_inputs(root)
     except FileNotFoundError as e:
         print(f"Error: {e}")
-        print("Run 'analyze' first to generate strategy/competitors/analysis.md")
+        print("Run 'analyze' first to generate channel/strategy/analysis.md")
         sys.exit(1)
 
     analysis = inputs["analysis"]
@@ -419,7 +419,7 @@ def cmd_topics(args: argparse.Namespace, root: Path) -> None:
         print(analysis)
     else:
         print("\n".join(analysis_lines[:50]))
-        print(f"... [{len(analysis_lines) - 50} more lines — full file at strategy/competitors/analysis.md]")
+        print(f"... [{len(analysis_lines) - 50} more lines — full file at channel/strategy/analysis.md]")
     print()
 
     # Print Past Topics list

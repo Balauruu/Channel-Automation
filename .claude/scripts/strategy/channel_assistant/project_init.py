@@ -198,9 +198,9 @@ def init_project(
 def load_project_inputs(root: Path, topic_number: int) -> dict:
     """Load context needed for project initialization.
 
-    Reads the selected topic brief from ``strategy/topic_briefs.md``
+    Reads the selected topic brief from ``channel/strategy/topics.md``
     and extracts the Title Patterns section from
-    ``strategy/competitors/analysis.md`` (if present).
+    ``channel/strategy/analysis.md`` (if present).
 
     Args:
         root: Project root directory.

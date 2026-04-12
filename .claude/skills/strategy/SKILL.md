@@ -21,9 +21,9 @@ Run the complete strategy pipeline for the documentary channel.
    a) Use WebSearch to research competitor channels for latest video data on dark mysteries/true crime documentaries.
    b) Analyze competitor data for trends, gaps, and opportunities.
    c) Generate 5 scored topic candidates with scores for obscurity, complexity, shock_factor, verifiability, pillar_fit.
-   Write competitor data to `projects/strategy/competitor_data.md`.
-   Write analysis to `projects/strategy/analysis.md`.
-   Write topics to `projects/strategy/topics.md`."
+   Write competitor data to `channel/strategy/competitor_data.md`.
+   Write analysis to `channel/strategy/analysis.md`.
+   Write topics to `channel/strategy/topics.md`."
 
 3. **CHECKPOINT**: Present the generated topics to the user. Display each topic with its individual scores and total score in a table format.
 

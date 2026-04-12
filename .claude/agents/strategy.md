@@ -133,15 +133,17 @@ Run strategy commands via module invocation from the Bash tool:
 
 Note: `project_init.py` provides project initialization functions but is not wired as a CLI subcommand. Use the project initialization procedure in the agent body instead.
 
-Store competitor data in the SQLite database at `data/channel_assistant.db`. The competitor channel registry is at `strategy/competitors/competitors.json`.
+Store competitor data in the SQLite database at `data/channel_assistant.db`. The competitor channel registry is at `channel/strategy/competitors.json`.
 
 If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities.
 
 ## File Conventions
 
 - Competitor database: `data/channel_assistant.db` (SQLite)
-- Competitor analysis output: `strategy/competitors/analysis.md`
-- Topic briefs: `strategy/topic_briefs.md`
+- Competitor analysis output: `channel/strategy/analysis.md`
+- Competitor data: `channel/strategy/competitor_data.md`
+- Topic briefs: `channel/strategy/topics.md`
+- Competitor registry: `channel/strategy/competitors.json`
 - Channel DNA: `channel/channel.md`
 - Past topics: `channel/past_topics.md`
 - Project directories: `projects/<project-name>/`

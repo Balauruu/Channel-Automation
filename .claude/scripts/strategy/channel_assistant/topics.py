@@ -97,7 +97,7 @@ def load_topic_inputs(root: Path) -> dict:
 
     Returns:
         {
-            "analysis": str,           # contents of strategy/competitors/analysis.md
+            "analysis": str,           # contents of channel/strategy/analysis.md
             "channel_dna": str,        # contents of channel/channel.md
             "past_topics": list[str],  # titles from channel/past_topics.md
             "trends": str,             # ## Trending Topics section from analysis.md (empty if absent)
@@ -108,7 +108,7 @@ def load_topic_inputs(root: Path) -> dict:
     Returns empty list for missing past_topics.md.
     Returns empty strings for trends/content_gaps if trends has not been run yet.
     """
-    analysis_path = root / "strategy" / "competitors" / "analysis.md"
+    analysis_path = root / "channel" / "strategy" / "analysis.md"
     channel_dna_path = root / "channel" / "channel.md"
     past_topics_path = root / "channel" / "past_topics.md"
 
@@ -263,7 +263,7 @@ def format_chat_cards(briefs: list[dict]) -> str:
 
         cards.append("\n".join(card_lines))
 
-    footer = f"\n**{len(briefs)} topics generated.** Full briefs with timelines and justifications: `strategy/topic_briefs.md`\n"
+    footer = f"\n**{len(briefs)} topics generated.** Full briefs with timelines and justifications: `channel/strategy/topics.md`\n"
     footer += "\nReply with a topic number (e.g. **1**) to start a project."
 
     return "\n\n".join(cards) + "\n\n" + footer

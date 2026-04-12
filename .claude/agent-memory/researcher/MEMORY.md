@@ -27,7 +27,10 @@
 - [2026-04-10] Pass 1 survey evaluation uses 3 criteria in priority order: primary source potential, unique perspective, contradiction signals
 
 ## Observations
-(none yet)
+- [2026-04-11] CBC News archives are the most reliable and retrievable English-language source for Canadian institutional abuse stories from the 1990s-2000s
+- [2026-04-11] Wikipedia API (action=query with rvprop=content) is the most efficient way to pull full article text including citations for offline source tracing
+- [2026-04-11] Many CBC archive URLs from 2004-2010 are broken; the article format changed and old paths 404. Use the current CBC news article URL format (with article title slug) rather than the old /categories/society/ paths
+- [2026-04-11] Érudit (erudit.org) uses bot-detection (Anubis) -- access academic papers through PubMed abstract or DOI metadata instead of direct crawling
 
 ## Open Questions
-(none yet)
+

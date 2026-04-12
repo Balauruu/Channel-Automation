@@ -25,7 +25,6 @@
 - [2026-04-10] Vague shot descriptions in visual planning consistently produce low asset match rates downstream
 
 ## Observations
-- Awaiting first pipeline run for observation data
 
 ## Open Questions
-- Awaiting first pipeline run for open questions
+

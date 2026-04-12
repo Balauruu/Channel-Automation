@@ -1,9 +1,9 @@
 # Code Reviewer Memory
 
 ## Key Files
-- Strategy scripts: strategy/*.py
-- Editorial scripts: editorial/**/*.py
-- Media scripts: media/*.py
+- Strategy scripts: .claude/scripts/strategy/**/*.py
+- Editorial scripts: .claude/scripts/editorial/**/*.py
+- Media scripts: .claude/scripts/media/*.py
 - Agent definitions: .claude/agents/*.md
 - Skill definitions: .claude/skills/*/SKILL.md
 - Test scripts: tests/*.js
@@ -24,7 +24,6 @@
 - [2026-04-10] Implement fixes directly for isolated clear bugs; flag for human decision when interfaces change
 
 ## Observations
-- Awaiting first code review session for observation data
 
 ## Open Questions
-- Awaiting first code review session for open questions
+

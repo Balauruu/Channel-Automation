@@ -31,7 +31,6 @@ A topic passes if it meets **at least 3 of 4**:
 - [ ] **Obscurity** -- Not covered to death by mainstream media or large channels
 - [ ] **Complexity** -- Multi-layered; reveals more the deeper you go
 - [ ] **Shock Factor** -- A detail, revelation, or twist that genuinely disturbs
-- [ ] **Verifiable** -- Based on documented sources, records, or credible reporting
 
 **Hard Rejects:**
 - Topics covered by our channel (see `past_topics.md`)
@@ -44,8 +43,6 @@ A topic passes if it meets **at least 3 of 4**:
 | Topics | Internet mysteries + crime | Dark history + cults + crime + disappearances |
 | Depth | Deep (Knudsen) / Investigative (BS) | Research-first, source-anchored |
 | Angle | Varied | Focus on stories most people have never heard of |
-
-**Our edge:** We combine Knudsen's research depth and neutral delivery with Barely Sociable's narrative pull and topic range -- but anchor everything in **obscure, documented history** rather than internet culture.
 
 ---
 

@@ -13,43 +13,54 @@ Behavioral protocols shared by all agents in the Channel-Automation pipeline. Th
 
 ## Memory Lifecycle
 
+Your MEMORY.md (`.claude/agent-memory/your-agent-name/MEMORY.md`) is auto-injected into your context at task start (first 200 lines). This is your only injection -- keep the file concise and relevant.
+
 ### At Task Start
 
-1. Read your complete MEMORY.md file using the Read tool
-   - Path: `.claude/agent-memory/your-agent-name/MEMORY.md`
-   - Read the FULL file, not just the auto-injected first 200 lines
-   - The auto-injected content is a preview -- always Read the complete file
-2. Review all sections: key_files, decisions, patterns, observations, open_questions
-3. Identify patterns and decisions relevant to the current task
-4. Note any open questions that this task might answer
+1. Review your auto-injected MEMORY.md content
+2. Identify patterns and decisions relevant to the current task
+3. Note any open questions that this task might answer
 
 ### During Work
 
-- Notice new patterns as you work
-- Track decisions you make and why
-- Record key files you create or discover
+- **Universal knowledge** (applies across all projects): note for MEMORY.md update at task end
+- **Project-specific observations**: write to `.claude/project-memories/<current-project>/your-agent-name.md`
 
 ### At Task End
 
-1. Read your current MEMORY.md again (it may have been updated during the session)
-2. Append new entries to the appropriate section with timestamp
-3. Entry format: `- [YYYY-MM-DD] observation or decision`
-4. Preserve ALL existing entries -- this is append-only, never delete
-5. Sections to update: key_files, decisions, patterns, observations, open_questions
+1. Append new universal entries to your MEMORY.md with timestamp
+2. Entry format: `- [YYYY-MM-DD] observation or decision`
+3. Preserve ALL existing entries -- this is append-only, never delete
+4. Keep MEMORY.md under 200 lines total -- if approaching the limit, flag in your task completion summary
 
-### Memory Format Example
+### Section Guide
 
-```markdown
-## Patterns
+Your MEMORY.md has five sections. Use them as follows:
 
-- [2026-04-10] Wikipedia articles on obscure cults need cross-referencing with primary newspaper sources
-- [2026-04-10] Academic papers behind paywalls often have freely available preprints on ResearchGate
-- [2026-04-11] Court records from before 1970 are rarely digitized -- newspaper coverage is the best proxy
-```
+- **Key Files** -- Paths and resources you reference regularly. Stable, rarely changes.
+- **Decisions** -- Choices made about how you work and why. Record when you commit to an approach.
+- **Patterns** -- Recurring behaviors or tendencies observed across multiple tasks that would change how you approach future work.
+- **Observations** -- Insights that would change how you or another agent approaches future work. Universal only -- project-specific findings go to project notes. Do NOT record: task completion events ("first run completed", "dossier written"), file creation logs, or restatements of what you already output.
+- **Open Questions** -- Unknowns that future tasks should investigate. Remove entries when answered.
+
+## Project-Scoped Notes
+
+Project-specific observations belong in the project directory, not in your persistent memory.
+
+### During Work
+
+Write project-specific observations to `.claude/project-memories/<project-name>/your-agent-name.md`. These include:
+- Source-specific findings tied to the current topic
+- Asset decisions specific to the current production
+- Project-scoped questions and blockers
+
+### At Project End
+
+Review your project notes and promote any **generalizable insights** to your MEMORY.md (compressed into one entry). The project notes remain archived with the project.
 
 ## Feedback Signal Protocol
 
-Cross-agent insights are stored in `feedback/signals.yaml` at the project root. This file is the feedback inbox -- a staging area where insights land, then get promoted into permanent agent changes. Signals permanently alter agent behavior; they are NOT ephemeral prompt injections.
+Cross-agent insights are stored in `.claude/feedback/signals.yaml`. This file is the feedback inbox -- a staging area where insights land, then get promoted into permanent agent changes. Signals permanently alter agent behavior; they are NOT ephemeral prompt injections.
 
 ### Domain Mapping
 
@@ -62,9 +73,9 @@ Identify your domain by matching your agent name:
 | strategy | strategy |
 | meta | meta, code-reviewer, compiler |
 
-### At Task Start (after reading MEMORY.md)
+### At Task Start (after reviewing MEMORY.md)
 
-1. Read `feedback/signals.yaml` from the project root using the Read tool
+1. Read `.claude/feedback/signals.yaml` from the project root using the Read tool
    - If the file or directory does not exist, skip signal processing (no signals yet)
 2. Identify your domain from the mapping above
 3. Filter for signals where `domain` matches your domain AND `resolved: false`
@@ -80,7 +91,7 @@ Identify your domain by matching your agent name:
 1. Review your work for cross-agent insights -- observations that would help agents in OTHER domains
    - Self-only learnings go to your MEMORY.md, NOT to signals
    - Focus on insights that would change how another agent works
-2. If you have cross-agent insights, read the current `feedback/signals.yaml`
+2. If you have cross-agent insights, read the current `.claude/feedback/signals.yaml`
 3. Find the highest existing SIG-NNN ID number and increment for your new entries
 4. Append new signal entries to the `signals:` array with these fields:
    ```yaml

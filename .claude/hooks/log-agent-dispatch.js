@@ -33,7 +33,7 @@ process.stdin.on('end', () => {
     const projectDir = data.cwd
       || process.env.CLAUDE_PROJECT_DIR
       || path.resolve(__dirname, '..', '..');
-    const logDir = path.resolve(projectDir, 'logs');
+    const logDir = path.resolve(projectDir, '.claude', 'logs');
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
     }

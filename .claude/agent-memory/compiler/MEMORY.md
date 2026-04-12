@@ -22,7 +22,6 @@
 - [2026-04-10] Coverage percentage is the primary quality signal: below 70% warrants re-running asset processing
 
 ## Observations
-- Awaiting first pipeline run for observation data
 
 ## Open Questions
-- Awaiting first pipeline run for open questions
+
