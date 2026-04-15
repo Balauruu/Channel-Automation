@@ -1,7 +1,5 @@
 """Tests for cache-aware pipeline orchestration."""
-import hashlib
 import pytest
-from unittest.mock import MagicMock, patch
 from channel_assistant.pipeline import Pipeline
 
 

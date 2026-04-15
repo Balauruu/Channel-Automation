@@ -4,7 +4,7 @@ Checks pipeline_runs table before each stage. Computes input hashes
 to detect whether underlying data has changed since last run.
 """
 import hashlib
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from .config import Config
 from .database import Database
