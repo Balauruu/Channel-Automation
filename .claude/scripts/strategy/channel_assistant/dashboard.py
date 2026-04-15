@@ -188,27 +188,44 @@ class DashboardGenerator:
                 if len(videos) < 2:
                     continue
 
-                # Group by month.
-                monthly: dict[str, int] = defaultdict(int)
+                # Parse dates (supports YYYY-MM-DD and YYYYMMDD).
+                dates: list[datetime] = []
                 for v in videos:
                     date_str = v["upload_date"]
-                    # Parse YYYY-MM-DD or YYYYMMDD.
-                    if len(date_str) == 8 and date_str.isdigit():
-                        month_key = f"{date_str[:4]}-{date_str[4:6]}"
-                    else:
-                        month_key = date_str[:7]
-                    monthly[month_key] += 1
+                    try:
+                        if len(date_str) == 8 and date_str.isdigit():
+                            dates.append(datetime.strptime(date_str, "%Y%m%d"))
+                        else:
+                            dates.append(datetime.strptime(date_str[:10], "%Y-%m-%d"))
+                    except ValueError:
+                        continue
 
-                if monthly:
-                    sorted_months = sorted(monthly.keys())
-                    traces.append(
-                        go.Scatter(
-                            x=sorted_months,
-                            y=[monthly[m] for m in sorted_months],
-                            mode="lines+markers",
-                            name=ch["name"],
-                        )
+                if len(dates) < 2:
+                    continue
+
+                dates.sort()
+
+                # 30-day rolling count: for each video's date, count uploads in prior 30 days.
+                x_vals: list[str] = []
+                y_vals: list[int] = []
+                for i, d in enumerate(dates):
+                    cutoff = d.replace(hour=0, minute=0, second=0)
+                    window_start = cutoff.timestamp() - 30 * 86400
+                    count = sum(
+                        1 for dd in dates
+                        if window_start <= dd.timestamp() <= cutoff.timestamp()
                     )
+                    x_vals.append(d.strftime("%Y-%m-%d"))
+                    y_vals.append(count)
+
+                traces.append(
+                    go.Scatter(
+                        x=x_vals,
+                        y=y_vals,
+                        mode="lines+markers",
+                        name=ch["name"],
+                    )
+                )
         finally:
             conn.close()
 
@@ -218,9 +235,9 @@ class DashboardGenerator:
         fig = go.Figure(data=traces)
         fig.update_layout(
             template=self._plotly_template(),
-            title="Upload Frequency by Month",
-            xaxis_title="Month",
-            yaxis_title="Videos",
+            title="Upload Frequency — 30-Day Rolling",
+            xaxis_title="Date",
+            yaxis_title="Videos (last 30 days)",
             height=350,
             margin=dict(l=60, r=20, t=50, b=40),
         )
@@ -318,7 +335,16 @@ class DashboardGenerator:
             channel_count = conn.execute("SELECT COUNT(*) AS c FROM channels").fetchone()["c"]
             video_count = conn.execute("SELECT COUNT(*) AS c FROM videos").fetchone()["c"]
             cluster_count = conn.execute("SELECT COUNT(*) AS c FROM topic_clusters").fetchone()["c"]
-            keyword_count = conn.execute("SELECT COUNT(*) AS c FROM keywords").fetchone()["c"]
+
+            # Niche avg engagement rate across watch-list channels.
+            engagement_row = conn.execute(
+                "SELECT AVG((v.likes + v.comment_count) * 1.0 / NULLIF(v.views, 0)) AS avg_eng "
+                "FROM videos v "
+                "JOIN channels c ON v.channel_id = c.youtube_id "
+                "WHERE c.tier = 'watch_list' AND v.views > 0"
+            ).fetchone()
+            avg_eng = engagement_row["avg_eng"] if engagement_row and engagement_row["avg_eng"] is not None else 0.0
+            avg_eng_display = f"{avg_eng * 100:.2f}%"
 
             latest_run = conn.execute(
                 "SELECT completed_at FROM pipeline_runs "
@@ -329,11 +355,11 @@ class DashboardGenerator:
             conn.close()
 
         cards = [
-            ("Channels", _fmt_number(channel_count), _ACCENT),
-            ("Videos", _fmt_number(video_count), _INFO),
-            ("Clusters", _fmt_number(cluster_count), _SUCCESS),
-            ("Keywords", _fmt_number(keyword_count), _WARNING),
-            ("Last Updated", last_updated, _TEXT_MUTED),
+            ("Competitors", _fmt_number(channel_count), _ACCENT),
+            ("Videos Indexed", _fmt_number(video_count), _INFO),
+            ("Topic Clusters", _fmt_number(cluster_count), _SUCCESS),
+            ("Avg Engagement", avg_eng_display, _WARNING),
+            ("Pipeline Freshness", last_updated, _TEXT_MUTED),
         ]
 
         items: list[str] = []
@@ -374,13 +400,20 @@ class DashboardGenerator:
         if not keywords:
             return "<p style='color:#ffffff;text-align:center;'>No keyword data.</p>"
 
+        th_style = (
+            f"text-align:left;padding:8px;border-bottom:1px solid {_BORDER};"
+            f"color:{_ACCENT};font-family:VT323,monospace;cursor:pointer;"
+            f"user-select:none;"
+        )
+        th_style_r = th_style.replace("text-align:left", "text-align:right")
+
         header = (
-            f"<tr>"
-            f'<th style="text-align:left;padding:8px;border-bottom:1px solid {_BORDER};color:{_ACCENT};font-family:VT323,monospace;">Keyword</th>'
-            f'<th style="text-align:left;padding:8px;border-bottom:1px solid {_BORDER};color:{_ACCENT};font-family:VT323,monospace;">Source</th>'
-            f'<th style="text-align:right;padding:8px;border-bottom:1px solid {_BORDER};color:{_ACCENT};font-family:VT323,monospace;">Freq</th>'
-            f'<th style="text-align:right;padding:8px;border-bottom:1px solid {_BORDER};color:{_ACCENT};font-family:VT323,monospace;">Channels</th>'
-            f'<th style="text-align:right;padding:8px;border-bottom:1px solid {_BORDER};color:{_ACCENT};font-family:VT323,monospace;">Avg Views</th>'
+            f'<tr id="kw-header">'
+            f'<th style="{th_style}" onclick="sortKwTable(0)">Keyword</th>'
+            f'<th style="{th_style}" onclick="sortKwTable(1)">Source</th>'
+            f'<th style="{th_style_r}" onclick="sortKwTable(2)">Freq</th>'
+            f'<th style="{th_style_r}" onclick="sortKwTable(3)">Channels</th>'
+            f'<th style="{th_style_r}" onclick="sortKwTable(4)">Avg Views</th>'
             f"</tr>"
         )
 
@@ -400,13 +433,39 @@ class DashboardGenerator:
                 f"</tr>"
             )
 
+        sort_script = """<script>
+(function() {
+  var _kwSortDir = {};
+  window.sortKwTable = function(colIdx) {
+    var table = document.getElementById('kw-table');
+    var tbody = table.querySelector('tbody');
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    var asc = !_kwSortDir[colIdx];
+    _kwSortDir = {};
+    _kwSortDir[colIdx] = asc;
+    rows.sort(function(a, b) {
+      var aText = a.cells[colIdx] ? a.cells[colIdx].innerText.trim() : '';
+      var bText = b.cells[colIdx] ? b.cells[colIdx].innerText.trim() : '';
+      var aNum = parseFloat(aText.replace(/[^0-9.-]/g, ''));
+      var bNum = parseFloat(bText.replace(/[^0-9.-]/g, ''));
+      var cmp = isNaN(aNum) || isNaN(bNum)
+        ? aText.localeCompare(bText)
+        : aNum - bNum;
+      return asc ? cmp : -cmp;
+    });
+    rows.forEach(function(r) { tbody.appendChild(r); });
+  };
+})();
+</script>"""
+
         return (
             f'<div style="overflow-x:auto;">'
-            f'<table style="width:100%;border-collapse:collapse;background:{_SURFACE};border-radius:4px;">'
+            f'<table id="kw-table" style="width:100%;border-collapse:collapse;background:{_SURFACE};border-radius:4px;">'
             f"<thead>{header}</thead>"
             f'<tbody>{"".join(rows)}</tbody>'
             f"</table>"
             f"</div>"
+            f"{sort_script}"
         )
 
     def _build_convergence_alerts(self) -> str:
