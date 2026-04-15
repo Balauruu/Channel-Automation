@@ -12,7 +12,6 @@ import re
 import statistics
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -242,7 +241,7 @@ class TopicEngine:
 
         for i, brief in enumerate(briefs, start=1):
             total = brief.get("total_score", 0) or 0
-            filled = min(total, 20)
+            filled = int(min(total, 20))
             empty = 20 - filled
             bar = "#" * filled + "-" * empty
 
