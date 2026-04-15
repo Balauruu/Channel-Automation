@@ -14,15 +14,15 @@ from __future__ import annotations
 
 import base64
 import statistics
-from collections import defaultdict
 from datetime import datetime
 from html import escape
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import plotly.graph_objects as go
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from .config import Config
     from .database import Database
 
@@ -289,7 +289,7 @@ class DashboardGenerator:
         conn = self.db.connect()
         try:
             clusters = conn.execute(
-                "SELECT label, keywords, saturation_score FROM topic_clusters"
+                "SELECT label, saturation_score FROM topic_clusters"
             ).fetchall()
         finally:
             conn.close()
@@ -333,8 +333,41 @@ class DashboardGenerator:
         conn = self.db.connect()
         try:
             channel_count = conn.execute("SELECT COUNT(*) AS c FROM channels").fetchone()["c"]
+
+            # Card 1 breakdown: watch list vs landscape.
+            watch_count = conn.execute(
+                "SELECT COUNT(*) AS c FROM channels WHERE tier = 'watch_list'"
+            ).fetchone()["c"]
+            landscape_count = conn.execute(
+                "SELECT COUNT(*) AS c FROM channels WHERE tier = 'landscape'"
+            ).fetchone()["c"]
+            channel_subtitle = f"{watch_count} watch list + {landscape_count} landscape"
+
+            # Card 2: total videos + delta since last scrape.
             video_count = conn.execute("SELECT COUNT(*) AS c FROM videos").fetchone()["c"]
+            last_scrape_run = conn.execute(
+                "SELECT started_at FROM pipeline_runs "
+                "WHERE status = 'success' ORDER BY completed_at DESC LIMIT 1 OFFSET 1"
+            ).fetchone()
+            if last_scrape_run and last_scrape_run["started_at"]:
+                delta_row = conn.execute(
+                    "SELECT COUNT(*) AS c FROM videos WHERE scraped_at >= ?",
+                    (last_scrape_run["started_at"],),
+                ).fetchone()
+                video_delta = delta_row["c"] if delta_row else 0
+                video_subtitle = f"+{video_delta} since last scrape"
+            else:
+                video_subtitle = ""
+
+            # Card 3: cluster count + underserved/saturated breakdown.
             cluster_count = conn.execute("SELECT COUNT(*) AS c FROM topic_clusters").fetchone()["c"]
+            underserved_count = conn.execute(
+                "SELECT COUNT(*) AS c FROM topic_clusters WHERE status = 'underserved'"
+            ).fetchone()["c"]
+            saturated_count = conn.execute(
+                "SELECT COUNT(*) AS c FROM topic_clusters WHERE status = 'saturated'"
+            ).fetchone()["c"]
+            cluster_subtitle = f"{underserved_count} underserved / {saturated_count} saturated"
 
             # Niche avg engagement rate across watch-list channels.
             engagement_row = conn.execute(
@@ -350,20 +383,29 @@ class DashboardGenerator:
                 "SELECT completed_at FROM pipeline_runs "
                 "WHERE status = 'success' ORDER BY completed_at DESC LIMIT 1"
             ).fetchone()
-            last_updated = latest_run["completed_at"][:10] if latest_run else "Never"
+            if latest_run and latest_run["completed_at"]:
+                last_updated = latest_run["completed_at"][:10]
+            else:
+                last_updated = "Never"
         finally:
             conn.close()
 
+        # (label, value, subtitle, color)
         cards = [
-            ("Competitors", _fmt_number(channel_count), _ACCENT),
-            ("Videos Indexed", _fmt_number(video_count), _INFO),
-            ("Topic Clusters", _fmt_number(cluster_count), _SUCCESS),
-            ("Avg Engagement", avg_eng_display, _WARNING),
-            ("Pipeline Freshness", last_updated, _TEXT_MUTED),
+            ("Competitors tracked", _fmt_number(channel_count), channel_subtitle, _ACCENT),
+            ("Videos indexed", _fmt_number(video_count), video_subtitle, _INFO),
+            ("Topic clusters", _fmt_number(cluster_count), cluster_subtitle, _SUCCESS),
+            ("Avg Engagement", avg_eng_display, "", _WARNING),
+            ("Pipeline Freshness", last_updated, "", _TEXT_MUTED),
         ]
 
         items: list[str] = []
-        for label, value, color in cards:
+        for label, value, subtitle, color in cards:
+            subtitle_html = (
+                f'<div style="font-family:Geist,sans-serif;font-size:11px;color:{_TEXT_MUTED};margin-top:2px;">'
+                f"{escape(subtitle)}</div>"
+                if subtitle else ""
+            )
             items.append(
                 f'<div style="'
                 f"background:{_SURFACE};"
@@ -377,6 +419,7 @@ class DashboardGenerator:
                 f"{escape(str(value))}</div>"
                 f'<div style="font-family:Geist,sans-serif;font-size:13px;color:{_TEXT};">'
                 f"{escape(label)}</div>"
+                f"{subtitle_html}"
                 f"</div>"
             )
 
@@ -587,8 +630,15 @@ h2 {{
   overflow: hidden;
 }}
 
+.row-wide-left {{
+  grid-template-columns: 2fr 1fr;
+}}
+
 @media (max-width: 900px) {{
   .dashboard-grid {{
+    grid-template-columns: 1fr;
+  }}
+  .row-wide-left {{
     grid-template-columns: 1fr;
   }}
 }}
@@ -615,13 +665,15 @@ h2 {{
     {upload_chart}
   </div>
 
-  <!-- Row 3: Cluster bubbles + Pillar gaps -->
-  <div class="card">
-    <h2>Topic Clusters</h2>
-    {cluster_chart}
-  </div>
-  <div class="card">
-    {pillar_html}
+  <!-- Row 3: Cluster bubbles + Pillar gaps (66/33 split) -->
+  <div class="row-full" style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
+    <div class="card">
+      <h2>Topic Clusters</h2>
+      {cluster_chart}
+    </div>
+    <div class="card">
+      {pillar_html}
+    </div>
   </div>
 
   <!-- Row 4: Keywords + Alerts -->

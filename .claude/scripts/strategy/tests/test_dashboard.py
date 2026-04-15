@@ -65,8 +65,8 @@ class TestDashboardGeneration:
         gen = DashboardGenerator(populated_analysis_db, tmp_config)
         gen.generate()
         html = tmp_config.DASHBOARD_PATH.read_text(encoding="utf-8")
-        # Should not have external script/link refs (except fonts if CDN fallback)
-        assert "<!DOCTYPE html>" in html or "<html" in html
+        assert "<!DOCTYPE html>" in html
+        assert "cdn.plot.ly" in html
 
     def test_generate_with_no_data(self, db, tmp_config):
         """Dashboard should still generate with empty DB (shows zeros)."""
