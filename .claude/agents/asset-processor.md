@@ -42,7 +42,21 @@ Download assets from URLs specified in the shotlist:
 
 3. **Format Validation** -- Prefer `.mp4` (H.264) downloads. Fall back to `.ogv` if mp4 unavailable from archive.org. Skip files > 2GB unless specifically needed. Re-encode above 24fps to 24fps by default.
 
-4. **Directory Organization** -- Downloaded assets go to `projects/<name>/assets/staging/`. A `download_manifest.json` tracks what was downloaded, from where, and when.
+4. **Audio Rules** -- Score 1 YouTube videos (primary source, rare footage): download with audio included. All other YouTube videos: video-only (no audio track). Archive.org downloads: video-only.
+
+5. **Directory Organization** -- Downloaded assets go to `projects/<name>/assets/staging/`. A `download_manifest.json` tracks what was downloaded, from where, and when.
+
+## Shot Resolution
+
+For each shot in the shotlist:
+
+1. **create/generate shots** -- Skip. No asset to download.
+2. **find/curate shots** -- Use `search_query` to find or download the asset.
+   - If primary search succeeds → asset acquired, done.
+   - If primary search fails and `fallback` exists → attempt the fallback shot spec using its own `search_query`.
+   - If fallback also fails → mark as unresolved in `asset_review.json` for user decision at the review checkpoint.
+
+No shot reaches the compiler without an asset. Unresolved shots are surfaced during the user review step -- the user either provides a manual asset, adjusts the search, or removes the shot.
 
 ## CLIP Embedding Pipeline
 
