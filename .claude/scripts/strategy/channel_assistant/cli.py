@@ -53,9 +53,8 @@ def _cmd_add(args: argparse.Namespace, db: Database, config: Config, pipeline: P
         result = collector.add_channel(args.url, tier=args.tier)
         print(f"Added: {result.get('name', 'unknown')} ({result.get('channel_id', '?')})")
         print(f"  Videos fetched: {result.get('videos_fetched', 0)}")
-        # Mark downstream stages stale
-        pipeline.mark_stale("analyze")
-        pipeline.mark_stale("dashboard")
+        # Mark scrape stale per spec (cascades to downstream on next run)
+        pipeline.mark_stale("scrape")
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
