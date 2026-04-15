@@ -1,5 +1,5 @@
 """Data models for channel_assistant pipeline."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
