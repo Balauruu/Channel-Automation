@@ -1,546 +1,406 @@
-"""CLI entry point for the channel assistant skill.
+"""CLI entry point for the channel assistant strategy pipeline.
 
-Provides subcommands: add, scrape, analyze, topics.
+Provides subcommands: add, remove, promote, demote, scrape, analyze,
+dashboard, topics, init, package, status.
 """
 
 import argparse
 import json
-import random
-import re
-import subprocess
 import sys
-import time
-from datetime import datetime, timezone
 from pathlib import Path
 
-from .analyzer import (
-    compute_channel_stats,
-    detect_outliers,
-    format_stats_table,
-    serialize_videos_for_analysis,
-)
+from .config import Config
 from .database import Database
-from .registry import Registry
-from .scraper import scrape_all_channels, scrape_single_channel
-from .topics import load_topic_inputs, check_duplicates, _extract_section
-from .project_init import load_project_inputs
-from .trend_scanner import (
-    scrape_autocomplete,
-    scrape_search_results,
-    get_recent_competitor_videos,
-    derive_keywords,
-    update_analysis_with_trends,
-)
+from .pipeline import Pipeline
 
 
-def _get_project_root() -> Path:
-    """Find the project root (directory containing AGENTS.md)."""
-    current = Path(__file__).resolve()
-    for parent in current.parents:
-        if (parent / "AGENTS.md").exists():
-            return parent
-    # Fallback to cwd
-    return Path.cwd()
+def _find_channel_by_name(db: Database, name: str) -> "sqlite3.Row":
+    """Case-insensitive channel lookup. Exits if not found."""
+    for ch in db.get_all_channels():
+        if ch["name"].lower() == name.lower():
+            return ch
+    print(f"Error: Channel '{name}' not found.", file=sys.stderr)
+    sys.exit(1)
 
 
-def _default_registry_path(root: Path) -> Path:
-    return root / "channel" / "strategy" / "competitors.json"
+def find_project_root(start_dir: str | None = None) -> Path:
+    """Walk up from *start_dir* looking for CLAUDE.md.
 
-
-def _default_db_path(root: Path) -> Path:
-    return root / "data" / "channel_assistant.db"
-
-
-def cmd_add(args: argparse.Namespace, registry: Registry) -> None:
-    """Handle 'add' subcommand: register a new competitor channel."""
-    url_or_handle = args.url.strip()
-
-    # Resolve channel name via a quick yt-dlp call
-    print(f"Resolving channel info for {url_or_handle}...")
-    try:
-        result = subprocess.run(
-            [
-                "yt-dlp",
-                "--dump-json",
-                "--skip-download",
-                "--no-warnings",
-                "--playlist-items", "1",
-                url_or_handle,
-            ],
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            data = json.loads(result.stdout.strip().split("\n")[0])
-            channel_name = data.get("channel", "Unknown")
-            handle = data.get("uploader_id", "")
-            channel_url = data.get("channel_url", url_or_handle)
-        else:
-            print(f"Warning: Could not resolve channel info. Using URL as-is.")
-            channel_name = url_or_handle
-            handle = url_or_handle if url_or_handle.startswith("@") else ""
-            channel_url = url_or_handle
-    except (subprocess.TimeoutExpired, json.JSONDecodeError):
-        print(f"Warning: Could not resolve channel info. Using URL as-is.")
-        channel_name = url_or_handle
-        handle = url_or_handle if url_or_handle.startswith("@") else ""
-        channel_url = url_or_handle
-
-    # Ensure handle starts with @
-    youtube_id = handle if handle.startswith("@") else f"@{handle}" if handle else f"@{channel_name.replace(' ', '')}"
-
-    try:
-        entry = registry.add(
-            name=channel_name,
-            youtube_id=youtube_id,
-            url=channel_url,
-        )
-        print(f"Added: {entry['name']} ({entry['youtube_id']})")
-    except ValueError as e:
-        print(f"Error: {e}")
-        sys.exit(1)
-
-
-def cmd_scrape(args: argparse.Namespace, registry: Registry, db: Database) -> None:
-    """Handle 'scrape' subcommand: scrape all or a specific channel."""
-    db.init_db()
-
-    if args.name:
-        result = scrape_single_channel(args.name, registry, db)
-    else:
-        result = scrape_all_channels(registry, db)
-
-    if result and result.get("failed"):
-        sys.exit(1)
-
-
-def _print_status_table(channels: list, db: Database) -> None:
-    """Print channel summary table to stdout."""
-    name_width = max(len(ch.name) for ch in channels)
-    name_width = max(name_width, len("Channel"))
-    header = (
-        f"{'Channel':<{name_width}}  "
-        f"{'Videos':>6}  "
-        f"{'Last Scraped':>12}  "
-        f"{'Latest Upload':>13}"
-    )
-    separator = "-" * len(header)
-
-    print(header)
-    print(separator)
-
-    for ch in channels:
-        stats = db.get_channel_stats(ch.youtube_id)
-        video_count = stats.get("video_count", 0)
-        last_scraped = stats.get("last_scraped", "")
-        latest_upload = stats.get("latest_upload", "")
-
-        last_scraped_short = last_scraped[:10] if last_scraped else "never"
-        latest_upload_short = latest_upload[:10] if latest_upload else "n/a"
-
-        print(
-            f"{ch.name:<{name_width}}  "
-            f"{video_count:>6}  "
-            f"{last_scraped_short:>12}  "
-            f"{latest_upload_short:>13}"
-        )
-
-    print()
-
-
-def _run_trend_scan(db: Database, root: Path) -> None:
-    """Run trend scanning: autocomplete, search results, convergence data.
-
-    Prints structured context to stdout for Claude heuristic reasoning.
+    Returns the directory containing CLAUDE.md, or calls sys.exit(1)
+    if none is found.
     """
-    # Load channel DNA
-    channel_dna_path = root / "strategy" / "channel" / "channel.md"
-    if not channel_dna_path.exists():
-        print(f"Warning: Channel DNA not found, skipping trends.", file=sys.stderr)
-        return
-    channel_dna = channel_dna_path.read_text(encoding="utf-8")
+    current = Path(start_dir).resolve() if start_dir else Path.cwd().resolve()
 
-    # Load analysis.md and extract topic clusters
-    analysis_path = root / "strategy" / "competitors" / "analysis.md"
-    topic_clusters: list[str] = []
-    if analysis_path.exists():
-        analysis_content = analysis_path.read_text(encoding="utf-8")
-        cluster_section = _extract_section(analysis_content, "Topic Clusters")
-        if cluster_section:
-            cluster_pattern = re.compile(r"(?:^[-\d.]*\s*)\*\*([^*]+)\*\*", re.MULTILINE)
-            matches = cluster_pattern.findall(cluster_section)
-            topic_clusters = [m.strip() for m in matches if m.strip()]
+    # Check current and all parents
+    for directory in [current, *current.parents]:
+        if (directory / "CLAUDE.md").exists():
+            return directory
 
-    # Derive keywords from channel DNA + topic clusters
-    keywords = derive_keywords(channel_dna, topic_clusters)
-    n = len(keywords)
-    print(f"Scanning {n} keywords...", file=sys.stderr)
+    print("Error: Could not find project root (no CLAUDE.md found).", file=sys.stderr)
+    sys.exit(1)
 
-    # Scrape autocomplete and search results for each keyword
-    all_autocomplete: dict[str, list[str]] = {}
-    all_search_results: dict[str, list[dict]] = {}
 
-    for i, keyword in enumerate(keywords, start=1):
-        if i > 1:
-            time.sleep(random.uniform(0.5, 1.5))
+# ------------------------------------------------------------------
+# Subcommand handlers
+# ------------------------------------------------------------------
 
-        suggestions = scrape_autocomplete(keyword)
-        results = scrape_search_results(keyword)
 
-        all_autocomplete[keyword] = suggestions
-        all_search_results[keyword] = results
-
+def _cmd_add(args: argparse.Namespace, db: Database, config: Config, pipeline: Pipeline) -> None:
+    """Register a new competitor channel via YouTube Data API."""
+    api_key = config.youtube_api_key
+    if not api_key:
         print(
-            f"  [{i}/{n}] {keyword}: {len(suggestions)} suggestions, {len(results)} results",
+            "Error: YOUTUBE_API_KEY environment variable is required for 'add'.",
             file=sys.stderr,
         )
-
-    # Query 30-day competitor video convergence data
-    competitor_videos = get_recent_competitor_videos(db, days=30)
-
-    # Print structured context to stdout for Claude heuristic reasoning
-    print("## Autocomplete Suggestions")
-    print()
-    for keyword, suggestions in all_autocomplete.items():
-        print(f"### {keyword}")
-        if suggestions:
-            for s in suggestions:
-                print(f"- {s}")
-        else:
-            print("- (no suggestions)")
-        print()
-
-    print("## Search Results")
-    print()
-    for keyword, results in all_search_results.items():
-        print(f"### {keyword}")
-        if results:
-            for r in results:
-                print(
-                    f"- {r['title']} | {r['channel']} | {r.get('published_text', '')} | {r.get('views_text', '')}"
-                )
-        else:
-            print("- (no results)")
-        print()
-
-    print("## Recent Competitor Videos (30-day window)")
-    print()
-    if competitor_videos:
-        for v in competitor_videos:
-            print(f"- {v['title']} | {v['channel_name']} | {v['upload_date']}")
-    else:
-        print("- (no competitor videos in last 30 days)")
-    print()
-
-    # Print prompt path
-    prompt_path = root / ".pi" / "multi-team" / "prompts" / "channel-assistant" / "trends_analysis.md"
-    print("## Trends Prompt")
-    print()
-    print(f"Prompt file: {prompt_path}")
-    print()
-
-    # Instruction line for Claude
-    print(
-        "Trend data loaded. Use the trends analysis prompt to score content gaps, "
-        "frame convergence alerts, and synthesize trending topics. "
-        "Write results using update_analysis_with_trends() from channel_assistant.trend_scanner"
-    )
-
-
-def cmd_analyze(args: argparse.Namespace, db: Database, root: Path) -> None:
-    """Handle 'analyze' subcommand: stats, outliers, trends, and report.
-
-    Combines competitor stats analysis with trend scanning into one command.
-    Use --no-trends to skip the trend scanning step.
-    """
-    db.init_db()
-
-    channels = db.get_all_channels()
-    if not channels:
-        print("No channels in database. Run 'scrape' first.")
-        return
-
-    # --- Status table ---
-    _print_status_table(channels, db)
-
-    # --- Freshness check ---
-    now = datetime.now(timezone.utc)
-    for ch in channels:
-        ch_stats = db.get_channel_stats(ch.youtube_id)
-        last_scraped = ch_stats.get("last_scraped")
-        if last_scraped:
-            try:
-                scraped_dt = datetime.fromisoformat(
-                    last_scraped.replace("Z", "+00:00")
-                )
-                age_days = (now - scraped_dt).days
-                if age_days > 7:
-                    print(
-                        f"Warning: {ch.name} data is {age_days} days old "
-                        f"(last scraped: {last_scraped[:10]})"
-                    )
-            except (ValueError, TypeError):
-                pass
-
-    # --- Compute stats and outliers ---
-    all_stats = []
-    all_outliers = []
-    all_videos_by_channel: dict[str, list] = {}
-    total_video_count = 0
-
-    for ch in channels:
-        videos = db.get_videos_by_channel(ch.youtube_id)
-        total_video_count += len(videos)
-
-        stats = compute_channel_stats(ch, videos)
-        all_stats.append(stats)
-
-        outliers = detect_outliers(ch, videos)
-        all_outliers.extend(outliers)
-
-        all_videos_by_channel[ch.name] = videos
-
-    all_outliers.sort(key=lambda x: x["multiplier"], reverse=True)
-
-    # --- Build report ---
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    stats_table = format_stats_table(all_stats)
-
-    report_lines = [
-        "# Competitor Analysis Report",
-        "",
-        f"*Generated: {timestamp}*",
-        "",
-        "## Channel Stats",
-        "",
-        stats_table,
-        "",
-        "## Outlier Videos",
-        "",
-    ]
-
-    if all_outliers:
-        for o in all_outliers:
-            report_lines.append(
-                f"- **{o['title']}** ({o['channel']}) -- "
-                f"{o['views']:,} views -- {o['multiplier']}x median"
-            )
-    else:
-        report_lines.append(
-            "No outlier videos detected (threshold: 2x channel median)."
-        )
-
-    report_lines.extend([
-        "",
-        "## Topic Clusters",
-        "",
-        "<!-- HEURISTIC: To be completed by Claude reasoning over video_data_for_analysis.md -->",
-        "",
-        "## Title Patterns",
-        "",
-        "<!-- HEURISTIC: To be completed by Claude reasoning over video_data_for_analysis.md -->",
-        "",
-    ])
-
-    # Write report
-    report_path = root / "strategy" / "competitors" / "analysis.md"
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text("\n".join(report_lines), encoding="utf-8")
-
-    # Write serialized video data for heuristic analysis
-    scratch_path = root / ".pi" / "multi-team" / "scratch" / "video_data_for_analysis.md"
-    scratch_path.parent.mkdir(parents=True, exist_ok=True)
-    serialized = serialize_videos_for_analysis(all_videos_by_channel)
-    scratch_header = (
-        "# Video Data for Heuristic Analysis\n\n"
-        "This file contains all competitor video data grouped by channel, "
-        "sorted by views descending.\n"
-        "Use this data for topic clustering and title pattern analysis.\n\n"
-    )
-    scratch_path.write_text(scratch_header + serialized, encoding="utf-8")
-
-    # Summary
-    print(
-        f"Analysis complete. {len(channels)} channels, "
-        f"{total_video_count} videos analyzed. "
-        f"{len(all_outliers)} outliers found."
-    )
-    print(f"Report: channel/strategy/analysis.md")
-    print(f"Video data: .pi/multi-team/scratch/video_data_for_analysis.md")
-    print()
-
-    # --- Trend scanning (unless --no-trends) ---
-    if not args.no_trends:
-        _run_trend_scan(db, root)
-
-
-def cmd_topics(args: argparse.Namespace, root: Path) -> None:
-    """Handle 'topics' subcommand: load context for topic generation.
-
-    Loads competitor analysis, channel DNA, and past topics from disk.
-    Prints a structured summary to stdout for Claude to reason over.
-    Claude (the agent running this command) then performs the [HEURISTIC]
-    generation, scoring, and deduplication steps.
-
-    Does NOT call any LLM API — context-loader only.
-    """
-    try:
-        inputs = load_topic_inputs(root)
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        print("Run 'analyze' first to generate channel/strategy/analysis.md")
         sys.exit(1)
 
-    analysis = inputs["analysis"]
-    channel_dna = inputs["channel_dna"]
-    past_topics = inputs["past_topics"]
-    trends = inputs.get("trends", "")
-    content_gaps = inputs.get("content_gaps", "")
+    from .collector import Collector
 
-    # Print trend data if available (injected before analysis so Claude prioritises gaps)
-    if trends or content_gaps:
-        print("## Trend Data")
-        print()
-        if content_gaps:
-            print("### Content Gaps (prioritize these)")
-            print(content_gaps)
-            print()
-        if trends:
-            print("### Trending Topics")
-            print(trends)
-            print()
-
-    # Print Competitor Analysis summary (first 50 lines or full if short)
-    analysis_lines = analysis.splitlines()
-    print("## Competitor Analysis Summary")
-    print()
-    if len(analysis_lines) <= 50:
-        print(analysis)
-    else:
-        print("\n".join(analysis_lines[:50]))
-        print(f"... [{len(analysis_lines) - 50} more lines — full file at channel/strategy/analysis.md]")
-    print()
-
-    # Print Past Topics list
-    print("## Past Topics")
-    print()
-    if past_topics:
-        for title in past_topics:
-            print(f"- {title}")
-    else:
-        print("None yet")
-    print()
-
-    # Print Channel DNA (content pillars section)
-    print("## Channel DNA")
-    print()
-    pillar_start = channel_dna.find("## Core Content Pillars")
-    criteria_end = channel_dna.find("## Differentiation Strategy")
-    if pillar_start != -1 and criteria_end != -1:
-        print(channel_dna[pillar_start:criteria_end].strip())
-    elif pillar_start != -1:
-        print(channel_dna[pillar_start:].strip()[:1500])
-    else:
-        print(channel_dna[:1500])
-    print()
-
-    # Print generation prompt path
-    prompt_path = root / ".pi" / "multi-team" / "prompts" / "channel-assistant" / "topic_generation.md"
-    print("## Generation Prompt")
-    print()
-    print(f"Prompt file: {prompt_path}")
-    print()
-
-    # Print output target
-    output_path = root / "strategy" / "topics" / "topic_briefs.md"
-    print("## Output Target")
-    print()
-    print(f"{output_path}")
-    print()
-
-    # Instruction line for Claude
-    print(
-        "Context loaded. Use the generation prompt to generate exactly 5 topic briefs. "
-        "REQUIRED dedup step: call check_duplicates(title, past_topics, threshold=0.85) "
-        "for each brief title and set brief['duplicate_of'] = result before calling "
-        "write_topic_briefs(). Import: from channel_assistant.topics import "
-        "check_duplicates, write_topic_briefs, format_chat_cards. "
-        "After writing briefs to file, call format_chat_cards(briefs) and OUTPUT THE "
-        "RETURNED MARKDOWN DIRECTLY IN YOUR CHAT RESPONSE — do NOT print it via bash "
-        "or show raw Python dicts. The user must see formatted markdown cards in chat."
-    )
-
-    # Project initialization guidance
-    prompt_path = root / ".pi" / "multi-team" / "prompts" / "channel-assistant" / "project_init.md"
-    print()
-    print("## Project Initialization")
-    print()
-    print("After generating topic briefs and the user selects a topic by number [N]:")
-    print("1. Call load_project_inputs(root, N) to get the selected brief and title patterns")
-    print("2. Read the project_init prompt: .pi/multi-team/prompts/channel-assistant/project_init.md")
-    print("3. Generate 5 title variants + 1 description (HEURISTIC)")
-    print("4. Call init_project() with structured data (DETERMINISTIC)")
-    print()
-    print(f"Prompt file: {prompt_path}")
+    try:
+        collector = Collector(db, config)
+        result = collector.add_channel(args.url, tier=args.tier)
+        print(f"Added: {result.get('name', 'unknown')} ({result.get('channel_id', '?')})")
+        print(f"  Videos fetched: {result.get('videos_fetched', 0)}")
+        # Mark scrape stale per spec (cascades to downstream on next run)
+        pipeline.mark_stale("scrape")
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
-def main() -> None:
-    """CLI entry point."""
+def _cmd_remove(args: argparse.Namespace, db: Database, pipeline: Pipeline) -> None:
+    """Remove a channel by name."""
+    match = _find_channel_by_name(db, args.name)
+
+    db.remove_channel(match["youtube_id"])
+    print(f"Removed: {match['name']} ({match['youtube_id']})")
+    pipeline.mark_stale("analyze")
+    pipeline.mark_stale("dashboard")
+
+
+def _cmd_promote(args: argparse.Namespace, db: Database, pipeline: Pipeline) -> None:
+    """Promote a channel to watch_list tier."""
+    match = _find_channel_by_name(db, args.name)
+
+    db.update_channel_tier(match["youtube_id"], "watch_list")
+    print(f"Promoted: {match['name']} -> watch_list")
+    pipeline.mark_stale("analyze")
+    pipeline.mark_stale("dashboard")
+
+
+def _cmd_demote(args: argparse.Namespace, db: Database, pipeline: Pipeline) -> None:
+    """Demote a channel to landscape tier."""
+    match = _find_channel_by_name(db, args.name)
+
+    db.update_channel_tier(match["youtube_id"], "landscape")
+    print(f"Demoted: {match['name']} -> landscape")
+    pipeline.mark_stale("analyze")
+    pipeline.mark_stale("dashboard")
+
+
+def _cmd_scrape(args: argparse.Namespace, db: Database, config: Config, pipeline: Pipeline) -> None:
+    """Scrape all channels if pipeline says it should run."""
+    api_key = config.youtube_api_key
+    if not api_key:
+        print(
+            "Error: YOUTUBE_API_KEY environment variable is required for 'scrape'.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if not pipeline.should_run("scrape", force=args.force):
+        print("Scrape: cache is fresh, skipping. Use --force to override.")
+        return
+
+    from .collector import Collector
+
+    input_hash = pipeline.compute_input_hash("scrape")
+    run_id = db.start_pipeline_run("scrape", input_hash)
+    try:
+        collector = Collector(db, config)
+        result = collector.scrape_all()
+
+        summary = (
+            f"{result['channels_scraped']} scraped, "
+            f"{result['channels_failed']} failed"
+        )
+        if result["quota_exceeded"]:
+            summary += " (quota exceeded)"
+
+        db.complete_pipeline_run(run_id, "success", summary)
+        print(f"Scrape complete: {summary}")
+    except Exception as e:
+        db.complete_pipeline_run(run_id, "error", str(e))
+        print(f"Error during scrape: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _cmd_analyze(args: argparse.Namespace, db: Database, config: Config, pipeline: Pipeline) -> None:
+    """Run 3-pass analysis if pipeline says it should run."""
+    if not pipeline.should_run("analyze", force=args.force):
+        print("Analyze: cache is fresh, skipping. Use --force to override.")
+        return
+
+    from .analyzer import Analyzer
+
+    input_hash = pipeline.compute_input_hash("analyze")
+    run_id = db.start_pipeline_run("analyze", input_hash)
+    try:
+        analyzer = Analyzer(
+            db,
+            cluster_min_k=config.CLUSTER_MIN_K,
+            cluster_max_k=config.CLUSTER_MAX_K,
+            outlier_multiplier=config.OUTLIER_MULTIPLIER,
+            convergence_window_days=config.CONVERGENCE_WINDOW_DAYS,
+            convergence_min_channels=config.CONVERGENCE_MIN_CHANNELS,
+            saturation_decay_lambda=config.SATURATION_DECAY_LAMBDA,
+        )
+        result = analyzer.run_all()
+
+        clusters = result.get("clusters", [])
+        keywords = result.get("keywords", [])
+        summary = f"{len(clusters)} clusters, {len(keywords)} keywords"
+
+        db.complete_pipeline_run(run_id, "success", summary)
+        print(f"Analysis complete: {summary}")
+
+        # Print cluster summary
+        if clusters:
+            print("\nClusters:")
+            for c in clusters:
+                print(f"  - {c['label']} ({c['video_count']} videos, {c['avg_views']:,.0f} avg views)")
+    except Exception as e:
+        db.complete_pipeline_run(run_id, "error", str(e))
+        print(f"Error during analysis: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _cmd_dashboard(args: argparse.Namespace, db: Database, config: Config, pipeline: Pipeline) -> None:
+    """Generate HTML dashboard if pipeline says it should run."""
+    if not pipeline.should_run("dashboard", force=args.force):
+        print("Dashboard: cache is fresh, skipping. Use --force to override.")
+        return
+
+    from .dashboard import DashboardGenerator
+
+    input_hash = pipeline.compute_input_hash("dashboard")
+    run_id = db.start_pipeline_run("dashboard", input_hash)
+    try:
+        generator = DashboardGenerator(db, config)
+        output_path = generator.generate()
+
+        db.complete_pipeline_run(run_id, "success", str(output_path))
+        print(f"Dashboard generated: {output_path}")
+    except Exception as e:
+        db.complete_pipeline_run(run_id, "error", str(e))
+        print(f"Error generating dashboard: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _cmd_topics(args: argparse.Namespace, db: Database, config: Config) -> None:
+    """Print formatted topic context to stdout for Claude."""
+    from .topics import TopicEngine
+
+    engine = TopicEngine(db, config)
+    context = engine.format_context()
+    print(context)
+
+
+def _cmd_init(args: argparse.Namespace, db: Database, config: Config) -> None:
+    """Initialize a project directory from a topic brief number."""
+    briefs = db.get_topic_briefs()
+    if not briefs:
+        print("Error: No topic briefs found. Run 'topics' first.", file=sys.stderr)
+        sys.exit(1)
+
+    topic_num = args.topic_num
+    if topic_num < 1 or topic_num > len(briefs):
+        print(
+            f"Error: Topic number {topic_num} is out of range (1-{len(briefs)}).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    brief = briefs[topic_num - 1]
+
+    from .project_init import ProjectInit
+
+    try:
+        scores_str = brief["scores"]
+        scores = json.loads(scores_str) if isinstance(scores_str, str) else scores_str
+        # Remove 'total' from scores if present (computed by init)
+        scores.pop("total", None)
+
+        pi = ProjectInit(db, config)
+        project_dir = pi.init(
+            title=brief["title"],
+            scores=scores,
+            pillar_primary=brief["pillar_primary"] or "",
+            runtime_estimate=20,  # default estimate
+            pillar_secondary=brief["pillar_secondary"],
+            source_clusters=json.loads(brief["source_clusters"])
+            if brief["source_clusters"]
+            else None,
+        )
+        db.select_topic(brief["id"])
+        print(f"Project initialized: {project_dir}")
+    except Exception as e:
+        print(f"Error initializing project: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _cmd_package(args: argparse.Namespace, db: Database, config: Config) -> None:
+    """Print packaging instructions for Claude to generate titles and description."""
+    project_path = config.root / "projects" / args.project
+    if not project_path.exists():
+        print(f"Error: Project directory not found: {project_path}", file=sys.stderr)
+        sys.exit(1)
+
+    metadata_path = project_path / "metadata.json"
+    if not metadata_path.exists():
+        print(f"Error: metadata.json not found in {project_path}", file=sys.stderr)
+        sys.exit(1)
+
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    title = metadata.get("title", "unknown")
+
+    print(f"Project: {title}")
+    print(f"Path: {project_path}")
+    print()
+    print("To package this project, Claude should:")
+    print("1. Generate 5 title variants (different hook types)")
+    print("2. Write a YouTube description")
+    print("3. Call ProjectInit.package(project_path, title_variants, description)")
+    print()
+    print("Import:")
+    print("  from channel_assistant.project_init import ProjectInit")
+    print("  from channel_assistant.database import Database")
+    print("  from channel_assistant.config import Config")
+
+
+def _cmd_status(args: argparse.Namespace, db: Database, config: Config, pipeline: Pipeline) -> None:
+    """Print pipeline freshness status for all stages."""
+    status = pipeline.get_status()
+
+    # Table header
+    print(f"{'Stage':<12} {'State':<8} {'Age (days)':<12} {'Last Run':<20}")
+    print("-" * 52)
+
+    for stage, info in status.items():
+        state = info["state"]
+        age = f"{info['age_days']}" if info["age_days"] is not None else "never"
+        last_run = ""
+        if info["last_run"] is not None:
+            completed = info["last_run"]["completed_at"]
+            last_run = completed[:19] if completed else ""
+
+        print(f"{stage:<12} {state:<8} {age:<12} {last_run:<20}")
+
+    # Channel count
+    channels = db.get_all_channels()
+    print(f"\nChannels tracked: {len(channels)}")
+    watch = [ch for ch in channels if ch["tier"] == "watch_list"]
+    landscape = [ch for ch in channels if ch["tier"] == "landscape"]
+    print(f"  watch_list: {len(watch)}  |  landscape: {len(landscape)}")
+
+
+# ------------------------------------------------------------------
+# CLI entry point
+# ------------------------------------------------------------------
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Argparse-based CLI with subcommands."""
     parser = argparse.ArgumentParser(
-        description="Channel Assistant - Competitor tracking and analysis"
+        description="Channel Assistant — strategy pipeline CLI"
     )
     subparsers = parser.add_subparsers(dest="command")
 
-    # add subcommand
-    add_parser = subparsers.add_parser(
-        "add", help="Register a new competitor channel"
-    )
+    # add
+    add_parser = subparsers.add_parser("add", help="Register a new competitor channel")
+    add_parser.add_argument("url", help="YouTube channel URL or @handle")
     add_parser.add_argument(
-        "url", help="YouTube channel URL or @handle"
+        "--tier",
+        choices=["watch_list", "landscape"],
+        default="landscape",
+        help="Channel tier (default: landscape)",
     )
 
-    # scrape subcommand
-    scrape_parser = subparsers.add_parser(
-        "scrape", help="Scrape all or a specific channel"
-    )
-    scrape_parser.add_argument(
-        "name", nargs="?", help="Channel name (optional, scrapes all if omitted)"
-    )
+    # remove
+    remove_parser = subparsers.add_parser("remove", help="Remove a channel by name")
+    remove_parser.add_argument("name", help="Channel name")
 
-    # analyze subcommand (includes stats + outliers + trends)
-    analyze_parser = subparsers.add_parser(
-        "analyze", help="Full analysis: channel stats, outliers, trends, and content gaps"
-    )
-    analyze_parser.add_argument(
-        "--no-trends", action="store_true",
-        help="Skip trend scanning (autocomplete + search scraping)"
-    )
+    # promote
+    promote_parser = subparsers.add_parser("promote", help="Promote channel to watch_list")
+    promote_parser.add_argument("name", help="Channel name")
 
-    # topics subcommand
-    subparsers.add_parser(
-        "topics", help="Load context for topic generation (5 scored briefs)"
-    )
+    # demote
+    demote_parser = subparsers.add_parser("demote", help="Demote channel to landscape")
+    demote_parser.add_argument("name", help="Channel name")
 
-    args = parser.parse_args()
+    # scrape
+    scrape_parser = subparsers.add_parser("scrape", help="Scrape all channels")
+    scrape_parser.add_argument("--force", action="store_true", help="Force scrape even if cache is fresh")
+
+    # analyze
+    analyze_parser = subparsers.add_parser("analyze", help="Run 3-pass analysis")
+    analyze_parser.add_argument("--force", action="store_true", help="Force analysis even if cache is fresh")
+
+    # dashboard
+    dashboard_parser = subparsers.add_parser("dashboard", help="Generate HTML dashboard")
+    dashboard_parser.add_argument("--force", action="store_true", help="Force regeneration")
+
+    # topics
+    subparsers.add_parser("topics", help="Print topic context for Claude")
+
+    # init
+    init_parser = subparsers.add_parser("init", help="Initialize project from topic brief")
+    init_parser.add_argument("topic_num", type=int, help="Topic brief number")
+
+    # package
+    package_parser = subparsers.add_parser("package", help="Print packaging instructions")
+    package_parser.add_argument("project", help="Project slug (directory name)")
+
+    # status
+    subparsers.add_parser("status", help="Show pipeline freshness status")
+
+    args = parser.parse_args(argv)
 
     if not args.command:
         parser.print_help()
         sys.exit(1)
 
-    # Setup paths
-    root = _get_project_root()
-    registry = Registry(_default_registry_path(root))
-    db = Database(_default_db_path(root))
+    # -- Resolve project root and create shared instances --
+    root = find_project_root()
+    config = Config(root)
+    db = Database(config.DB_PATH)
+    db.init_db()
+    pipeline = Pipeline(db, config)
 
+    # -- Dispatch --
     if args.command == "add":
-        cmd_add(args, registry)
+        _cmd_add(args, db, config, pipeline)
+    elif args.command == "remove":
+        _cmd_remove(args, db, pipeline)
+    elif args.command == "promote":
+        _cmd_promote(args, db, pipeline)
+    elif args.command == "demote":
+        _cmd_demote(args, db, pipeline)
     elif args.command == "scrape":
-        cmd_scrape(args, registry, db)
+        _cmd_scrape(args, db, config, pipeline)
     elif args.command == "analyze":
-        cmd_analyze(args, db, root)
+        _cmd_analyze(args, db, config, pipeline)
+    elif args.command == "dashboard":
+        _cmd_dashboard(args, db, config, pipeline)
     elif args.command == "topics":
-        cmd_topics(args, root)
+        _cmd_topics(args, db, config)
+    elif args.command == "init":
+        _cmd_init(args, db, config)
+    elif args.command == "package":
+        _cmd_package(args, db, config)
+    elif args.command == "status":
+        _cmd_status(args, db, config, pipeline)
 
 
 if __name__ == "__main__":
