@@ -66,6 +66,8 @@ class ProjectInit:
             The created project directory as a ``pathlib.Path``.
         """
         slug = _slugify(title)
+        if not slug:
+            raise ValueError(f"Title {title!r} produced an empty slug.")
         projects_dir = self._config.root / "projects"
         project_dir = projects_dir / slug
         project_dir.mkdir(parents=True, exist_ok=True)
@@ -120,6 +122,11 @@ class ProjectInit:
             The updated metadata dict.
         """
         metadata_path = project_path / "metadata.json"
+        if not metadata_path.exists():
+            raise FileNotFoundError(
+                f"metadata.json not found in {project_path}. "
+                "Call init() before package()."
+            )
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
         metadata["youtube"] = {
             "title_variants": title_variants,
