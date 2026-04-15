@@ -142,6 +142,32 @@ Multi-dimensional scoring for asset-to-shot matching:
 
 Combined scores determine whether an asset reaches the editor review stage.
 
+## Adaptive Asset Review
+
+After embedding and searching, review candidates before presenting to the user.
+
+### Blank Pre-Filter
+
+Before any review, auto-reject frames where more than 50% of pixels are near-blank (solid color or static). This is a deterministic check -- no LLM needed.
+
+### Tiered Review
+
+Send candidate frames for review based on CLIP score:
+
+| Score Range | Action |
+|-------------|--------|
+| > 0.25 | Auto-accept top 1 per shot. Include in review as pre-approved. |
+| 0.15 - 0.25 | Send top 3 per shot for review. Describe: what it shows, mood, era. |
+| < 0.15 | Skip. Trigger query refinement instead. |
+
+### Query Refinement
+
+When peak score < 0.20 for a shot:
+
+1. Rephrase the `search_query` to a more concrete visual description
+2. Re-run search
+3. Up to 3 rounds. If still < 0.15 after 3 rounds, report as gap in `asset_review.json`
+
 ## User Review
 
 After downloading and embedding assets, present candidates for user approval before proceeding to clip export or compiler handoff.
@@ -162,8 +188,9 @@ Produce `projects/<name>/assets/asset_review.json`:
           "asset_path": "<local path>",
           "source_url": "<original URL>",
           "relevance_score": 0.28,
-          "duration_seconds": 45,
-          "suggested_timestamp": "00:12-00:18",
+          "review_description": "<what the frame actually shows>",
+          "review_mood": "<mood tag>",
+          "review_era": "<estimated era>",
           "status": "pending"
         }
       ]
