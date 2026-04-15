@@ -18,7 +18,7 @@ Dark mysteries documentary video production pipeline.
 - `.claude/hooks/` -- Pre/PostToolUse and SubagentStop hooks
 - `.claude/scripts/` -- Python scripts (strategy/, editorial/, media/ subdirs + audit-agents.js)
 - `data/` -- SQLite databases (channel_assistant.db, asset_catalog.db)
-- `channel/strategy/` -- Strategy outputs (competitors.json, analysis, topics)
+- `channel/strategy/` -- Strategy outputs (dashboard.html, topics.md)
 - `channel/voice-analysis/` -- Style-extractor workspace (reconstructed scripts)
 - `projects/` -- Per-documentary outputs
 
@@ -28,7 +28,7 @@ Dark mysteries documentary video production pipeline.
 |-------|--------|-------------|
 | @researcher | Editorial | Research a documentary topic |
 | @writer | Editorial | Generate a script from research |
-| @strategy | Strategy | Competitor analysis, topic generation, project init |
+| @strategy | Strategy | Competitive intelligence, NLP analysis, dashboard, topic generation |
 | @style-extractor | Editorial | Extract or refine channel narrator voice |
 | @editorial-lead | Editorial | Quality gate research dossiers and scripts |
 | @visual-researcher | Media | Visual intent definition and resource gathering |
