@@ -462,8 +462,8 @@ class Database:
             return conn.execute(
                 """
                 SELECT * FROM pipeline_runs
-                WHERE stage = ?
-                ORDER BY started_at DESC
+                WHERE stage = ? AND status = 'success'
+                ORDER BY completed_at DESC
                 LIMIT 1
                 """,
                 (stage,),

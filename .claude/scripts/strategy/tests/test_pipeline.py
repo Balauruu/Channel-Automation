@@ -82,3 +82,17 @@ class TestStatus:
         assert "dashboard" in status
         for stage_info in status.values():
             assert "state" in stage_info
+
+
+class TestMarkStale:
+    def test_mark_stale_forces_rerun(self, pipeline, db):
+        current_hash = pipeline.compute_input_hash("scrape")
+        run_id = db.start_pipeline_run("scrape", current_hash)
+        db.complete_pipeline_run(run_id, "success", "ok")
+        assert pipeline.should_run("scrape") is False
+        pipeline.mark_stale("scrape")
+        assert pipeline.should_run("scrape") is True
+
+    def test_mark_stale_no_op_when_no_success_run(self, pipeline):
+        # should not raise even with nothing to invalidate
+        pipeline.mark_stale("scrape")

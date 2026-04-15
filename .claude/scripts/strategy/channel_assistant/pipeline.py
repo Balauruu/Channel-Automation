@@ -79,8 +79,6 @@ class Pipeline:
         freshness = self.check_freshness(stage)
         if freshness["state"] == "stale":
             return True
-        if freshness["last_run"] is None:
-            return True
         current_hash = self.compute_input_hash(stage)
         return current_hash != freshness["last_run"]["input_hash"]
 
@@ -99,7 +97,7 @@ class Pipeline:
             conn.execute(
                 "UPDATE pipeline_runs SET status='invalidated' "
                 "WHERE stage=? AND status='success' "
-                "AND id=(SELECT MAX(id) FROM pipeline_runs WHERE stage=?)",
+                "AND id=(SELECT MAX(id) FROM pipeline_runs WHERE stage=? AND status='success')",
                 (stage, stage),
             )
             conn.commit()
