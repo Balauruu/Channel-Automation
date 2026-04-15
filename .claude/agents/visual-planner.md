@@ -66,46 +66,27 @@ Prelinger coverage is excellent for 1940s-1970s, moderate for 1930s-1940s, poor 
 
 ### YouTube Search and Gathering
 
-For each chapter in the shotlist that needs `curate` (b-roll) shots, search YouTube for relevant documentary footage:
+For each chapter that needs `curate` (b-roll) shots, search YouTube for relevant footage:
 
-1. **Formulate search queries** from the chapter's narrative beats and entity names. Use combinations: topic + "documentary", entity + "interview", location + "footage", event + "news report".
-2. **Execute searches** via WebSearch or crawl4ai. Target 3-5 queries per chapter.
-3. **Apply hard filters** (below) to eliminate unsuitable results.
-4. **Score surviving results** 1-4 (below).
-5. **Attach scored leads** to the relevant shotlist entries as `broll_leads` with `relevance_score`.
+1. **Formulate search queries** from narrative beats and entity names (topic + "documentary", entity + "interview", location + "footage"). Target 3-5 queries per chapter.
+2. **Apply hard filters** -- discard immediately:
+   - Duration < 30 seconds
+   - Views < 1,000 (exception: survivor/witness testimony regardless of views)
+   - AI-generated signals: channel names with generic dark/mystery keywords + high upload volume, AI narration voice, burned-in text overlays, kinetic typography
+3. **Score results 1-4** per the media-evaluation skill rubrics.
+4. **Attach scored leads** to shotlist entries as `broll_leads` with `relevance_score`.
 
-Score 1 leads are always kept and marked for download. Score 2 leads are included. Score 3-4 leads are included only when they fill a gap with no better option.
+### Scoring Budget
 
-### YouTube Evaluation
+- Score 1 (primary source, rare): budget of 7 or fewer videos per project
+- Score 2 (strong supporting): include all
+- Score 3-4 (supplementary/marginal): only when filling gaps with no better option
 
-Evaluate YouTube search results with hard filters and scoring:
+### YouTube Lead Validation
 
-**Hard Filters (discard immediately):**
-- Duration < 30 seconds
-- View count < 1,000 views (exception: first-person accounts from verified personal channels)
-- AI content signals: clickbait title + new channel + very low views
-- Content farms: slideshow format, AI narration, no original footage
-- Re-uploads of content already captured from original channel
-
-**AI Content Detection:**
-- Channel with < 1K subscribers AND < 1K views -- very likely AI
-- Sensationalist reformulation of the topic -- exaggerated, manipulative titles
-- Generic dark/mystery channel branding ("Dreaded Documentary", "Suppressed Shadows")
-- No visible original footage -- just stock images and AI voiceover
-
-**Scoring (1-4):**
-- Score 1: Primary source -- original interviews, archival footage directly about the topic. Rare and precious (3-7 per run).
-- Score 2: Strong supporting -- professional production with substantial relevant footage, broader topic scope, or smaller legitimate channel.
-- Score 3: Supplementary -- some usable footage but mostly tangential. Short news clips, tangentially related documentaries.
-- Score 4: Marginal -- minimal usable footage, could fill a specific gap.
-
-Score 1 requires ALL of: primarily about the topic, original footage, credible producer, meaningful view count.
-
-### Score-Based Filtering
-
-- **Score 1 (Primary):** Always kept and included in the shotlist. These are downloaded by both the visual planner and the asset processor. Never filtered.
-- **Score 2 (Strong):** Included in the shotlist. Downloaded during asset processing.
-- **Score 3-4 (Supplementary/Marginal):** Included in broll_leads only when they fill a specific gap with no better option. May be dropped during asset processing if bandwidth is limited.
+- Validate all YouTube leads with `yt-dlp --dump-json --no-download`
+- Rate limiting: 2-second pause between calls, 10-second pause between 20-video batches
+- Stop immediately on HTTP 429 (do not retry)
 
 ## B-Roll Curation
 
@@ -118,6 +99,13 @@ For each `curate` shot in the shotlist:
 3. **Rights Assessment** -- Verify public domain or Creative Commons status. Archive.org Prelinger collection has most reliable public domain status.
 
 4. **Quantity Target** -- 2-4 candidate assets per shot to provide editor choice. Quality over quantity -- one well-matched clip beats three mediocre ones.
+
+### Lead Quality Gates
+
+Before attaching a b-roll lead, it must pass both:
+
+1. **Visual concreteness** -- The metaphor is immediately legible without explanation. If you need a caption to explain why this cartoon relates to the topic, it is too abstract.
+2. **Scene availability** -- The source contains at least 5-10 seconds of directly matching footage. A 2-second flash in a 30-minute video does not count.
 
 ## Shotlist Format
 
@@ -134,12 +122,14 @@ Output structure for the shotlist (`shotlist.json`):
         {
           "shot_id": "ch1_s01",
           "shot_type": "find|create|generate|curate",
-          "duration_seconds": 5,
           "source_url": "<URL or null>",
           "asset_id": "<media_leads reference or null>",
           "visual_notes": "<what to show and why>",
           "act_reference": "<chapter.paragraph>",
           "mood_register": "<grounding|conceptual|atmospheric|emotional|transitional>",
+          "text_content": "<exact text for editor to display, or null>",
+          "search_query": "<era + geography + subject search string, or null>",
+          "fallback": "<mini-shot spec (same fields minus fallback), or null>",
           "broll_leads": [
             {
               "url": "<URL>",
@@ -162,6 +152,12 @@ Output structure for the shotlist (`shotlist.json`):
 }
 ```
 
+### New Field Rules
+
+- **`text_content`** -- Required when `shot_type` is `create`. The exact text the editor puts on screen (quotes, dates, stats, titles). Null for all other shot types.
+- **`search_query`** -- Required when `shot_type` is `find` or `curate`. A concrete search string with era + geography + subject (e.g., `"1950s Quebec orphanage exterior building"`). Not abstract concepts. Null for `create` and `generate`.
+- **`fallback`** -- Optional for any shot type. A mini-shot spec (same fields minus `fallback` itself) that asset-processor attempts if the primary asset cannot be found. One level deep only -- no nested fallbacks.
+
 ### Equilibrium Rules
 
 Enforce these rules to prevent visual monotony:
@@ -172,6 +168,33 @@ Enforce these rules to prevent visual monotony:
 4. Curated b-roll (atmospheric + cartoon) totals at least 15% of shots
 5. Cartoon b-roll (`broll_cartoon`) at least 10% of shots
 6. Opening shot should use `find` or `curate` (atmospheric) when possible
+
+## Form Vocabulary Reference
+
+When writing `visual_notes` and `search_query`, use this vocabulary to think about what format each shot takes. These are guidance for judgment, not schema fields.
+
+| Form | Typical Action | What It Depicts |
+|------|---------------|-----------------|
+| text_card | create | Quotes, dates, intro titles, stats |
+| graphic | create | Diagrams, timelines, maps |
+| archival_photo | find | Photos, portraits, mugshots, interiors/exteriors |
+| archival_video | find | News clips, home video, institutional footage |
+| document | find | Newspaper clippings, scans, screenshots |
+| landscape | find/curate | Wide establishing shots |
+| vector_silhouette | generate | ComfyUI compositions (future) |
+| broll_atmospheric | curate | Mood footage -- corridors, textures, industrial |
+| broll_cartoon | curate | Public domain cartoons, metaphorical only |
+| broll_environment | curate | Nature, cityscapes, rural, water |
+
+### Register-to-Action Affinities
+
+Default pairings, not hard rules:
+
+- grounding → find (archival_photo, document)
+- conceptual → curate (broll_cartoon) or generate (vector_silhouette)
+- atmospheric → curate (broll_atmospheric, broll_cartoon)
+- emotional → generate (vector_silhouette) or find (archival_photo)
+- transitional → curate (broll_atmospheric) or find (document)
 
 ## Python Scripts
 
