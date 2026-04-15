@@ -14,6 +14,15 @@ from .database import Database
 from .pipeline import Pipeline
 
 
+def _find_channel_by_name(db: Database, name: str) -> "sqlite3.Row":
+    """Case-insensitive channel lookup. Exits if not found."""
+    for ch in db.get_all_channels():
+        if ch["name"].lower() == name.lower():
+            return ch
+    print(f"Error: Channel '{name}' not found.", file=sys.stderr)
+    sys.exit(1)
+
+
 def find_project_root(start_dir: str | None = None) -> Path:
     """Walk up from *start_dir* looking for CLAUDE.md.
 
@@ -62,16 +71,7 @@ def _cmd_add(args: argparse.Namespace, db: Database, config: Config, pipeline: P
 
 def _cmd_remove(args: argparse.Namespace, db: Database, pipeline: Pipeline) -> None:
     """Remove a channel by name."""
-    channels = db.get_all_channels()
-    match = None
-    for ch in channels:
-        if ch["name"].lower() == args.name.lower():
-            match = ch
-            break
-
-    if match is None:
-        print(f"Error: Channel '{args.name}' not found.", file=sys.stderr)
-        sys.exit(1)
+    match = _find_channel_by_name(db, args.name)
 
     db.remove_channel(match["youtube_id"])
     print(f"Removed: {match['name']} ({match['youtube_id']})")
@@ -81,16 +81,7 @@ def _cmd_remove(args: argparse.Namespace, db: Database, pipeline: Pipeline) -> N
 
 def _cmd_promote(args: argparse.Namespace, db: Database, pipeline: Pipeline) -> None:
     """Promote a channel to watch_list tier."""
-    channels = db.get_all_channels()
-    match = None
-    for ch in channels:
-        if ch["name"].lower() == args.name.lower():
-            match = ch
-            break
-
-    if match is None:
-        print(f"Error: Channel '{args.name}' not found.", file=sys.stderr)
-        sys.exit(1)
+    match = _find_channel_by_name(db, args.name)
 
     db.update_channel_tier(match["youtube_id"], "watch_list")
     print(f"Promoted: {match['name']} -> watch_list")
@@ -100,16 +91,7 @@ def _cmd_promote(args: argparse.Namespace, db: Database, pipeline: Pipeline) -> 
 
 def _cmd_demote(args: argparse.Namespace, db: Database, pipeline: Pipeline) -> None:
     """Demote a channel to landscape tier."""
-    channels = db.get_all_channels()
-    match = None
-    for ch in channels:
-        if ch["name"].lower() == args.name.lower():
-            match = ch
-            break
-
-    if match is None:
-        print(f"Error: Channel '{args.name}' not found.", file=sys.stderr)
-        sys.exit(1)
+    match = _find_channel_by_name(db, args.name)
 
     db.update_channel_tier(match["youtube_id"], "landscape")
     print(f"Demoted: {match['name']} -> landscape")
@@ -133,10 +115,9 @@ def _cmd_scrape(args: argparse.Namespace, db: Database, config: Config, pipeline
 
     from .collector import Collector
 
+    input_hash = pipeline.compute_input_hash("scrape")
+    run_id = db.start_pipeline_run("scrape", input_hash)
     try:
-        input_hash = pipeline.compute_input_hash("scrape")
-        run_id = db.start_pipeline_run("scrape", input_hash)
-
         collector = Collector(db, config)
         result = collector.scrape_all()
 
@@ -150,6 +131,7 @@ def _cmd_scrape(args: argparse.Namespace, db: Database, config: Config, pipeline
         db.complete_pipeline_run(run_id, "success", summary)
         print(f"Scrape complete: {summary}")
     except Exception as e:
+        db.complete_pipeline_run(run_id, "error", str(e))
         print(f"Error during scrape: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -162,10 +144,9 @@ def _cmd_analyze(args: argparse.Namespace, db: Database, config: Config, pipelin
 
     from .analyzer import Analyzer
 
+    input_hash = pipeline.compute_input_hash("analyze")
+    run_id = db.start_pipeline_run("analyze", input_hash)
     try:
-        input_hash = pipeline.compute_input_hash("analyze")
-        run_id = db.start_pipeline_run("analyze", input_hash)
-
         analyzer = Analyzer(
             db,
             cluster_min_k=config.CLUSTER_MIN_K,
@@ -190,6 +171,7 @@ def _cmd_analyze(args: argparse.Namespace, db: Database, config: Config, pipelin
             for c in clusters:
                 print(f"  - {c['label']} ({c['video_count']} videos, {c['avg_views']:,.0f} avg views)")
     except Exception as e:
+        db.complete_pipeline_run(run_id, "error", str(e))
         print(f"Error during analysis: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -202,16 +184,16 @@ def _cmd_dashboard(args: argparse.Namespace, db: Database, config: Config, pipel
 
     from .dashboard import DashboardGenerator
 
+    input_hash = pipeline.compute_input_hash("dashboard")
+    run_id = db.start_pipeline_run("dashboard", input_hash)
     try:
-        input_hash = pipeline.compute_input_hash("dashboard")
-        run_id = db.start_pipeline_run("dashboard", input_hash)
-
         generator = DashboardGenerator(db, config)
         output_path = generator.generate()
 
         db.complete_pipeline_run(run_id, "success", str(output_path))
         print(f"Dashboard generated: {output_path}")
     except Exception as e:
+        db.complete_pipeline_run(run_id, "error", str(e))
         print(f"Error generating dashboard: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -256,7 +238,7 @@ def _cmd_init(args: argparse.Namespace, db: Database, config: Config) -> None:
             scores=scores,
             pillar_primary=brief["pillar_primary"] or "",
             runtime_estimate=20,  # default estimate
-            pillar_secondary=brief.get("pillar_secondary"),
+            pillar_secondary=brief["pillar_secondary"],
             source_clusters=json.loads(brief["source_clusters"])
             if brief["source_clusters"]
             else None,
