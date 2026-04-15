@@ -34,7 +34,7 @@ You do NOT define visual intent -- that is the visual-researcher's domain. You d
 
 ## Asset Download
 
-Download assets from URLs specified in the shotlist:
+Before downloading new assets, search the channel asset library at `D:/Youtube/D. Mysteries Channel/3. Assets` using `python -m asset_manager search` with the shot's `search_query`. If a match scores above 0.25, extract it directly with `python -m asset_manager extract` -- no download needed.
 
 1. **URL-Based Download** -- Download from YouTube (via yt-dlp) and archive.org. YouTube downloads use sequential requests with jittered delays; stop on first HTTP 429. Archive.org downloads can run in parallel (5 workers), video-only.
 
