@@ -103,6 +103,7 @@ class Analyzer:
                 "median_views": 0,
                 "upload_frequency_days": None,
                 "most_recent_upload": None,
+                "engagement_rate": 0.0,
             }
 
         valid_views = [v["views"] for v in videos if v["views"] is not None]
@@ -128,6 +129,18 @@ class Analyzer:
                 intervals = len(dates) - 1
                 upload_frequency_days = round(total_span / intervals, 1)
 
+        # Engagement rate: (likes + comments) / views across all videos.
+        total_likes = sum(v["likes"] for v in videos if v["likes"] is not None)
+        total_comments = sum(
+            v["comment_count"] for v in videos if v["comment_count"] is not None
+        )
+        total_views = sum(valid_views) if valid_views else 0
+        engagement_rate = (
+            round((total_likes + total_comments) / total_views, 4)
+            if total_views > 0
+            else 0.0
+        )
+
         return {
             "channel_id": channel_id,
             "total_videos": total_videos,
@@ -135,6 +148,7 @@ class Analyzer:
             "median_views": median_views,
             "upload_frequency_days": upload_frequency_days,
             "most_recent_upload": most_recent_upload,
+            "engagement_rate": engagement_rate,
         }
 
     def detect_outliers(self, channel_id: str) -> list[dict]:
