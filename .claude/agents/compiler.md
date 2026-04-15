@@ -71,7 +71,12 @@ The edit sheet (`edit_sheet.md`) follows this structure:
 
 ### Shot Matching Logic
 
-- `create` shots (text cards): No asset file needed -- the text content IS the asset. Include text inline.
+- `create` shots (text cards): No asset file needed -- render `text_content` as a blockquote in the edit sheet. The text IS the asset. Example:
+
+  ```markdown
+  ### Shot ch1_s01 -- text_card | grounding
+  > "They told us we were orphans. We believed them." -- Alice Quinton, 1999 testimony
+  ```
 - `generate` shots (ComfyUI): No asset file available yet. Include the composition brief for future generation.
 - `find` shots (archival/stock): Match against processed assets using shot description and asset metadata.
 - `curate` shots (library pulls): Match against downloaded/curated assets from the asset review.
