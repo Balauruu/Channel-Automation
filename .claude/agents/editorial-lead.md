@@ -5,7 +5,10 @@ description: >-
   standards. Gates content quality before downstream pipeline stages. Provides
   structured feedback. Invoke when research or scripts need quality review
   before proceeding.
-tools: Read, Grep, Glob
+tools:
+  - Read
+  - Grep
+  - Glob
 model: sonnet
 memory: project
 color: red

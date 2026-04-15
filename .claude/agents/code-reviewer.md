@@ -127,9 +127,7 @@ Review standards specific to Claude Code agent and skill definitions.
 ### Memory Setup Verification
 
 - Agent memory directory exists: `.claude/agent-memory/{agent-name}/MEMORY.md`
-- MEMORY.md has all 5 standard sections: Key Files, Decisions, Patterns, Observations, Open Questions
-- Key Files section lists actual paths relevant to the agent's domain
-- Decisions and Patterns are seeded with substantive content (not empty placeholders)
+- MEMORY.md has standard sections and substantive content (not empty placeholders)
 
 ## Fix Implementation
 

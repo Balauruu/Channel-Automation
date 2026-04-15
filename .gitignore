@@ -33,3 +33,6 @@ feedback/
 
 # ── Tests (local validation scripts, not versioned) ───────────────────────────
 .claude/tests/
+
+# ── Docs (specs, plans, roadmap — local working docs) ────────────────────────
+docs/

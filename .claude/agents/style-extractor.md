@@ -5,7 +5,12 @@ description: >-
   Analyzes existing documentary scripts to identify tone, pacing, vocabulary,
   and structural patterns. Produces voice profile documents. Invoke when the
   user wants to update or refine the channel's voice profile.
-tools: Read, Write, Edit, Grep, Glob
+tools:
+  - Read
+  - Write
+  - Edit
+  - Grep
+  - Glob
 model: sonnet
 memory: project
 color: pink

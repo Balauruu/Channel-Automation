@@ -208,7 +208,7 @@ If a script fails, report the error and stop. Do NOT fall back to Claude-native 
 - Channel DNA: `channel/channel.md`
 - Past topics: `channel/past_topics.md`
 - Project directories: `projects/<project-name>/`
-- Project metadata: `projects/<project-name>/metadata.md`
+- Project metadata: `projects/<project-name>/metadata.json`
 
 ## Task Classification
 

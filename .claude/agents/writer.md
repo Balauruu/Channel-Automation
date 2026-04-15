@@ -93,18 +93,6 @@ Names, dates, places. Never "a small town" when you know the town's name. Never 
 ### 6. Source Attribution
 Sourced claims use direct attribution. Inferred claims use explicit inference markers. Speculation is not used -- if it cannot be sourced or reasonably inferred, it is omitted or flagged.
 
-## AI Puffery Ban
-
-LLMs regress to statistical means, producing generic, puffy prose. The following patterns are banned in all script output:
-
-- **Puffery:** pivotal, crucial, vital, testament, enduring legacy
-- **Empty "-ing" phrases:** ensuring reliability, showcasing features, highlighting capabilities
-- **Promotional adjectives:** groundbreaking, seamless, robust, cutting-edge
-- **Overused AI vocabulary:** delve, leverage, multifaceted, foster, realm, tapestry
-- **Filler transitions:** furthermore, notably, it is worth noting, importantly
-
-Be specific, not grandiose. If you catch yourself reaching for any of these, rewrite the sentence with a concrete fact instead.
-
 ## Quotes
 
 Direct quotes from the research dossier's Direct Quotes section are a primary tool. Use them to:
