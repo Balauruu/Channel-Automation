@@ -175,6 +175,31 @@ testCases.push({
   }
 });
 
+testCases.push({
+  name: 'tool_fail/appends_event',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      agent_id: 'a1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    runHook('tool_pre', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 'tf', tool_input: { command: 'sleep 999' }
+    }, tmp);
+    runHook('tool_fail', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 'tf',
+      error: 'Command timed out after 120000ms',
+      interrupted: false
+    }, tmp);
+    const events = readJsonl(path.join(tmp, '.claude', 'logs', 'runs', listRunFiles(tmp)[0]));
+    const f = events.find(e => e.event === 'tool_fail');
+    return f && f.tool_use_id === 'tf' && f.error.includes('timed out')
+      && f.interrupted === false;
+  }
+});
+
 // Run
 let pass = 0, fail = 0;
 for (const tc of testCases) {

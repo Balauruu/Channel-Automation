@@ -98,7 +98,20 @@ function handleToolPost(data) {
     output: data.tool_response || {}
   });
 }
-function handleToolFail(data) { /* Task 5 */ }
+function handleToolFail(data) {
+  const projectDir = resolveProjectDir(data);
+  const runFile = readPointer(projectDir, data.agent_id);
+  if (!runFile) return;
+  appendEvent(runFile, {
+    ts: isoStamp(),
+    event: 'tool_fail',
+    tool: data.tool_name,
+    tool_use_id: data.tool_use_id,
+    duration_ms: null,
+    error: data.error || '',
+    interrupted: data.interrupted === true
+  });
+}
 function handlePermissionDenied(data) { /* Task 6 */ }
 function handleSubagentStop(data) { /* Task 7 */ }
 
