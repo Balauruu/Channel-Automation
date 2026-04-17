@@ -16,7 +16,7 @@ Dark mysteries documentary video production pipeline.
 - `.claude/logs/` -- Agent dispatch/completion session logs
 - `.claude/tests/` -- Smoke tests and validation scripts
 - `.claude/hooks/` -- Pre/PostToolUse and SubagentStop hooks
-- `.claude/scripts/` -- Python scripts (strategy/, editorial/, media/ subdirs + audit-agents.js)
+- `.claude/scripts/` -- Python scripts (strategy/, editorial/, media/ subdirs)
 - `data/` -- SQLite databases (channel_assistant.db, asset_catalog.db)
 - `channel/strategy/` -- Strategy outputs (competitors.json, analysis, topics)
 - `channel/voice-analysis/` -- Style-extractor workspace (reconstructed scripts)
