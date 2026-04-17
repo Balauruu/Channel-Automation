@@ -195,8 +195,7 @@ If running:
 
 ### Pass 4 — Synthesize
 
-1. `PYTHONPATH=".claude/scripts/editorial" C:/Users/iorda/venvs/crawl4ai/Scripts/python -m researcher status "<topic>"` — confirm all source files are present before aggregating.
-2. `PYTHONPATH=".claude/scripts/editorial" C:/Users/iorda/venvs/crawl4ai/Scripts/python -m researcher write "<topic>"`
+1. `PYTHONPATH=".claude/scripts/editorial" C:/Users/iorda/venvs/crawl4ai/Scripts/python -m researcher write "<topic>"`
 2. Read `synthesis_input.md`.
 3. Assemble the 10-section dossier per the Research Output Structure.
 4. Write the Executive Summary last, after all evidence is organized.
