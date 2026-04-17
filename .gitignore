@@ -31,12 +31,11 @@ feedback/
 # ── Git worktrees (ephemeral agent isolation dirs) ────────────────────────────
 .claude/worktrees/
 
-# ── Tests (local validation scripts, not versioned) ───────────────────────────
-.claude/tests/
-# Versioned observability suite — smoke test + fixture data are part of the branch
+# ── Tests — ignore local ad-hoc .js scripts at the tests/ root, but track ────
+# ── versioned suites (smoke-test-*) and structured subdirectories (fixtures/).
+.claude/tests/*.js
 !.claude/tests/smoke-test-observability.js
-!.claude/tests/fixtures/
-!.claude/tests/fixtures/**
+!.claude/tests/smoke-test-pipeline.js
 
 # ── Docs (specs, plans, roadmap — local working docs) ────────────────────────
 docs/
