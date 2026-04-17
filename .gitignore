@@ -33,6 +33,10 @@ feedback/
 
 # ── Tests (local validation scripts, not versioned) ───────────────────────────
 .claude/tests/
+# Versioned observability suite — smoke test + fixture data are part of the branch
+!.claude/tests/smoke-test-observability.js
+!.claude/tests/fixtures/
+!.claude/tests/fixtures/**
 
 # ── Docs (specs, plans, roadmap — local working docs) ────────────────────────
 docs/

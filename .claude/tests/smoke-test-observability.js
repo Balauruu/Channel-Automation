@@ -222,6 +222,166 @@ testCases.push({
   }
 });
 
+const { mergeAndFinalize } = require(obsScript);
+
+const fixtures = path.join(projectRoot, '.claude', 'tests', 'fixtures', 'observability');
+
+function prepareRunFile(tmp, fixtureToolEvents) {
+  fs.mkdirSync(path.join(tmp, '.claude', 'logs', 'runs', '.active'), { recursive: true });
+  const runFile = path.join(tmp, '.claude', 'logs', 'runs', 'fixture.jsonl');
+  fs.copyFileSync(fixtureToolEvents, runFile);
+  return runFile;
+}
+
+testCases.push({
+  name: 'merge/chronological_order_and_durations',
+  check: () => {
+    const tmp = makeTmpProject();
+    const runFile = prepareRunFile(tmp, path.join(fixtures, 'tool-events.jsonl'));
+    mergeAndFinalize({
+      runFile,
+      transcriptPath: path.join(fixtures, 'transcript.jsonl'),
+      stopHookInput: { stop_hook_active: false }
+    });
+    const events = readJsonl(runFile);
+    // dispatch + 2 tool_pre + 1 tool_post + 1 tool_fail + 3 assistant_message + 1 complete = 9
+    if (events.length !== 9) return false;
+    // Chronological by ts
+    for (let i = 1; i < events.length; i++) {
+      if (events[i].ts < events[i-1].ts) return false;
+    }
+    // tool_post duration = 500ms, tool_fail duration = 200ms
+    const post = events.find(e => e.event === 'tool_post' && e.tool_use_id === 't1');
+    const fail = events.find(e => e.event === 'tool_fail' && e.tool_use_id === 't2');
+    if (post.duration_ms !== 500) return false;
+    if (fail.duration_ms !== 200) return false;
+    // Last turn tokens
+    const complete = events[events.length - 1];
+    if (complete.event !== 'complete') return false;
+    if (complete.last_turn_input_tokens !== 1500) return false;
+    if (complete.total_output_tokens !== 65) return false;  // 20+30+15
+    if (complete.tool_calls !== 2) return false;
+    if (complete.tool_fails !== 1) return false;
+    if (complete.outcome !== 'completed') return false;  // tool_fail does NOT force errored
+    return true;
+  }
+});
+
+testCases.push({
+  name: 'merge/outcome_stopped_on_max_tokens',
+  check: () => {
+    const tmp = makeTmpProject();
+    const runFile = prepareRunFile(tmp, path.join(fixtures, 'tool-events.jsonl'));
+    mergeAndFinalize({
+      runFile,
+      transcriptPath: path.join(fixtures, 'transcript-stopped.jsonl'),
+      stopHookInput: { stop_hook_active: false }
+    });
+    const events = readJsonl(runFile);
+    return events[events.length - 1].outcome === 'stopped';
+  }
+});
+
+testCases.push({
+  name: 'merge/outcome_stopped_on_stop_hook_active',
+  check: () => {
+    const tmp = makeTmpProject();
+    const runFile = prepareRunFile(tmp, path.join(fixtures, 'tool-events.jsonl'));
+    mergeAndFinalize({
+      runFile,
+      transcriptPath: path.join(fixtures, 'transcript.jsonl'),
+      stopHookInput: { stop_hook_active: true }
+    });
+    return readJsonl(runFile).slice(-1)[0].outcome === 'stopped';
+  }
+});
+
+testCases.push({
+  name: 'merge/outcome_errored_on_unknown_stop_reason',
+  check: () => {
+    const tmp = makeTmpProject();
+    const runFile = prepareRunFile(tmp, path.join(fixtures, 'tool-events.jsonl'));
+    mergeAndFinalize({
+      runFile,
+      transcriptPath: path.join(fixtures, 'transcript-errored.jsonl'),
+      stopHookInput: { stop_hook_active: false }
+    });
+    return readJsonl(runFile).slice(-1)[0].outcome === 'errored';
+  }
+});
+
+testCases.push({
+  name: 'merge/assistant_message_preserves_stop_reason_and_thinking',
+  check: () => {
+    const tmp = makeTmpProject();
+    const runFile = prepareRunFile(tmp, path.join(fixtures, 'tool-events.jsonl'));
+    mergeAndFinalize({
+      runFile,
+      transcriptPath: path.join(fixtures, 'transcript.jsonl'),
+      stopHookInput: { stop_hook_active: false }
+    });
+    const events = readJsonl(runFile);
+    const messages = events.filter(e => e.event === 'assistant_message');
+    if (messages.length !== 3) return false;
+    if (messages[0].thinking !== null) return false;
+    if (messages[1].thinking !== 'The listing succeeded.') return false;
+    if (messages[0].stop_reason !== 'tool_use') return false;
+    if (messages[2].stop_reason !== 'end_turn') return false;
+    return true;
+  }
+});
+
+testCases.push({
+  name: 'merge/atomic_rewrite_leaves_no_tmp_on_success',
+  check: () => {
+    const tmp = makeTmpProject();
+    const runFile = prepareRunFile(tmp, path.join(fixtures, 'tool-events.jsonl'));
+    mergeAndFinalize({
+      runFile,
+      transcriptPath: path.join(fixtures, 'transcript.jsonl'),
+      stopHookInput: { stop_hook_active: false }
+    });
+    return !fs.existsSync(runFile + '.tmp');
+  }
+});
+
+testCases.push({
+  name: 'subagent_stop/handler_removes_pointer_and_sweeps_orphans',
+  check: () => {
+    const tmp = makeTmpProject();
+    // Dispatch + one tool round
+    runHook('dispatch', {
+      agent_id: 'a1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    runHook('tool_pre', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't1', tool_input: { command: 'ls' }
+    }, tmp);
+    runHook('tool_post', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't1', tool_response: { stdout: 'ok' }
+    }, tmp);
+    // Plant an orphan .tmp to confirm sweep
+    const runsD = path.join(tmp, '.claude', 'logs', 'runs');
+    fs.writeFileSync(path.join(runsD, 'stale.jsonl.tmp'), 'junk');
+    // Stop
+    const transcript = path.join(fixtures, 'transcript.jsonl');
+    runHook('subagent_stop', {
+      agent_id: 'a1', cwd: tmp,
+      agent_type: 'researcher',
+      agent_transcript_path: transcript,
+      stop_hook_active: false
+    }, tmp);
+    const ptr = path.join(runsD, '.active', 'a1.ptr');
+    if (fs.existsSync(ptr)) return false;
+    if (fs.existsSync(path.join(runsD, 'stale.jsonl.tmp'))) return false;
+    const runFile = path.join(runsD, listRunFiles(tmp)[0]);
+    const last = readJsonl(runFile).slice(-1)[0];
+    return last.event === 'complete';
+  }
+});
+
 // Run
 let pass = 0, fail = 0;
 for (const tc of testCases) {
