@@ -474,6 +474,138 @@ testCases.push({
   }
 });
 
+// --- Polish: schema ver, large-string annotation, truncation, cap ---
+
+testCases.push({
+  name: 'dispatch/event_has_schema_ver',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      agent_id: 'av1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    const events = readJsonl(path.join(tmp, '.claude', 'logs', 'runs', listRunFiles(tmp)[0]));
+    return events[0].ver === 1 && events[0].event === 'dispatch';
+  }
+});
+
+testCases.push({
+  name: 'tool_post/annotates_large_string_with_len_hint',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      agent_id: 'b1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    const bigOutput = 'x'.repeat(15_000); // > 10KB threshold
+    runHook('tool_post', {
+      agent_id: 'b1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't1',
+      tool_response: { stdout: bigOutput, exit_code: 0 }
+    }, tmp);
+    const events = readJsonl(path.join(tmp, '.claude', 'logs', 'runs', listRunFiles(tmp)[0]));
+    const post = events.find(e => e.event === 'tool_post');
+    // No truncation by default — full content preserved
+    if (post.output.stdout.length !== 15_000) return false;
+    // But _len hint IS emitted
+    if (post.output.stdout_len !== 15_000) return false;
+    return true;
+  }
+});
+
+testCases.push({
+  name: 'tool_post/truncates_when_OBS_TRUNCATE_KB_set',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      agent_id: 'tr1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    // OBS_TRUNCATE_KB=5 → anything > 5120 chars gets truncated
+    const bigOutput = 'A'.repeat(10_000);
+    execFileSync('node', [obsScript, 'tool_post'], {
+      input: JSON.stringify({
+        agent_id: 'tr1', cwd: tmp,
+        tool_name: 'Bash', tool_use_id: 't1',
+        tool_response: { stdout: bigOutput }
+      }),
+      env: { ...process.env, CLAUDE_PROJECT_DIR: tmp, OBS_TRUNCATE_KB: '5' },
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    const events = readJsonl(path.join(tmp, '.claude', 'logs', 'runs', listRunFiles(tmp)[0]));
+    const post = events.find(e => e.event === 'tool_post');
+    // Truncated marker should be present; full length preserved in _len
+    if (!post.output.stdout.includes('chars truncated')) return false;
+    if (post.output.stdout_len !== 10_000) return false;
+    if (post.output.stdout.length >= 10_000) return false;
+    return true;
+  }
+});
+
+testCases.push({
+  name: 'cap/writes_log_capped_event_and_stops_appending',
+  check: () => {
+    const tmp = makeTmpProject();
+    // OBS_MAX_RUN_MB=1 → cap at ~1MB; feed several large tool_post events to blow past it
+    runHook('dispatch', {
+      agent_id: 'cap1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    const bigOutput = 'x'.repeat(400_000); // ~400KB per event
+    for (let i = 0; i < 5; i++) {
+      execFileSync('node', [obsScript, 'tool_post'], {
+        input: JSON.stringify({
+          agent_id: 'cap1', cwd: tmp,
+          tool_name: 'Bash', tool_use_id: `t${i}`,
+          tool_response: { stdout: bigOutput }
+        }),
+        env: { ...process.env, CLAUDE_PROJECT_DIR: tmp, OBS_MAX_RUN_MB: '1' },
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+    }
+    // Try to append one more; should be dropped silently
+    execFileSync('node', [obsScript, 'tool_post'], {
+      input: JSON.stringify({
+        agent_id: 'cap1', cwd: tmp,
+        tool_name: 'Bash', tool_use_id: 'dropped',
+        tool_response: { stdout: 'should-not-appear' }
+      }),
+      env: { ...process.env, CLAUDE_PROJECT_DIR: tmp, OBS_MAX_RUN_MB: '1' },
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    const runFile = path.join(tmp, '.claude', 'logs', 'runs', listRunFiles(tmp)[0]);
+    const events = readJsonl(runFile);
+    const hasCapEvent = events.some(e => e.event === 'log_capped');
+    const droppedAppeared = events.some(e => e.tool_use_id === 'dropped');
+    // Cap marker sidecar should exist
+    const marker = runFile + '.capped';
+    return hasCapEvent && !droppedAppeared && fs.existsSync(marker);
+  }
+});
+
+testCases.push({
+  name: 'complete/log_capped_flag_reflected',
+  check: () => {
+    const tmp = makeTmpProject();
+    const runFile = path.join(tmp, '.claude', 'logs', 'runs', 'fixture.jsonl');
+    fs.mkdirSync(path.dirname(runFile), { recursive: true });
+    // Seed a run file that already contains a log_capped event
+    const lines = [
+      { ts: '2026-04-17T10-00-00-000Z', event: 'dispatch', session_id: 's', agent_type: 'r', agent_id: 'a1', cwd: '/tmp', prompt: 'x' },
+      { ts: '2026-04-17T10-00-01-000Z', event: 'log_capped', size_bytes: 999999, max_bytes: 1000000 }
+    ];
+    fs.writeFileSync(runFile, lines.map(l => JSON.stringify(l)).join('\n') + '\n');
+    mergeAndFinalize({
+      runFile,
+      transcriptPath: path.join(fixtures, 'transcript.jsonl'),
+      stopHookInput: { stop_hook_active: false }
+    });
+    const events = readJsonl(runFile);
+    const complete = events[events.length - 1];
+    return complete.event === 'complete' && complete.log_capped === true;
+  }
+});
+
 testCases.push({
   name: 'settings/registers_all_six_events',
   check: () => {

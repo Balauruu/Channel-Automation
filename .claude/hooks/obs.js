@@ -37,8 +37,52 @@ function readPointer(projectDir, agentId) {
   return fs.readFileSync(p, 'utf8').trim();
 }
 
+// Per-run hard size cap (takeaway #5). Default 100MB; tune via OBS_MAX_RUN_MB.
+// Once exceeded, a single log_capped event is appended (via sidecar marker) and
+// subsequent appends are silently dropped until a new run.
+const MAX_RUN_BYTES = Math.max(1, parseInt(process.env.OBS_MAX_RUN_MB || '100', 10)) * 1024 * 1024;
+
 function appendEvent(runFile, obj) {
+  const capMarker = runFile + '.capped';
+  if (fs.existsSync(capMarker)) return;
+  try {
+    const st = fs.statSync(runFile);
+    if (st.size > MAX_RUN_BYTES) {
+      fs.writeFileSync(capMarker, '');
+      fs.appendFileSync(runFile,
+        JSON.stringify({ ts: isoStamp(), event: 'log_capped', size_bytes: st.size, max_bytes: MAX_RUN_BYTES }) + '\n',
+        'utf8');
+      return;
+    }
+  } catch {}
   fs.appendFileSync(runFile, JSON.stringify(obj) + '\n', 'utf8');
+}
+
+// Annotate large string fields with `<key>_len` hints (takeaway #4) and
+// optionally truncate them with head+tail preservation when OBS_TRUNCATE_KB is
+// set (takeaway #3). Default: no truncation, hints only.
+const LARGE_STRING_THRESHOLD = 10_000; // 10KB — threshold for _len annotation
+const TRUNCATE_BYTES = Math.max(0, parseInt(process.env.OBS_TRUNCATE_KB || '0', 10)) * 1024;
+
+function annotateLargeStrings(obj) {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(annotateLargeStrings);
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v === 'string' && v.length >= LARGE_STRING_THRESHOLD) {
+      if (TRUNCATE_BYTES > 0 && v.length > TRUNCATE_BYTES) {
+        out[k] = v.slice(0, 200) + `...(${v.length} chars truncated)...` + v.slice(-50);
+      } else {
+        out[k] = v;
+      }
+      out[`${k}_len`] = v.length;
+    } else if (v && typeof v === 'object') {
+      out[k] = annotateLargeStrings(v);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
 }
 
 function shouldSkip(data) {
@@ -49,6 +93,9 @@ function shouldSkip(data) {
 }
 
 // --- Handlers (stubs — filled in subsequent tasks) ---
+
+// Schema version — bump on breaking changes so consumers can handle migrations.
+const SCHEMA_VER = 1;
 
 function handleDispatch(data) {
   const projectDir = resolveProjectDir(data);
@@ -62,6 +109,7 @@ function handleDispatch(data) {
   const fd = fs.openSync(runFile, 'ax');
   try {
     fs.writeSync(fd, JSON.stringify({
+      ver: SCHEMA_VER,
       ts,
       event: 'dispatch',
       session_id: data.session_id || null,
@@ -73,6 +121,9 @@ function handleDispatch(data) {
   } finally {
     fs.closeSync(fd);
   }
+  // Tool inputs/outputs may contain secrets. Restrict access. POSIX-only effect;
+  // Windows ignores the mode but the call is harmless.
+  try { fs.chmodSync(runFile, 0o600); } catch {}
 
   fs.writeFileSync(pointerPath(projectDir, agentId), runFile, 'utf8');
 }
@@ -85,7 +136,7 @@ function handleToolPre(data) {
     event: 'tool_pre',
     tool: data.tool_name,
     tool_use_id: data.tool_use_id,
-    input: data.tool_input || {}
+    input: annotateLargeStrings(data.tool_input || {})
   });
 }
 function handleToolPost(data) {
@@ -98,7 +149,7 @@ function handleToolPost(data) {
     tool: data.tool_name,
     tool_use_id: data.tool_use_id,
     duration_ms: null,  // populated by mergeAndFinalize in Task 7
-    output: data.tool_response || {}
+    output: annotateLargeStrings(data.tool_response || {})
   });
 }
 function handleToolFail(data) {
@@ -124,7 +175,7 @@ function handlePermissionDenied(data) {
     event: 'permission_denied',
     tool: data.tool_name,
     tool_use_id: data.tool_use_id,
-    input: data.tool_input || {},
+    input: annotateLargeStrings(data.tool_input || {}),
     reason: data.reason || ''
   });
 }
@@ -230,6 +281,7 @@ function mergeAndFinalize({ runFile, transcriptPath, stopHookInput }) {
   const toolCalls = merged.filter(e => e.event === 'tool_post' || e.event === 'tool_fail').length;
   const toolFails = merged.filter(e => e.event === 'tool_fail').length;
   const permissionDenials = merged.filter(e => e.event === 'permission_denied').length;
+  const logCapped = merged.some(e => e.event === 'log_capped');
   const lastTurn = messages[messages.length - 1] || null;
   const lastStopReason = lastTurn?.stop_reason || null;
   const totalOutputTokens = messages.reduce((s, m) => s + (m.output_tokens || 0), 0);
@@ -253,6 +305,7 @@ function mergeAndFinalize({ runFile, transcriptPath, stopHookInput }) {
     last_turn_input_tokens: lastTurn?.input_tokens ?? null,
     last_turn_output_tokens: lastTurn?.output_tokens ?? null,
     total_output_tokens: totalOutputTokens,
+    log_capped: logCapped,
     outcome
   });
 
@@ -292,6 +345,7 @@ function handleSubagentStop(data) {
     stopHookInput: { stop_hook_active: data.stop_hook_active === true }
   });
   try { fs.unlinkSync(pointerPath(projectDir, data.agent_id)); } catch {}
+  try { fs.unlinkSync(runFile + '.capped'); } catch {}
 }
 
 const HANDLERS = {
