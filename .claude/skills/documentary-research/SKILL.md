@@ -102,7 +102,7 @@ Evaluate potential hooks on three axes. A strong hook scores well on all three; 
 
 - `.claude/scripts/editorial/researcher/cli.py survey <topic>` -- Automated broad survey across multiple source types
 - `.claude/scripts/editorial/researcher/cli.py deepen <topic>` -- Deep dive on specific aspects identified in survey
-- `.claude/scripts/editorial/researcher/cli.py synthesize <topic>` -- Compile findings into structured dossier format
+- `.claude/scripts/editorial/researcher/cli.py write <topic>` -- Compile findings into structured dossier format
 
 ## Reflection Phase
 

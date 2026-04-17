@@ -19,7 +19,7 @@ Before starting work:
    - Path: `.claude/skills/crawl4ai-scraping/insights.md`
    - Even if empty, this confirms the learning loop is active
 
-## Extraction Strategy Selection [DETERMINISTIC]
+## Extraction Strategy Selection
 
 Choose the right extraction approach based on the target site's characteristics.
 
@@ -57,7 +57,7 @@ Many research-relevant sites embed structured data. Check for `<script type="app
 - `Event` -- historical events with dates and locations
 - `Organization` -- institutional information
 
-## Anti-Bot Handling [DETERMINISTIC]
+## Anti-Bot Handling
 
 ### Rate Limiting Rules
 
@@ -86,7 +86,7 @@ Many research-relevant sites embed structured data. Check for `<script type="app
 - Use JavaScript injection to click consent buttons: `document.querySelector('.cookie-accept')?.click()`
 - Wait for the main content container to appear after accepting: `wait_for="css:.main-content"`
 
-## Content Selection Patterns [HEURISTIC]
+## Content Selection Patterns
 
 ### Identifying Main Content vs Boilerplate
 
@@ -119,7 +119,7 @@ Before passing extracted content downstream, verify:
 - Images referenced in text are noted (even if not downloaded)
 - Links within the content are preserved as absolute URLs
 
-## Output Formatting [DETERMINISTIC]
+## Output Formatting
 
 ### Clean Markdown Output
 
