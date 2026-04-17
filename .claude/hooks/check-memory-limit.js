@@ -1,6 +1,6 @@
 // .claude/hooks/check-memory-limit.js
 // SubagentStop hook -- warns if agent MEMORY.md exceeds 200 lines
-// Registered in .claude/settings.json alongside log-agent-complete.js
+// Registered in .claude/settings.json
 
 const fs = require('fs');
 const path = require('path');
