@@ -257,19 +257,24 @@ function mergeAndFinalize({ runFile, transcriptPath, stopHookInput }) {
   fs.renameSync(tmp, runFile);
 }
 
-function sweepOrphanTmpFiles(projectDir) {
+// §6.8: sweeps orphan .tmp files left by crashed previous runs.
+// Excludes the current agent's own .tmp so a parallel in-flight rewrite
+// is never clobbered. Spec §6.6 allows parallel subagent dispatch; per-agent
+// run files are unique but the sweep needs the exclude to avoid racing.
+function sweepOrphanTmpFiles(projectDir, currentRunFile) {
   const d = runsDir(projectDir);
+  const currentTmp = currentRunFile ? path.basename(currentRunFile) + '.tmp' : null;
   for (const f of fs.readdirSync(d)) {
-    if (f.endsWith('.jsonl.tmp')) {
-      try { fs.unlinkSync(path.join(d, f)); } catch {}
-    }
+    if (!f.endsWith('.jsonl.tmp')) continue;
+    if (currentTmp && f === currentTmp) continue;
+    try { fs.unlinkSync(path.join(d, f)); } catch {}
   }
 }
 
 function handleSubagentStop(data) {
   const projectDir = resolveProjectDir(data);
   const runFile = readPointer(projectDir, data.agent_id);
-  sweepOrphanTmpFiles(projectDir);  // §6.8 orphan sweep
+  sweepOrphanTmpFiles(projectDir, runFile);  // §6.8 orphan sweep, exclude own tmp
   if (!runFile || !fs.existsSync(runFile)) return;
   mergeAndFinalize({
     runFile,
