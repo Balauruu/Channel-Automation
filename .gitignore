@@ -27,6 +27,7 @@ feedback/
 
 # ── Local-only settings ───────────────────────────────────────────────────────
 .claude/settings.local.json
+.env
 
 # ── Git worktrees (ephemeral agent isolation dirs) ────────────────────────────
 .claude/worktrees/
