@@ -13,7 +13,6 @@ skills:
   - archive-search
   - crawl4ai-scraping
   - autoresearch
-  - agent-observability
 tools:
   - Read
   - Write
