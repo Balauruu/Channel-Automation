@@ -112,7 +112,19 @@ function handleToolFail(data) {
     interrupted: data.interrupted === true
   });
 }
-function handlePermissionDenied(data) { /* Task 6 */ }
+function handlePermissionDenied(data) {
+  const projectDir = resolveProjectDir(data);
+  const runFile = readPointer(projectDir, data.agent_id);
+  if (!runFile) return;
+  appendEvent(runFile, {
+    ts: isoStamp(),
+    event: 'permission_denied',
+    tool: data.tool_name,
+    tool_use_id: data.tool_use_id,
+    input: data.tool_input || {},
+    reason: data.reason || ''
+  });
+}
 function handleSubagentStop(data) { /* Task 7 */ }
 
 const HANDLERS = {

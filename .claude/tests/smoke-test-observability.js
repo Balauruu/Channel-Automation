@@ -200,6 +200,28 @@ testCases.push({
   }
 });
 
+testCases.push({
+  name: 'permission_denied/appends_event',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      agent_id: 'a1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    runHook('permission_denied', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash',
+      tool_use_id: 'pd1',
+      tool_input: { command: 'rm -rf /' },
+      reason: 'classifier: destructive'
+    }, tmp);
+    const events = readJsonl(path.join(tmp, '.claude', 'logs', 'runs', listRunFiles(tmp)[0]));
+    const p = events.find(e => e.event === 'permission_denied');
+    return p && p.reason === 'classifier: destructive'
+      && p.input.command === 'rm -rf /';
+  }
+});
+
 // Run
 let pass = 0, fail = 0;
 for (const tc of testCases) {
