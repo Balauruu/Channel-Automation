@@ -14,7 +14,6 @@ memory: project
 color: red
 skills:
   - agent-protocols
-  - documentary-research
 ---
 
 <project_context>

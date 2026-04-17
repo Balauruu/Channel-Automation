@@ -96,7 +96,7 @@ sources: N
 | YYYY-MM-DD | Event description | [Source](URL) | N |
 
 ## Key Entities
-[Entity index per documentary-research skill standards]
+[Entity index per the Entity Indexing Standards in `.claude/agents/researcher.md`]
 
 ## Narrative Arc
 ### The Hook

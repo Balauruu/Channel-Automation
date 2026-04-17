@@ -85,7 +85,7 @@ When two consecutive iterations are at or below the saturation threshold, source
 ### Claim Verification Completeness
 
 All factual claims in the research have been classified by verification level:
-- **Complete**: Every claim is tagged as Sourced, Attributed, Unverified, or Contested (per documentary-research skill tiers)
+- **Complete**: Every claim is tagged as Sourced, Attributed, Unverified, or Contested (per the tier definitions in `.claude/agents/researcher.md`)
 - **Incomplete**: Claims exist without verification tags, or claims tagged "needs verification" have not been investigated
 
 Convergence requires that no claim remains in "needs verification" status. Unverified claims are acceptable if explicitly tagged -- the goal is classification, not universal verification.
