@@ -422,6 +422,59 @@ testCases.push({
 });
 
 testCases.push({
+  // Perf sanity: 500-turn synthetic transcript should merge + rewrite well under
+  // the 15s SubagentStop hook timeout. Establishes a baseline so a future
+  // regression (e.g. accidental O(n^2) sort) would be caught locally.
+  name: 'merge/large_transcript_completes_under_budget',
+  check: () => {
+    const tmp = makeTmpProject();
+    const runFile = path.join(tmp, '.claude', 'logs', 'runs', 'fixture.jsonl');
+    // Seed tool-events file with a dispatch line
+    fs.mkdirSync(path.dirname(runFile), { recursive: true });
+    fs.writeFileSync(runFile,
+      JSON.stringify({
+        ts: '2026-04-17T10-00-00-000Z',
+        event: 'dispatch',
+        session_id: 's', agent_type: 'researcher', agent_id: 'a1',
+        cwd: '/tmp', prompt: 'perf'
+      }) + '\n'
+    );
+    // Generate a 500-turn transcript spanning 500 seconds
+    const transcriptPath = path.join(tmp, 'transcript.jsonl');
+    const lines = [];
+    for (let i = 0; i < 500; i++) {
+      const sec = String(i).padStart(3, '0');
+      lines.push(JSON.stringify({
+        timestamp: `2026-04-17T10:0${Math.floor(i/60)}:${String(i%60).padStart(2,'0')}.500Z`,
+        message: {
+          role: 'assistant',
+          content: [{ type: 'text', text: `Turn ${i} output.` }],
+          stop_reason: i === 499 ? 'end_turn' : 'tool_use',
+          usage: { input_tokens: 1000 + i, output_tokens: 10, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 }
+        }
+      }));
+    }
+    fs.writeFileSync(transcriptPath, lines.join('\n') + '\n');
+    const t0 = Date.now();
+    mergeAndFinalize({
+      runFile,
+      transcriptPath,
+      stopHookInput: { stop_hook_active: false }
+    });
+    const elapsed = Date.now() - t0;
+    // Budget: 3000ms. Well under the 15s settings.json timeout, leaves headroom
+    // for slower CI and larger-in-the-wild transcripts.
+    if (elapsed >= 3000) {
+      console.log(`  [perf] ${elapsed}ms exceeds 3000ms budget`);
+      return false;
+    }
+    const events = readJsonl(runFile);
+    // 1 dispatch + 500 assistant_message + 1 complete
+    return events.length === 502 && events[events.length - 1].event === 'complete';
+  }
+});
+
+testCases.push({
   name: 'settings/registers_all_six_events',
   check: () => {
     const settings = JSON.parse(

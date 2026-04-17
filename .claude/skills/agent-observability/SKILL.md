@@ -229,6 +229,8 @@ This is the source of truth for Task 9. Six registrations, all pointing at `obs.
 
 `subagent_stop` is **synchronous** (no `async: true`). The chronological rewrite must complete before the run file is considered final. All other hooks are async.
 
+**Note on the shipped `SubagentStop` array:** the actual `.claude/settings.json` also co-registers `check-memory-limit.js` and `check-definition-signals.js` alongside `obs.js subagent_stop`. Those are unrelated to observability (memory-usage guard + agent-definition signal checks) and were already present before this skill shipped. They are kept because they run at the same hook event and don't conflict with observability's use of the transcript.
+
 ## Debug Recipes
 
 ### Wrong output — cross-reference tool outputs with agent reasoning

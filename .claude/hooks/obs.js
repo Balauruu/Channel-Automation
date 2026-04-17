@@ -6,7 +6,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const BUILTIN_AGENT_TYPES = new Set(['Explore', 'Plan', 'general-purpose', 'Bash']);
+// Built-in agent types from Claude Code — skip logging for these.
+// Note: 'Bash' is a tool name, not an agent type, so it's not included.
+// The !data.agent_id guard in shouldSkip handles main-agent tool calls anyway.
+const BUILTIN_AGENT_TYPES = new Set(['Explore', 'Plan', 'general-purpose']);
 
 function isoStamp() {
   return new Date().toISOString().replace(/[:.]/g, '-');
@@ -140,7 +143,9 @@ function parseTranscriptAssistantTurns(transcriptPath) {
     const content = Array.isArray(msg.content) ? msg.content : [];
     for (const block of content) {
       if (block.type === 'text') text += block.text || '';
-      else if (block.type === 'thinking') thinking = block.thinking || '';
+      else if (block.type === 'thinking') {
+        thinking = (thinking ?? '') + (block.thinking || '');
+      }
     }
     turns.push({
       ts: (obj.timestamp || '').replace(/[:.]/g, '-'),
