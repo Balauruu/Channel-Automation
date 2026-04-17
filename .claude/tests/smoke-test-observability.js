@@ -150,6 +150,31 @@ testCases.push({
   }
 });
 
+testCases.push({
+  name: 'tool_post/appends_event_without_duration',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      agent_id: 'a1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    runHook('tool_pre', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't1', tool_input: { command: 'ls' }
+    }, tmp);
+    runHook('tool_post', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't1',
+      tool_response: { stdout: 'ok', exit_code: 0 }
+    }, tmp);
+    const events = readJsonl(path.join(tmp, '.claude', 'logs', 'runs', listRunFiles(tmp)[0]));
+    const post = events.find(e => e.event === 'tool_post');
+    // duration_ms is computed at rewrite time, not here — expect it absent/null
+    return post && post.tool_use_id === 't1' && post.output.stdout === 'ok'
+      && (post.duration_ms === undefined || post.duration_ms === null);
+  }
+});
+
 // Run
 let pass = 0, fail = 0;
 for (const tc of testCases) {

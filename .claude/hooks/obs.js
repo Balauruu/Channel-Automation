@@ -85,7 +85,19 @@ function handleToolPre(data) {
     input: data.tool_input || {}
   });
 }
-function handleToolPost(data) { /* Task 4 */ }
+function handleToolPost(data) {
+  const projectDir = resolveProjectDir(data);
+  const runFile = readPointer(projectDir, data.agent_id);
+  if (!runFile) return;
+  appendEvent(runFile, {
+    ts: isoStamp(),
+    event: 'tool_post',
+    tool: data.tool_name,
+    tool_use_id: data.tool_use_id,
+    duration_ms: null,  // populated by mergeAndFinalize in Task 7
+    output: data.tool_response || {}
+  });
+}
 function handleToolFail(data) { /* Task 5 */ }
 function handlePermissionDenied(data) { /* Task 6 */ }
 function handleSubagentStop(data) { /* Task 7 */ }
