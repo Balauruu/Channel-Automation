@@ -4,11 +4,13 @@ Subcommands:
     survey  — Pass 1: resolve output dir, fetch initial URLs, write src_*.json files.
     deepen  — Pass 2: fetch targeted primary sources from evaluated manifest.
     write   — Pass 3: aggregate sources into synthesis_input.md.
+    status  — Show current iteration state and convergence metrics.
 
 Usage:
-    PYTHONPATH=.pi/multi-team/scripts/editorial python -m researcher survey "Jonestown Massacre"
-    PYTHONPATH=.pi/multi-team/scripts/editorial python -m researcher deepen "Jonestown Massacre"
-    PYTHONPATH=.pi/multi-team/scripts/editorial python -m researcher write "Jonestown Massacre"
+    PYTHONPATH=.claude/scripts/editorial python -m researcher survey "Jonestown Massacre"
+    PYTHONPATH=.claude/scripts/editorial python -m researcher deepen "Jonestown Massacre"
+    PYTHONPATH=.claude/scripts/editorial python -m researcher write "Jonestown Massacre"
+    PYTHONPATH=.claude/scripts/editorial python -m researcher status "Jonestown Massacre"
 """
 import argparse
 import asyncio
@@ -299,6 +301,17 @@ def cmd_survey(topic: str) -> None:
     manifest = {
         "topic": topic,
         "run_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "iteration": 1,
+        "iteration_budget": None,
+        "topic_complexity": None,
+        "convergence": {
+            "source_saturated": False,
+            "claims_classified": False,
+            "entities_resolved": False,
+            "timeline_consistent": False,
+        },
+        "quality_gates": [],
+        "gap_register": [],
         "sources": sources,
     }
     manifest_path.write_text(
@@ -388,8 +401,9 @@ def cmd_deepen(topic: str) -> None:
 
     _print_summary_table(pass2_sources)
 
-    # Update manifest with pass2_sources
+    # Update manifest with pass2_sources and increment iteration
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["iteration"] = manifest.get("iteration", 1) + 1
     manifest["pass2_sources"] = pass2_sources
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2),
@@ -413,16 +427,59 @@ def cmd_write(topic: str) -> None:
     content = build_synthesis_input(topic, pass1, pass2, output_dir)
     synthesis_path = write_synthesis_input(output_dir, content)
 
-    prompt_path = root / ".pi" / "multi-team" / "prompts" / "researcher" / "synthesis.md"
-
     print(f"Synthesis input ready: {synthesis_path}")
     print(f"Pass 1 sources: {len(pass1)}  |  Pass 2 sources: {len(pass2)}")
-    print(f"Synthesis prompt: {prompt_path}")
     print()
     print(
-        "Aggregation complete. Read synthesis_input.md and the synthesis prompt, "
+        "Aggregation complete. Read synthesis_input.md, "
         "then produce Research.md and entity_index.json in the research/ directory."
     )
+
+
+def cmd_status(topic: str) -> None:
+    """Print current research state from the manifest."""
+    root = _get_project_root()
+    output_dir = resolve_output_dir(root, topic)
+    manifest_path = output_dir / "source_manifest.json"
+
+    if not manifest_path.exists():
+        print("No manifest found. Run survey first.")
+        return
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    print(f"Topic: {manifest.get('topic', '?')}")
+    print(f"Iteration: {manifest.get('iteration', '?')}")
+    print(f"Budget: {manifest.get('iteration_budget', 'not set')}")
+    print(f"Complexity: {manifest.get('topic_complexity', 'not classified')}")
+
+    # Source counts
+    sources = manifest.get("sources", [])
+    pass2 = manifest.get("pass2_sources", [])
+    ok = sum(1 for s in sources + pass2 if s.get("fetch_status") == "ok")
+    print(f"Sources: {len(sources)} pass1, {len(pass2)} pass2, {ok} succeeded")
+
+    # Convergence
+    conv = manifest.get("convergence", {})
+    if conv:
+        print("Convergence:")
+        for k, v in conv.items():
+            print(f"  {k}: {'Yes' if v else 'No'}")
+
+    # Quality gates
+    gates = manifest.get("quality_gates", [])
+    if gates:
+        print(f"Quality gates: {len(gates)} recorded")
+        for g in gates[-3:]:
+            print(f"  [{g.get('iteration', '?')}] {g.get('gate', '?')}: {g.get('result', '?')}")
+
+    # Gaps
+    gaps = manifest.get("gap_register", [])
+    open_gaps = [g for g in gaps if g.get("status") != "resolved"]
+    if gaps:
+        print(f"Gaps: {len(gaps)} total, {len(open_gaps)} open")
+        for g in open_gaps:
+            print(f"  - {g.get('gap', '?')} ({g.get('status', '?')})")
 
 
 def main() -> None:
@@ -442,6 +499,9 @@ def main() -> None:
     write_parser = subparsers.add_parser("write", help="Pass 3: aggregate sources into synthesis_input.md")
     write_parser.add_argument("topic", help="Topic string (same as used for survey/deepen)")
 
+    status_parser = subparsers.add_parser("status", help="Show current iteration state and convergence metrics")
+    status_parser.add_argument("topic", help="Topic string (same as used for survey/deepen)")
+
     args = parser.parse_args()
 
     try:
@@ -451,6 +511,8 @@ def main() -> None:
             cmd_deepen(args.topic)
         elif args.command == "write":
             cmd_write(args.topic)
+        elif args.command == "status":
+            cmd_status(args.topic)
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)

@@ -95,6 +95,29 @@ def build_synthesis_input(
     lines.append(f"**Pass 1 sources:** {len(pass1)}")
     lines.append(f"**Pass 2 sources:** {len(pass2)}")
     lines.append(f"**Output directory:** {output_dir}")
+
+    # Include iteration metadata if manifest exists
+    manifest_path = output_dir / "source_manifest.json"
+    if manifest_path.exists():
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            iteration = manifest.get("iteration", "?")
+            complexity = manifest.get("topic_complexity", "unclassified")
+            lines.append(f"**Iterations completed:** {iteration}")
+            lines.append(f"**Topic complexity:** {complexity}")
+
+            convergence = manifest.get("convergence", {})
+            if convergence:
+                conv_items = [f"{k}: {'Yes' if v else 'No'}" for k, v in convergence.items()]
+                lines.append(f"**Convergence:** {', '.join(conv_items)}")
+
+            gaps = manifest.get("gap_register", [])
+            open_gaps = [g for g in gaps if g.get("status") != "resolved"]
+            if open_gaps:
+                lines.append(f"**Open gaps:** {len(open_gaps)}")
+        except Exception:  # noqa: BLE001
+            pass
+
     lines.append("")
 
     # Skipped/failed section

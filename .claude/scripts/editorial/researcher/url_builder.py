@@ -19,7 +19,7 @@ def _get_project_root() -> Path:
     """
     current = Path(__file__).resolve()
     for parent in current.parents:
-        if (parent / "AGENTS.md").exists():
+        if (parent / "CLAUDE.md").exists():
             return parent
     return Path.cwd()
 
@@ -76,7 +76,7 @@ def resolve_output_dir(root: Path, topic: str) -> Path:
     if project_dir is not None:
         output_dir = project_dir / "research"
     else:
-        output_dir = root / ".pi" / "multi-team" / "scratch" / "researcher"
+        output_dir = root / ".claude" / "scratch" / "researcher"
 
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
