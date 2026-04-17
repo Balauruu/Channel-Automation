@@ -108,7 +108,7 @@ function handleToolFail(data) {
     tool: data.tool_name,
     tool_use_id: data.tool_use_id,
     duration_ms: null,
-    error: data.error || '',
+    error: data.error || data.tool_response?.error || '',
     interrupted: data.interrupted === true
   });
 }
@@ -258,24 +258,29 @@ function mergeAndFinalize({ runFile, transcriptPath, stopHookInput }) {
 }
 
 // §6.8: sweeps orphan .tmp files left by crashed previous runs.
-// Excludes the current agent's own .tmp so a parallel in-flight rewrite
-// is never clobbered. Spec §6.6 allows parallel subagent dispatch; per-agent
-// run files are unique but the sweep needs the exclude to avoid racing.
-function sweepOrphanTmpFiles(projectDir, currentRunFile) {
+// Uses a time-based filter: anything with mtime older than ORPHAN_STALE_MS is
+// definitely orphaned (a live rewrite completes in milliseconds). This is
+// race-safe under §6.6 parallel dispatch — a parallel agent's in-flight .tmp
+// is always very recent and is never swept.
+const ORPHAN_STALE_MS = 60_000;
+function sweepOrphanTmpFiles(projectDir) {
   const d = runsDir(projectDir);
-  const currentTmp = currentRunFile ? path.basename(currentRunFile) + '.tmp' : null;
+  const now = Date.now();
   for (const f of fs.readdirSync(d)) {
     if (!f.endsWith('.jsonl.tmp')) continue;
-    if (currentTmp && f === currentTmp) continue;
-    try { fs.unlinkSync(path.join(d, f)); } catch {}
+    const full = path.join(d, f);
+    try {
+      const stat = fs.statSync(full);
+      if (now - stat.mtimeMs > ORPHAN_STALE_MS) fs.unlinkSync(full);
+    } catch {}
   }
 }
 
 function handleSubagentStop(data) {
   const projectDir = resolveProjectDir(data);
   const runFile = readPointer(projectDir, data.agent_id);
-  sweepOrphanTmpFiles(projectDir, runFile);  // §6.8 orphan sweep, exclude own tmp
   if (!runFile || !fs.existsSync(runFile)) return;
+  sweepOrphanTmpFiles(projectDir);
   mergeAndFinalize({
     runFile,
     transcriptPath: data.agent_transcript_path || '',

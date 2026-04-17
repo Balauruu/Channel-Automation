@@ -362,9 +362,14 @@ testCases.push({
       agent_id: 'a1', cwd: tmp,
       tool_name: 'Bash', tool_use_id: 't1', tool_response: { stdout: 'ok' }
     }, tmp);
-    // Plant an orphan .tmp to confirm sweep
+    // Plant a STALE orphan .tmp (backdate mtime > 60s) to confirm sweep.
+    // The sweep is time-based: only mtime older than ORPHAN_STALE_MS gets deleted,
+    // so live parallel-agent tmps (always recent) are never clobbered.
     const runsD = path.join(tmp, '.claude', 'logs', 'runs');
-    fs.writeFileSync(path.join(runsD, 'stale.jsonl.tmp'), 'junk');
+    const stale = path.join(runsD, 'stale.jsonl.tmp');
+    fs.writeFileSync(stale, 'junk');
+    const oldTime = new Date(Date.now() - 120_000); // 2 minutes ago
+    fs.utimesSync(stale, oldTime, oldTime);
     // Stop
     const transcript = path.join(fixtures, 'transcript.jsonl');
     runHook('subagent_stop', {
@@ -379,6 +384,40 @@ testCases.push({
     const runFile = path.join(runsD, listRunFiles(tmp)[0]);
     const last = readJsonl(runFile).slice(-1)[0];
     return last.event === 'complete';
+  }
+});
+
+testCases.push({
+  name: 'subagent_stop/sweep_preserves_parallel_agent_tmp',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      agent_id: 'a1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    runHook('tool_pre', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't1', tool_input: { command: 'ls' }
+    }, tmp);
+    runHook('tool_post', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't1', tool_response: { stdout: 'ok' }
+    }, tmp);
+    const runsD = path.join(tmp, '.claude', 'logs', 'runs');
+    // Plant a parallel agent's in-flight .tmp — real filename format, not 'stale'.
+    // Sweep must preserve it because it belongs to a different agent_id mid-rewrite.
+    const parallelTmp = path.join(runsD, '2026-04-17T10-00-00-000Z__writer__a2.jsonl.tmp');
+    fs.writeFileSync(parallelTmp, 'in flight');
+    runHook('subagent_stop', {
+      agent_id: 'a1', cwd: tmp,
+      agent_type: 'researcher',
+      agent_transcript_path: path.join(fixtures, 'transcript.jsonl'),
+      stop_hook_active: false
+    }, tmp);
+    if (!fs.existsSync(parallelTmp)) return false;
+    // Also confirm a1's own tmp is gone (rewrite completed, renameSync removed it)
+    if (fs.readdirSync(runsD).some(f => f.endsWith('.jsonl.tmp') && f.includes('__a1'))) return false;
+    return true;
   }
 });
 
