@@ -382,6 +382,32 @@ testCases.push({
   }
 });
 
+testCases.push({
+  name: 'settings/registers_all_six_events',
+  check: () => {
+    const settings = JSON.parse(
+      fs.readFileSync(path.join(projectRoot, '.claude', 'settings.json'), 'utf8')
+    );
+    const expected = [
+      ['PreToolUse', 'Agent', 'obs.js dispatch'],
+      ['PreToolUse', '*', 'obs.js tool_pre'],
+      ['PostToolUse', '*', 'obs.js tool_post'],
+      ['PostToolUseFailure', '*', 'obs.js tool_fail'],
+      ['PermissionDenied', '*', 'obs.js permission_denied'],
+      ['SubagentStop', null, 'obs.js subagent_stop']
+    ];
+    for (const [event, matcher, cmdFragment] of expected) {
+      const groups = settings.hooks?.[event] || [];
+      const hit = groups.some(g =>
+        (matcher === null || g.matcher === matcher) &&
+        (g.hooks || []).some(h => h.command && h.command.includes(cmdFragment))
+      );
+      if (!hit) return false;
+    }
+    return true;
+  }
+});
+
 // Run
 let pass = 0, fail = 0;
 for (const tc of testCases) {
