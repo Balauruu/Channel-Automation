@@ -39,6 +39,80 @@ testCases.push({
   }
 });
 
+// --- Helpers for hook-subprocess tests ---
+
+function makeTmpProject() {
+  const tmp = fs.mkdtempSync(path.join(require('os').tmpdir(), 'obs-test-'));
+  fs.mkdirSync(path.join(tmp, '.claude', 'logs', 'runs', '.active'), { recursive: true });
+  return tmp;
+}
+
+function runHook(event, stdinJson, projectDir) {
+  execFileSync('node', [obsScript, event], {
+    input: JSON.stringify(stdinJson),
+    env: { ...process.env, CLAUDE_PROJECT_DIR: projectDir },
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
+}
+
+function listRunFiles(projectDir) {
+  const d = path.join(projectDir, '.claude', 'logs', 'runs');
+  return fs.readdirSync(d).filter(f => f.endsWith('.jsonl'));
+}
+
+function readJsonl(filePath) {
+  return fs.readFileSync(filePath, 'utf8')
+    .trim().split('\n').filter(Boolean)
+    .map(l => JSON.parse(l));
+}
+
+// --- Dispatch tests ---
+
+testCases.push({
+  name: 'dispatch/creates_run_file_and_pointer',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      session_id: 'sess-1',
+      agent_id: 'a1',
+      cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'hello' }
+    }, tmp);
+    const files = listRunFiles(tmp);
+    if (files.length !== 1) return false;
+    if (!/__researcher__a1\.jsonl$/.test(files[0])) return false;
+    const events = readJsonl(path.join(tmp, '.claude', 'logs', 'runs', files[0]));
+    if (events.length !== 1 || events[0].event !== 'dispatch') return false;
+    if (events[0].agent_type !== 'researcher' || events[0].prompt !== 'hello') return false;
+    const ptr = path.join(tmp, '.claude', 'logs', 'runs', '.active', 'a1.ptr');
+    if (!fs.existsSync(ptr)) return false;
+    const ptrPath = fs.readFileSync(ptr, 'utf8').trim();
+    return ptrPath === path.join(tmp, '.claude', 'logs', 'runs', files[0]);
+  }
+});
+
+testCases.push({
+  name: 'dispatch/skips_when_no_agent_id',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', { session_id: 's', tool_input: { subagent_type: 'researcher' } }, tmp);
+    return listRunFiles(tmp).length === 0;
+  }
+});
+
+testCases.push({
+  name: 'dispatch/skips_builtin_agents',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      agent_id: 'a2',
+      cwd: tmp,
+      tool_input: { subagent_type: 'general-purpose', prompt: 'x' }
+    }, tmp);
+    return listRunFiles(tmp).length === 0;
+  }
+});
+
 // Run
 let pass = 0, fail = 0;
 for (const tc of testCases) {

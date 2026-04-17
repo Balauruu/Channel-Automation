@@ -47,7 +47,32 @@ function shouldSkip(data) {
 
 // --- Handlers (stubs — filled in subsequent tasks) ---
 
-function handleDispatch(data) { /* Task 2 */ }
+function handleDispatch(data) {
+  const projectDir = resolveProjectDir(data);
+  const agentType = data.tool_input?.subagent_type || 'unknown';
+  const agentId = data.agent_id;
+  const ts = isoStamp();
+  const runId = `${ts}__${agentType}__${agentId}`;
+  const runFile = path.join(runsDir(projectDir), `${runId}.jsonl`);
+
+  // Exclusive create — ms timestamp + agent_id makes collisions effectively impossible
+  const fd = fs.openSync(runFile, 'ax');
+  try {
+    fs.writeSync(fd, JSON.stringify({
+      ts,
+      event: 'dispatch',
+      session_id: data.session_id || null,
+      agent_type: agentType,
+      agent_id: agentId,
+      cwd: projectDir,
+      prompt: data.tool_input?.prompt || ''
+    }) + '\n');
+  } finally {
+    fs.closeSync(fd);
+  }
+
+  fs.writeFileSync(pointerPath(projectDir, agentId), runFile, 'utf8');
+}
 function handleToolPre(data) { /* Task 3 */ }
 function handleToolPost(data) { /* Task 4 */ }
 function handleToolFail(data) { /* Task 5 */ }
