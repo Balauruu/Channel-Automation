@@ -113,6 +113,43 @@ testCases.push({
   }
 });
 
+testCases.push({
+  name: 'tool_pre/appends_event_via_pointer',
+  check: () => {
+    const tmp = makeTmpProject();
+    runHook('dispatch', {
+      agent_id: 'a1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'x' }
+    }, tmp);
+    runHook('tool_pre', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash',
+      tool_use_id: 'toolu_01',
+      tool_input: { command: 'ls' }
+    }, tmp);
+    const file = path.join(tmp, '.claude', 'logs', 'runs', listRunFiles(tmp)[0]);
+    const events = readJsonl(file);
+    if (events.length !== 2) return false;
+    const e = events[1];
+    return e.event === 'tool_pre' && e.tool === 'Bash'
+      && e.tool_use_id === 'toolu_01'
+      && e.input.command === 'ls';
+  }
+});
+
+testCases.push({
+  name: 'tool_pre/silent_exit_when_no_pointer',
+  check: () => {
+    const tmp = makeTmpProject();
+    // No dispatch — pointer does not exist
+    runHook('tool_pre', {
+      agent_id: 'a1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't', tool_input: {}
+    }, tmp);
+    return listRunFiles(tmp).length === 0;
+  }
+});
+
 // Run
 let pass = 0, fail = 0;
 for (const tc of testCases) {

@@ -73,7 +73,18 @@ function handleDispatch(data) {
 
   fs.writeFileSync(pointerPath(projectDir, agentId), runFile, 'utf8');
 }
-function handleToolPre(data) { /* Task 3 */ }
+function handleToolPre(data) {
+  const projectDir = resolveProjectDir(data);
+  const runFile = readPointer(projectDir, data.agent_id);
+  if (!runFile) return;  // silent per §6.2
+  appendEvent(runFile, {
+    ts: isoStamp(),
+    event: 'tool_pre',
+    tool: data.tool_name,
+    tool_use_id: data.tool_use_id,
+    input: data.tool_input || {}
+  });
+}
 function handleToolPost(data) { /* Task 4 */ }
 function handleToolFail(data) { /* Task 5 */ }
 function handlePermissionDenied(data) { /* Task 6 */ }
