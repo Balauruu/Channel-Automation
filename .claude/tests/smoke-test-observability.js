@@ -408,6 +408,25 @@ testCases.push({
   }
 });
 
+if (process.env.OBS_TEST_INTEGRATION === '1') {
+  testCases.push({
+    name: 'integration/live_dispatch_produces_run_file',
+    check: () => {
+      const runsD = path.join(projectRoot, '.claude', 'logs', 'runs');
+      const before = new Set(fs.existsSync(runsD) ? fs.readdirSync(runsD) : []);
+      console.log('  [integration] Dispatch a trivial subagent in Claude Code, then press ENTER here.');
+      require('child_process').execSync('node -e "process.stdin.once(\'data\', () => process.exit(0))"', { stdio: 'inherit' });
+      const after = fs.readdirSync(runsD).filter(f => f.endsWith('.jsonl') && !before.has(f));
+      if (after.length === 0) return false;
+      const events = readJsonl(path.join(runsD, after[0]));
+      const hasDispatch = events.some(e => e.event === 'dispatch');
+      const hasComplete = events.some(e => e.event === 'complete');
+      fs.unlinkSync(path.join(runsD, after[0]));
+      return hasDispatch && hasComplete;
+    }
+  });
+}
+
 // Run
 let pass = 0, fail = 0;
 for (const tc of testCases) {
