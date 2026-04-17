@@ -231,6 +231,25 @@ This is the source of truth for Task 9. Six registrations, all pointing at `obs.
 
 **Note on the shipped `SubagentStop` array:** the actual `.claude/settings.json` also co-registers `check-memory-limit.js` and `check-definition-signals.js` alongside `obs.js subagent_stop`. Those are unrelated to observability (memory-usage guard + agent-definition signal checks) and were already present before this skill shipped. They are kept because they run at the same hook event and don't conflict with observability's use of the transcript.
 
+## Compressed Summaries (Recommended First Step)
+
+Raw run JSONLs can be hundreds of KB. For most debug questions, start with the summarizer — it emits a ~2-5KB markdown digest (top-5 slowest tools, all failures, all permission denials, one-line reasoning timeline, extended thinking excerpts, capped/errored warnings).
+
+```bash
+node .claude/scripts/obs-summarize.js                    # most recent run
+node .claude/scripts/obs-summarize.js <agent-id>         # prefix match
+node .claude/scripts/obs-summarize.js path/to/run.jsonl  # explicit path
+```
+
+Fall back to the raw JSONL recipes below when the summary doesn't show enough detail.
+
+## Tunables (Env Vars)
+
+- `OBS_TRUNCATE_KB=N` — when set, truncate any string field in input/output larger than N*1024 chars to `head[:200] + marker + tail[-50:]`. Default: `0` (no truncation; full fidelity preserved).
+- `OBS_MAX_RUN_MB=N` — per-run size cap in MB. Default: `100`. On overflow, a single `log_capped` event is appended and further appends are dropped. Protects against runaway edge cases.
+
+All string fields larger than 10KB always get a sibling `<key>_len` hint field carrying the byte length, even when truncation is off — useful for spotting bloated outputs at a glance.
+
 ## Debug Recipes
 
 ### Wrong output — cross-reference tool outputs with agent reasoning

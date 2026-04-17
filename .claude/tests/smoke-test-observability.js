@@ -607,6 +607,79 @@ testCases.push({
 });
 
 testCases.push({
+  name: 'summarize/produces_compressed_markdown',
+  check: () => {
+    const tmp = makeTmpProject();
+    // Build a realistic run via full hook flow
+    runHook('dispatch', {
+      agent_id: 'sum1', cwd: tmp,
+      tool_input: { subagent_type: 'researcher', prompt: 'find X in codebase' }
+    }, tmp);
+    runHook('tool_pre', {
+      agent_id: 'sum1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't1', tool_input: { command: 'ls -la' }
+    }, tmp);
+    runHook('tool_post', {
+      agent_id: 'sum1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't1',
+      tool_response: { stdout: 'output data', exit_code: 0 }
+    }, tmp);
+    runHook('tool_pre', {
+      agent_id: 'sum1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't2', tool_input: { command: 'false' }
+    }, tmp);
+    runHook('tool_fail', {
+      agent_id: 'sum1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't2',
+      error: 'exit 1', interrupted: false
+    }, tmp);
+    runHook('permission_denied', {
+      agent_id: 'sum1', cwd: tmp,
+      tool_name: 'Bash', tool_use_id: 't3',
+      tool_input: { command: 'rm -rf /' }, reason: 'destructive'
+    }, tmp);
+    runHook('subagent_stop', {
+      agent_id: 'sum1', cwd: tmp,
+      agent_type: 'researcher',
+      agent_transcript_path: path.join(fixtures, 'transcript.jsonl'),
+      stop_hook_active: false
+    }, tmp);
+    const runFile = path.join(tmp, '.claude', 'logs', 'runs', listRunFiles(tmp)[0]);
+    const summarizerPath = path.join(projectRoot, '.claude', 'scripts', 'obs-summarize.js');
+    const md = execFileSync('node', [summarizerPath, runFile], { encoding: 'utf8' });
+    // Required sections
+    if (!md.includes('# Run summary')) return false;
+    if (!md.includes('Agent:')) return false;
+    if (!md.includes('Outcome:')) return false;
+    if (!md.includes('Slowest tool calls')) return false;
+    if (!md.includes('Failures (1)')) return false;
+    if (!md.includes('Permission denials (1)')) return false;
+    if (!md.includes('Reasoning timeline')) return false;
+    // Size budget: <5KB for this small run
+    if (md.length > 5000) return false;
+    return true;
+  }
+});
+
+testCases.push({
+  name: 'summarize/flags_errored_and_capped',
+  check: () => {
+    const tmp = makeTmpProject();
+    const runFile = path.join(tmp, '.claude', 'logs', 'runs', 'errored.jsonl');
+    fs.mkdirSync(path.dirname(runFile), { recursive: true });
+    const lines = [
+      { ver: 1, ts: '2026-04-17T10-00-00-000Z', event: 'dispatch', session_id: 's', agent_type: 'r', agent_id: 'x', cwd: '/tmp', prompt: 'p' },
+      { ts: '2026-04-17T10-00-05-000Z', event: 'log_capped', size_bytes: 999999 },
+      { ts: '2026-04-17T10-00-10-000Z', event: 'complete', duration_ms: 10000, tool_calls: 0, tool_fails: 0, permission_denials: 0, last_turn_input_tokens: null, last_turn_output_tokens: null, total_output_tokens: 0, log_capped: true, outcome: 'errored' }
+    ];
+    fs.writeFileSync(runFile, lines.map(l => JSON.stringify(l)).join('\n') + '\n');
+    const summarizerPath = path.join(projectRoot, '.claude', 'scripts', 'obs-summarize.js');
+    const md = execFileSync('node', [summarizerPath, runFile], { encoding: 'utf8' });
+    return md.includes('ERRORED') && md.includes('log was capped');
+  }
+});
+
+testCases.push({
   name: 'settings/registers_all_six_events',
   check: () => {
     const settings = JSON.parse(
