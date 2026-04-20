@@ -22,6 +22,12 @@ const MAX_SIZE = 10 * 1024 * 1024; // 10MB rotation threshold
 const PURGE_DAYS = 30;
 const PURGE_MS = PURGE_DAYS * 24 * 60 * 60 * 1000;
 
+// ── SubagentStop caps per D-09, D-10 ────────────────────────────────────────
+
+const THINKING_CAP = 10240; // 10KB per turn for thinking blocks (D-10)
+const TEXT_CAP = 10240;     // 10KB per turn for assistant text
+const PROMPT_CAP = 2048;    // 2KB for dispatch prompt (D-09 Agent input cap)
+
 // ── Truncation caps per D-09 ─────────────────────────────────────────────────
 
 const TRUNCATION_CAPS = {
@@ -75,7 +81,7 @@ function main(data) {
       handleToolEvent(data, obsFile);
       break;
     case 'subagent_stop':
-      // SubagentStop handler added in Plan 02
+      handleSubagentStop(data, obsFile, project);
       break;
     default:
       // Unknown event -- no-op, never block
@@ -216,6 +222,168 @@ function handleToolEvent(data, obsFile) {
   }
 
   appendEvent(obsFile, event);
+}
+
+// ── SubagentStop handler (CAPT-03) ──────────────────────────────────────────
+
+function handleSubagentStop(data, obsFile, project) {
+  const agentId = data.agent_id || '';
+  const agentType = data.agent_type || '';
+  const sessionId = data.session_id || '';
+  const tpath = data.agent_transcript_path || '';
+  const now = Date.now();
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
+
+  // --- Parse transcript ---
+  let firstUserPrompt = '';
+  const assistantTurns = [];
+
+  if (tpath && fs.existsSync(tpath)) {
+    try {
+      const lines = fs.readFileSync(tpath, 'utf8').split('\n');
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        let obj;
+        try { obj = JSON.parse(line); } catch (e) { continue; }
+        const msg = obj.message || {};
+        const role = msg.role;
+
+        if (role === 'user' && !firstUserPrompt) {
+          const content = msg.content;
+          if (typeof content === 'string') {
+            firstUserPrompt = content;
+          } else if (Array.isArray(content)) {
+            firstUserPrompt = content
+              .filter(b => b && b.type === 'text')
+              .map(b => b.text || '')
+              .join('');
+          }
+        } else if (role === 'assistant') {
+          let text = '';
+          let thinking = '';
+          for (const block of (msg.content || [])) {
+            if (!block || typeof block !== 'object') continue;
+            if (block.type === 'text') text += (block.text || '');
+            else if (block.type === 'thinking') thinking += (block.thinking || '');
+          }
+          assistantTurns.push({
+            text: truncate(text, TEXT_CAP),
+            thinking: truncate(thinking, THINKING_CAP),
+            inputTokens: obj.inputTokens || 0,
+            outputTokens: obj.outputTokens || 0,
+            stopReason: obj.stopReason || '',
+          });
+        }
+      }
+    } catch (err) {
+      process.stderr.write('[pipeline-observe] transcript read error: ' + err.message + '\n');
+    }
+  }
+
+  // --- Compute durations (CAPT-05) ---
+  const durations = computeDurations(obsFile, agentId);
+
+  // --- Scan obs.jsonl for agent's prior events (aggregates) ---
+  let toolCalls = 0;
+  let toolFails = 0;
+  let permDenials = 0;
+  let totalOutputTokens = 0;
+  try {
+    if (fs.existsSync(obsFile)) {
+      const existingLines = fs.readFileSync(obsFile, 'utf8').split('\n');
+      for (const l of existingLines) {
+        if (!l.trim()) continue;
+        try {
+          const ev = JSON.parse(l);
+          if (ev.agent_id !== agentId) continue;
+          if (ev.event === 'tool_post' || ev.event === 'tool_fail') toolCalls++;
+          if (ev.event === 'tool_fail') toolFails++;
+          if (ev.event === 'permission_denied') permDenials++;
+        } catch (e) { /* skip invalid lines */ }
+      }
+    }
+  } catch (err) {
+    process.stderr.write('[pipeline-observe] aggregate scan error: ' + err.message + '\n');
+  }
+
+  // --- Synthesize dispatch event ---
+  const dispatchEvent = {
+    ts: ts,
+    epoch_ms: now,
+    event: 'dispatch',
+    session_id: sessionId,
+    agent_id: agentId,
+    agent_type: agentType,
+    project: project,
+    prompt: truncate(firstUserPrompt, PROMPT_CAP),
+    cwd: data.cwd || '',
+  };
+  appendEvent(obsFile, dispatchEvent);
+
+  // --- Synthesize assistant_message events ---
+  for (const turn of assistantTurns) {
+    const amEvent = {
+      ts: ts,
+      epoch_ms: now,
+      event: 'assistant_message',
+      session_id: sessionId,
+      agent_id: agentId,
+      project: project,
+      text: turn.text,
+      thinking: turn.thinking,
+      input_tokens: turn.inputTokens,
+      output_tokens: turn.outputTokens,
+      stop_reason: turn.stopReason,
+    };
+    appendEvent(obsFile, amEvent);
+    totalOutputTokens += turn.outputTokens;
+  }
+
+  // --- Synthesize complete event ---
+  const completeEvent = {
+    ts: ts,
+    epoch_ms: now,
+    event: 'complete',
+    session_id: sessionId,
+    agent_id: agentId,
+    agent_type: agentType,
+    project: project,
+    outcome: data.outcome || 'completed',
+    tool_calls: toolCalls,
+    tool_fails: toolFails,
+    permission_denials: permDenials,
+    total_output_tokens: totalOutputTokens || (data.total_output_tokens || 0),
+    durations: durations,
+  };
+  appendEvent(obsFile, completeEvent);
+}
+
+// ── Per-tool duration computation (CAPT-05) ─────────────────────────────────
+
+function computeDurations(obsFile, agentId) {
+  const durations = {};
+  try {
+    if (!fs.existsSync(obsFile)) return durations;
+    const lines = fs.readFileSync(obsFile, 'utf8').split('\n');
+    const preEvents = {}; // tool_use_id -> epoch_ms
+
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        const ev = JSON.parse(line);
+        if (ev.agent_id !== agentId) continue;
+        if (ev.event === 'tool_pre') {
+          preEvents[ev.tool_use_id] = ev.epoch_ms;
+        } else if (ev.event === 'tool_post' && preEvents[ev.tool_use_id]) {
+          durations[ev.tool_use_id] = ev.epoch_ms - preEvents[ev.tool_use_id];
+          delete preEvents[ev.tool_use_id];
+        }
+      } catch (e) { /* skip invalid lines */ }
+    }
+  } catch (err) {
+    process.stderr.write('[pipeline-observe] duration compute error: ' + err.message + '\n');
+  }
+  return durations;
 }
 
 // ── Truncation utility ───────────────────────────────────────────────────────
