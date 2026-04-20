@@ -44,3 +44,6 @@
 
 - [2026-04-16] Install crawl4ai in the editorial conda env — all researcher scripts fail without it; urllib.request is the fallback but loses DDG search capability
 
+## Pending Review
+
+
