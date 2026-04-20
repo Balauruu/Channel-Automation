@@ -38,3 +38,6 @@
 ## Open Questions
 - [2026-04-10] Are embed.py, search.py, download.py fully functional in V0.6? Verify during first production run
 - [2026-04-10] Pool index file locking (issue #2 from known-issues) not yet fixed -- monitor for corruption in concurrent scenarios
+
+## Pending Review
+

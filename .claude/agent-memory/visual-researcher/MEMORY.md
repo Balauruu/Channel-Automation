@@ -27,3 +27,6 @@
 
 ## Open Questions
 - [2026-04-10] Are crawl_images.py and wiki_screenshots.py fully functional in V0.6? Verify during first production run
+
+## Pending Review
+
