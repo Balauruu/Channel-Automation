@@ -46,7 +46,11 @@ Plans:
   3. The observer does not produce entries for its own runs (no self-loop)
   4. Duplicate learnings already present in target memory files are not re-proposed
   5. On second invocation, the observer processes only new events (cursor-based incremental reads)
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 02-01-PLAN.md — Bootstrap write targets (PLAYBOOK.md, Pending Review sections, observer MEMORY.md)
+- [ ] 02-02-PLAN.md — Eval test scaffold and fixture data (format validation, self-loop, cursor, rejections)
+- [ ] 02-03-PLAN.md — Observer agent definition (system prompt, scope-test, few-shot examples, guardrails)
 
 ### Phase 3: Evolve Command
 **Goal**: User can run /evolve to trigger observation and then review, approve, edit, or revert pending memory entries with full control
@@ -86,7 +90,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Capture Hardening | 3/3 | Complete | 2026-04-20 |
-| 2. Observer Agent | 0/TBD | Not started | - |
+| 2. Observer Agent | 0/3 | Planned | - |
 | 3. Evolve Command | 0/TBD | Not started | - |
 | 4. Agent Consumption | 0/TBD | Not started | - |
 | 5. Memory Lifecycle | 0/TBD | Not started | - |
