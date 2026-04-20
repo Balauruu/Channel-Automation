@@ -36,6 +36,7 @@ feedback/
 # ── versioned suites (smoke-test-*) and structured subdirectories (fixtures/).
 .claude/tests/*.js
 !.claude/tests/smoke-test-observe.js
+!.claude/tests/eval-observer.js
 
 # ── Docs (specs, plans, roadmap — local working docs) ────────────────────────
 docs/
