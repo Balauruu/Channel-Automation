@@ -101,7 +101,7 @@ Build the @observer subagent that reads obs.jsonl, extracts reusable learnings f
 <deferred>
 ## Deferred Ideas
 
-None — discussion stayed within phase scope
+- Remove all files related to the old memory system (signals.yaml, project-memories/ references, old scratchpad paths, etc.) — future cleanup phase after new system is operational
 
 </deferred>
 
