@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-04-20T10:54:32Z"
-last_activity: 2026-04-20 -- Executed plan 01-02 (SubagentStop handler)
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-04-20T11:00:38Z"
+last_activity: 2026-04-20 -- Executed plan 01-03 (test suite + hook registration)
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -25,30 +25,30 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 
 ## Current Position
 
-Phase: 1 of 5 (Capture Hardening)
-Plan: 2 of 3 in current phase
-Status: Executing
-Last activity: 2026-04-20 -- Executed plan 01-02 (SubagentStop handler)
+Phase: 1 of 5 (Capture Hardening) -- COMPLETE
+Plan: 3 of 3 in current phase
+Status: Phase 1 complete
+Last activity: 2026-04-20 -- Executed plan 01-03 (test suite + hook registration)
 
-Progress: [######....] 67%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 2
-- Average duration: 2min
-- Total execution time: 0.07 hours
+- Total plans completed: 3
+- Average duration: 3min
+- Total execution time: 0.13 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-capture-hardening | 2/3 | 4min | 2min |
+| 01-capture-hardening | 3/3 | 8min | 3min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-01 (2min), 01-02 (2min)
+- Last 5 plans: 01-01 (2min), 01-02 (2min), 01-03 (4min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -70,6 +70,8 @@ Recent decisions affecting current work:
 - [01-02]: Three cap constants (THINKING_CAP=10KB, TEXT_CAP=10KB, PROMPT_CAP=2KB) for SubagentStop truncation
 - [01-02]: computeDurations matches tool_pre/tool_post by tool_use_id from obs.jsonl
 - [01-02]: Aggregate stats from obs.jsonl scan (not transcript) since tool events already captured by Plan 01
+- [01-03]: Updated .gitignore to allow smoke-test-observe.js (was blocked by .claude/tests/*.js pattern)
+- [01-03]: Staged deprecated test file deletions alongside settings.json update for clean D-06 closure
 
 ### Pending Todos
 
@@ -91,8 +93,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-04-20T10:54:32Z
-Stopped at: Completed 01-02-PLAN.md
-Resume file: .planning/phases/01-capture-hardening/01-03-PLAN.md
+Last session: 2026-04-20T11:00:38Z
+Stopped at: Completed 01-03-PLAN.md (Phase 1 complete)
+Resume file: None -- phase 1 complete, ready for phase transition
 
 **Planned Phase:** 1 (Capture Hardening) — 3 plans — 2026-04-20T10:44:34.694Z

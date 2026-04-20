@@ -11,9 +11,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **CAPT-01**: Single pipeline-observe.sh hook captures both main conversation and subagent events to obs.jsonl
 - [x] **CAPT-02**: Main conversation events (PreToolUse/PostToolUse without agent_id) are recorded with tool name, input/output, timestamp
-- [ ] **CAPT-03**: Subagent events include full detail: dispatch prompt, tool calls, thinking blocks, completions with outcome classification
+- [x] **CAPT-03**: Subagent events include full detail: dispatch prompt, tool calls, thinking blocks, completions with outcome classification
 - [x] **CAPT-04**: All writes are atomic (single os.write() call, <4KB per line) to prevent JSONL corruption under concurrent async hooks
-- [ ] **CAPT-05**: Per-tool duration computed at SubagentStop by matching tool_pre→tool_post pairs on tool_use_id
+- [x] **CAPT-05**: Per-tool duration computed at SubagentStop by matching tool_pre→tool_post pairs on tool_use_id
 - [x] **CAPT-06**: File rotation at 10MB with timestamped archive; 30-day auto-purge of archive files
 - [x] **CAPT-07**: Windows path safety — handle spaces in project path, avoid MSYS2 path mangling when passing to Python
 
@@ -75,9 +75,9 @@ Deferred to future release. Tracked but not in current roadmap.
 |-------------|-------|--------|
 | CAPT-01 | Phase 1 | Complete (01-01) |
 | CAPT-02 | Phase 1 | Complete (01-01) |
-| CAPT-03 | Phase 1 | Pending |
+| CAPT-03 | Phase 1 | Complete (01-02, verified 01-03) |
 | CAPT-04 | Phase 1 | Complete (01-01) |
-| CAPT-05 | Phase 1 | Pending |
+| CAPT-05 | Phase 1 | Complete (01-02, verified 01-03) |
 | CAPT-06 | Phase 1 | Complete (01-01) |
 | CAPT-07 | Phase 1 | Complete (01-01) |
 | OBSV-01 | Phase 2 | Pending |

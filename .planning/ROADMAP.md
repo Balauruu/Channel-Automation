@@ -12,7 +12,7 @@ Transform the broken memory implementation into a functioning learn-from-runs pi
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Capture Hardening** - Battle-harden pipeline-observe.sh to produce reliably valid JSONL from both main conversations and subagent events
+- [x] **Phase 1: Capture Hardening** - Battle-harden pipeline-observe.sh to produce reliably valid JSONL from both main conversations and subagent events
 - [ ] **Phase 2: Observer Agent** - Build @observer subagent that reads obs.jsonl, classifies learnings via scope-tests, and writes to memory with confidence tags
 - [ ] **Phase 3: Evolve Command** - Create /evolve human review gate that dispatches observer and presents pending entries for approve/edit/revert
 - [ ] **Phase 4: Agent Consumption** - Rewrite agent-protocols and skills so pipeline agents read PLAYBOOK.md and use updated memory paths
@@ -32,9 +32,9 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. The hook works correctly when the project path contains spaces (Windows path safety verified)
 **Plans:** 3 plans
 Plans:
-- [ ] 01-01-PLAN.md — Core hook implementation (tool event capture, rotation, purge)
-- [ ] 01-02-PLAN.md — SubagentStop handler (transcript parsing, duration computation)
-- [ ] 01-03-PLAN.md — Smoke tests, settings.json wiring, old hook removal
+- [x] 01-01-PLAN.md — Core hook implementation (tool event capture, rotation, purge)
+- [x] 01-02-PLAN.md — SubagentStop handler (transcript parsing, duration computation)
+- [x] 01-03-PLAN.md — Smoke tests, settings.json wiring, old hook removal
 
 ### Phase 2: Observer Agent
 **Goal**: @observer subagent reads captured events, extracts reusable learnings, classifies them to the correct memory tier via scope-test questions, and writes tagged entries to Pending Review sections
@@ -85,7 +85,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Capture Hardening | 1/3 | Executing | - |
+| 1. Capture Hardening | 3/3 | Complete | 2026-04-20 |
 | 2. Observer Agent | 0/TBD | Not started | - |
 | 3. Evolve Command | 0/TBD | Not started | - |
 | 4. Agent Consumption | 0/TBD | Not started | - |
