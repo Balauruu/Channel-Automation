@@ -30,7 +30,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Every line in obs.jsonl is valid JSON parseable by `python -c "import json; json.loads(line)"` even after concurrent async hook writes
   4. obs.jsonl rotates cleanly at 10MB with timestamped archive; archive files older than 30 days are purged
   5. The hook works correctly when the project path contains spaces (Windows path safety verified)
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — Core hook implementation (tool event capture, rotation, purge)
+- [ ] 01-02-PLAN.md — SubagentStop handler (transcript parsing, duration computation)
+- [ ] 01-03-PLAN.md — Smoke tests, settings.json wiring, old hook removal
 
 ### Phase 2: Observer Agent
 **Goal**: @observer subagent reads captured events, extracts reusable learnings, classifies them to the correct memory tier via scope-test questions, and writes tagged entries to Pending Review sections
@@ -81,7 +85,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Capture Hardening | 0/TBD | Not started | - |
+| 1. Capture Hardening | 0/3 | Planned | - |
 | 2. Observer Agent | 0/TBD | Not started | - |
 | 3. Evolve Command | 0/TBD | Not started | - |
 | 4. Agent Consumption | 0/TBD | Not started | - |
