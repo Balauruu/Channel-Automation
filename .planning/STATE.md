@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-04-20T10:11:48.566Z"
-last_activity: 2026-04-20 -- Roadmap created from requirements and research
+status: executing
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-04-20T10:49:53Z"
+last_activity: 2026-04-20 -- Executed plan 01-01 (core hook creation)
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 3
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -26,30 +26,30 @@ See: .planning/PROJECT.md (updated 2026-04-20)
 ## Current Position
 
 Phase: 1 of 5 (Capture Hardening)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-04-20 -- Roadmap created from requirements and research
+Plan: 1 of 3 in current phase
+Status: Executing
+Last activity: 2026-04-20 -- Executed plan 01-01 (core hook creation)
 
-Progress: [..........] 0%
+Progress: [###.......] 33%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 2min
+- Total execution time: 0.03 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-capture-hardening | 1/3 | 2min | 2min |
 
 **Recent Trend:**
 
-- Last 5 plans: -
-- Trend: -
+- Last 5 plans: 01-01 (2min)
+- Trend: baseline
 
 *Updated after each plan completion*
 
@@ -64,6 +64,9 @@ Recent decisions affecting current work:
 - [Init]: Categorical confidence (HIGH/MED/LOW) -- LLMs cannot calibrate numeric scores
 - [Init]: Pending Review sections as lightweight staging -- no staging directory
 - [Init]: pipeline-observe.sh already exists (342 lines) but needs hardening for main conversation capture
+- [01-01]: Used process.argv[2] for event type dispatch (matches settings.json pattern)
+- [01-01]: Included epoch_ms for CAPT-05 duration matching in Plan 02
+- [01-01]: Purge throttled via .last-purge marker file mtime check
 
 ### Pending Todos
 
@@ -85,6 +88,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 1 context gathered
-Resume file: --resume-file
+Last session: 2026-04-20T10:49:53Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: .planning/phases/01-capture-hardening/01-02-PLAN.md
+
+**Planned Phase:** 1 (Capture Hardening) — 3 plans — 2026-04-20T10:44:34.694Z

@@ -85,7 +85,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Capture Hardening | 0/3 | Planned | - |
+| 1. Capture Hardening | 1/3 | Executing | - |
 | 2. Observer Agent | 0/TBD | Not started | - |
 | 3. Evolve Command | 0/TBD | Not started | - |
 | 4. Agent Consumption | 0/TBD | Not started | - |
