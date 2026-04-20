@@ -12,8 +12,8 @@ projects/
 # Node modules
 node_modules/
 
-# ── GSD planning scaffolding (internal build artifacts) ───────────────────────
-.planning/
+# ── GSD planning scaffolding ──────────────────────────────────────────────────
+# .planning/ is tracked in git (commit_docs: true)
 
 # ── Channel identity & working data (local, user-configured) ─────────────────
 channel/
