@@ -17,13 +17,13 @@ Agents learn from past runs and don't repeat mistakes — knowledge persists acr
 ### Active
 
 - [ ] Single capture hook (pipeline-observe.sh) handles both main conversation and subagent events
-- [ ] Main conversation events written to `sessions.jsonl` (lighter, no transcript parsing)
-- [ ] Subagent events written to `agents.jsonl` (full detail: tool durations, thinking blocks, completions)
-- [ ] Both files under `.claude/logs/observations/<project>/`
+- [ ] All events written to single `obs.jsonl` per project — observer filters by `agent_id` presence
+- [ ] File at `.claude/logs/observations/<project>/obs.jsonl` with 10MB rotation
 - [ ] @observer subagent (Sonnet 4.6) reads both streams and extracts learnings
 - [ ] Observer classifies candidates against 3 scope-test questions as enforcement checklist
-- [ ] Observer writes directly to 3-layer memory (no staging directory)
-- [ ] Confidence scoring on memory entries (borrowed from CLv2: 0.3-0.9 weighted)
+- [ ] Observer writes to ## Pending Review sections in memory files (lightweight staging)
+- [ ] /evolve promotes Pending Review entries or reverts (git history as rollback)
+- [ ] Categorical confidence tagging: HIGH/MED/LOW inline with decay (LOW=14d, MED=30d)
 - [ ] Single `/evolve` command: dispatches observer + reviews recent additions (can revert)
 - [ ] PLAYBOOK.md redesigned as cross-agent message bus (research needed for optimal shape)
 - [ ] agent-protocols rewritten (thin — no signals, no project-memories, no scratchpad)
@@ -89,8 +89,9 @@ The observer classifies every candidate against these three questions. If a cand
 | Observer stays as Sonnet 4.6 subagent | Quality analysis, 1M context handles full event detail, subscription-covered | — Pending |
 | Merge /learn into /evolve | /evolve already dispatches observer; separation adds UX overhead for no benefit | — Pending |
 | Remove memory-candidates staging | Observer writes directly to memory; /evolve reviews and can revert. Eliminates directory tree and YAML frontmatter overhead | — Pending |
-| One capture hook, two output files | Single pipeline-observe.sh branches by agent_id presence. Clearly named files (agents.jsonl, sessions.jsonl) avoid confusion | — Pending |
-| Borrow CLv2 confidence scoring | 0.3-0.9 weighted confidence with evidence tracking. Lean implementation, not CLv2's full CLI | — Pending |
+| One file (obs.jsonl) not two | NTFS locking issues documented in Claude Code issues; observer filters by agent_id presence; simpler hook logic | — Pending |
+| Categorical confidence (HIGH/MED/LOW) | LLMs cannot calibrate numeric probabilities; consuming LLMs cannot use them; Features research flags numeric scoring as anti-feature at this scale | — Pending |
+| Pending Review sections as lightweight staging | Direct write risk mitigated without directory tree; observer writes to ## Pending Review, /evolve promotes or reverts via git | — Pending |
 | Drop session-start-nudge | User runs /evolve when ready; no hook-based nudging | — Pending |
 | PLAYBOOK.md as cross-agent message bus | Not a ticket system; captures insights from one agent that affect another. Observer manages lifecycle. Optimal shape needs research | — Pending |
 | Observer enforces scope via checklist | Classifies against 3 scope-test questions. Rejects candidates that don't clearly pass exactly one test | — Pending |
