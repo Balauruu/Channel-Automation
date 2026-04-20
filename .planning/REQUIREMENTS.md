@@ -73,37 +73,37 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAPT-01 | — | Pending |
-| CAPT-02 | — | Pending |
-| CAPT-03 | — | Pending |
-| CAPT-04 | — | Pending |
-| CAPT-05 | — | Pending |
-| CAPT-06 | — | Pending |
-| CAPT-07 | — | Pending |
-| OBSV-01 | — | Pending |
-| OBSV-02 | — | Pending |
-| OBSV-03 | — | Pending |
-| OBSV-04 | — | Pending |
-| OBSV-05 | — | Pending |
-| OBSV-06 | — | Pending |
-| OBSV-07 | — | Pending |
-| OBSV-08 | — | Pending |
-| EVLV-01 | — | Pending |
-| EVLV-02 | — | Pending |
-| EVLV-03 | — | Pending |
-| EVLV-04 | — | Pending |
-| MEML-01 | — | Pending |
-| MEML-02 | — | Pending |
-| MEML-03 | — | Pending |
-| MEML-04 | — | Pending |
-| MEML-05 | — | Pending |
-| MEML-06 | — | Pending |
+| CAPT-01 | Phase 1 | Pending |
+| CAPT-02 | Phase 1 | Pending |
+| CAPT-03 | Phase 1 | Pending |
+| CAPT-04 | Phase 1 | Pending |
+| CAPT-05 | Phase 1 | Pending |
+| CAPT-06 | Phase 1 | Pending |
+| CAPT-07 | Phase 1 | Pending |
+| OBSV-01 | Phase 2 | Pending |
+| OBSV-02 | Phase 2 | Pending |
+| OBSV-03 | Phase 2 | Pending |
+| OBSV-04 | Phase 2 | Pending |
+| OBSV-05 | Phase 2 | Pending |
+| OBSV-06 | Phase 2 | Pending |
+| OBSV-07 | Phase 2 | Pending |
+| OBSV-08 | Phase 2 | Pending |
+| MEML-01 | Phase 2 | Pending |
+| EVLV-01 | Phase 3 | Pending |
+| EVLV-02 | Phase 3 | Pending |
+| EVLV-03 | Phase 3 | Pending |
+| MEML-03 | Phase 4 | Pending |
+| MEML-04 | Phase 4 | Pending |
+| MEML-05 | Phase 4 | Pending |
+| MEML-06 | Phase 4 | Pending |
+| EVLV-04 | Phase 5 | Pending |
+| MEML-02 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 25 total
-- Mapped to phases: 0
-- Unmapped: 25 ⚠️
+- Mapped to phases: 25
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-20*
-*Last updated: 2026-04-20 after initial definition*
+*Last updated: 2026-04-20 after roadmap phase mapping*
