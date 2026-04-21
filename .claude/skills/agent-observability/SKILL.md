@@ -1,304 +1,232 @@
 ---
 name: agent-observability
-description: Use when debugging a subagent run — "why did agent X produce wrong output", "which tool call was slow", "what permission was denied", or "what did the agent reason about before calling that tool". Reads logs from .claude/logs/runs/.
+description: >-
+  Observation pipeline reference. Use when debugging agent runs ("why did
+  agent X produce wrong output", "which tool call was slow", "what was
+  denied"), understanding the memory system ("how does the observer work",
+  "what does /evolve do", "how are learnings classified"), or querying
+  obs.jsonl event logs. Covers capture, observer, evolve, PLAYBOOK routing,
+  scope tests, and debug recipes.
+user-invocable: true
 ---
 
 # Agent Observability
 
-## Overview
+The observation pipeline captures every tool call, agent dispatch, and reasoning turn to `.claude/logs/observations/<project>/obs.jsonl`, then provides tools to analyze, extract learnings, and route insights to the correct memory tier.
 
-Every custom subagent dispatch writes one JSONL file to `.claude/logs/runs/`. Read it top-to-bottom for a chronological replay of the full run: tool calls with inputs, outputs, and durations; failures; permission denials; the agent's own assistant text and extended thinking — all interleaved in timestamp order.
-
-**Primary use case:** open `.claude/logs/runs/<run>.jsonl` and find out exactly what the agent did and why it produced a given output.
+Components:
+1. **pipeline-observe.js** -- PostToolUse/SubagentStop hook that writes events to obs.jsonl
+2. **@observer agent** -- Sonnet-class subagent that reads obs.jsonl, extracts learnings, classifies via scope tests
+3. **/evolve command** -- User-invoked skill that dispatches observer and manages memory promotion
+4. **PLAYBOOK.md** -- Observer-managed routing log for cross-agent coordination insights
 
 ## When to Use
 
+**Debugging (post-mortem on agent runs):**
 - "Why did @researcher return X instead of Y?"
 - "Which tool call took the most time in that run?"
 - "What permission was denied and why did the agent stop?"
-- "What was the agent reasoning about just before it called that tool?"
-- Any post-mortem on a subagent run that produced unexpected output
+- "What was the agent reasoning about before calling that tool?"
 
-**Not for:** top-level (non-subagent) tool call tracing — only dispatched custom subagents are logged.
+**System understanding (how the memory pipeline works):**
+- "How does the observer classify learnings?"
+- "What does /evolve do?"
+- "How are insights routed through PLAYBOOK.md?"
+- "What are the scope-test questions?"
 
-## What Gets Logged
+**Not for:** Direct memory file edits (use /evolve), pipeline-observe.js code changes (use pipeline-design skill).
 
-| Event | When emitted |
+## Event Schema
+
+Events are written to `.claude/logs/observations/<project>/obs.jsonl` -- one JSON object per line (JSONL format). Rotation at 10MB with timestamped archive; files older than 30 days are purged.
+
+### Base Fields
+
+Every event contains these fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ts` | string | ISO timestamp with colons replaced (Windows filename safe, e.g. `2026-04-17T14-22-30-123Z`) |
+| `epoch_ms` | number | Unix milliseconds for duration computation |
+| `event` | string | Event type (see table below) |
+| `session_id` | string | Claude Code session ID |
+| `agent_id` | string | Empty string for main conversation; populated for subagent dispatches |
+| `project` | string | Project slug derived from path detection |
+
+### Event Types
+
+| Event | When Emitted |
 |-------|-------------|
-| `dispatch` | First line — agent type, session ID, full dispatch prompt |
-| `tool_pre` | Before every tool call — tool name, input, `tool_use_id` |
-| `tool_post` | After tool success — output, `duration_ms` |
-| `tool_fail` | After tool failure — error message, `interrupted` flag, `duration_ms` |
-| `permission_denied` | When a tool call is blocked — tool input, denial reason |
-| `assistant_message` | Merged from agent transcript at SubagentStop — text, thinking, per-turn token usage, `stop_reason` |
-| `complete` | Last line — aggregated counts, token summary, `outcome` |
+| `tool_pre` | Before every tool call -- tool name, input |
+| `tool_post` | After tool success -- output, `duration_ms` |
+| `tool_fail` | After tool failure -- error message, `duration_ms` |
+| `permission_denied` | When a tool call is blocked -- tool input, denial reason |
+| `dispatch` | When a subagent is dispatched -- agent type, dispatch prompt |
+| `assistant_message` | Agent reasoning turn -- text, thinking blocks, token usage, `stop_reason` |
+| `complete` | Final event for a run -- aggregated counts, token summary, `outcome` |
 
-## Schema
+### Truncation Caps
 
-Every line is a self-contained JSON object. Base fields on every event: `ts` (colon-replaced ISO, e.g. `2026-04-17T14-22-30-123Z`), `event`.
+Input and output fields are truncated to prevent log bloat. Caps defined in pipeline-observe.js:
 
-### dispatch
-```json
-{
-  "ts": "2026-04-17T14-22-30-123Z",
-  "event": "dispatch",
-  "session_id": "bb5cdf28-...",
-  "agent_type": "researcher",
-  "agent_id": "a3f67b0",
-  "cwd": "D:/Youtube/...",
-  "prompt": "<full dispatch prompt text>"
-}
+| Tool | Input Cap | Output Cap |
+|------|-----------|------------|
+| Read, Grep, Glob | 1 KB | 1 KB |
+| Bash, Write, Edit | 5 KB | 5 KB |
+| Agent | 2 KB | 5 KB |
+| Thinking blocks | 10 KB/turn | -- |
+| Assistant text | 10 KB/turn | -- |
+| Dispatch prompt | 2 KB | -- |
+
+Default cap for unlisted tools: 2 KB input, 2 KB output.
+
+### agent_id Semantics
+
+- **Empty string** (`""`) -- event originated from the main conversation (user's direct Claude Code session)
+- **Populated** (e.g. `"a3f67b0"`) -- event originated from a subagent dispatch. The observer uses this field to group events into runs.
+
+## Observer System
+
+The `@observer` agent (Sonnet, dispatched by /evolve only) processes obs.jsonl incrementally via a 10-step pipeline:
+
+1. **Load cursor** -- reads byte offset from `.observer-cursor`
+2. **Read events** -- reads obs.jsonl from cursor position
+3. **Group by run** -- segments events by agent_id
+4. **Filter self** -- skips runs where agent_id contains "observer"
+5. **Classify candidates** -- applies scope-test questions (see below)
+6. **Score confidence** -- assigns [HIGH], [MED], or [LOW]
+7. **Deduplicate** -- checks target files for existing entries
+8. **Write entries** -- appends to target file's Pending Review (or PLAYBOOK Open for Q3)
+9. **Log rejections** -- writes rejected candidates to rejections.jsonl
+10. **Update cursor** -- advances byte offset after successful writes
+
+Maximum 3 candidates per run. Exactly one scope-test question must pass per candidate.
+
+### Confidence Levels
+
+| Level | Criteria |
+|-------|----------|
+| **[HIGH]** | Unambiguous evidence: clear error-recovery loop, documented workaround, repeated pattern across turns/runs |
+| **[MED]** | Single-instance evidence: observed once, sound reasoning suggests recurrence but unconfirmed |
+| **[LOW]** | Speculative: plausible from limited data, inference without tool-level confirmation |
+
+### Entry Formats
+
+**MEMORY.md entries:**
+```
+- [CONFIDENCE] source-agent: distilled insight text (YYYY-MM-DDThh:mm)
 ```
 
-### tool_pre
-```json
-{
-  "ts": "...",
-  "event": "tool_pre",
-  "tool": "Bash",
-  "tool_use_id": "toolu_01ABC...",
-  "input": { "command": "ls -la" }
-}
+**insights.md entries:**
+```
+- [YYYY-MM-DD] [CONFIDENCE] distilled insight text (from: source-agent, YYYY-MM-DDThh:mm)
 ```
 
-### tool_post
-```json
-{
-  "ts": "...",
-  "event": "tool_post",
-  "tool": "Bash",
-  "tool_use_id": "toolu_01ABC...",
-  "duration_ms": 2310,
-  "output": { "stdout": "...", "exit_code": 0 }
-}
-```
-`duration_ms` is computed at SubagentStop by matching `tool_use_id` against the preceding `tool_pre`. `null` if the matching `tool_pre` was not recorded.
+### Rejections
 
-### tool_fail
-```json
-{
-  "ts": "...",
-  "event": "tool_fail",
-  "tool": "Bash",
-  "tool_use_id": "toolu_01ABC...",
-  "duration_ms": 180,
-  "error": "Command timed out after 120000ms",
-  "interrupted": false
-}
-```
+Rejected candidates are logged to `.claude/logs/observations/<project>/rejections.jsonl` with reasons: `no-scope-match`, `ambiguous-scope`, `duplicate-of-existing`, `format-error`, `target-file-corrupt`. Same 10MB rotation and 30-day purge as obs.jsonl.
 
-### permission_denied
-```json
-{
-  "ts": "...",
-  "event": "permission_denied",
-  "tool": "Bash",
-  "tool_use_id": "toolu_01XYZ...",
-  "input": { "command": "rm -rf /" },
-  "reason": "classifier: write to .env"
-}
-```
+## /evolve Command
 
-### assistant_message
-```json
-{
-  "ts": "...",
-  "event": "assistant_message",
-  "text": "I'll start by reading the metadata file...",
-  "thinking": null,
-  "input_tokens": 12034,
-  "output_tokens": 487,
-  "cache_read_input_tokens": 10200,
-  "cache_creation_input_tokens": 0,
-  "stop_reason": "tool_use"
-}
-```
-`thinking` is a string when extended thinking is present for that turn, `null` otherwise. `stop_reason` is the SDK field preserved verbatim (`tool_use`, `end_turn`, `stop_sequence`, `max_tokens`, or any non-standard value).
+User-invoked skill that orchestrates the learning cycle:
 
-### complete
-```json
-{
-  "ts": "...",
-  "event": "complete",
-  "duration_ms": 318500,
-  "tool_calls": 14,
-  "tool_fails": 0,
-  "permission_denials": 0,
-  "last_turn_input_tokens": 184321,
-  "last_turn_output_tokens": 9842,
-  "total_output_tokens": 28140,
-  "outcome": "completed"
-}
-```
+1. Dispatch @observer to process new obs.jsonl events
+2. Scan all memory files for ## Pending Review entries (`evolve.js scan`)
+3. Auto-promote all entries to ## Permanent (`evolve.js promote`)
+4. Display grouped numbered summary (insights files first, then MEMORY files, then PLAYBOOK)
+5. Offer revert by number -- user can undo specific promotions
+6. Commit changes
 
-## Reading Token Numbers Correctly
+PLAYBOOK.md is excluded from evolve.js scan/promote (its Open/Resolved lifecycle is managed by the observer, not /evolve).
 
-`complete` does NOT report `total_input_tokens`. Summing `input_tokens` across turns double-counts the cached context prefix that appears every turn — the number would be misleading.
+Helper script: `.claude/scripts/memory/evolve.js` with subcommands: `scan`, `promote <file> <entry>`, `revert <file> <entry>`
 
-Use instead:
-- `last_turn_input_tokens` — the final assistant turn's `input_tokens`. Answers "how large did the context window get?"
-- `total_output_tokens` — summed across all turns. Output tokens don't overlap; this is the billed new-content figure.
+## PLAYBOOK Routing
 
-## Outcome Values
+`.claude/PLAYBOOK.md` is an observer-managed routing log for cross-agent coordination insights (scope-test Q3 passes). Agents do not read or write it directly.
 
-`outcome` in `complete` is one of:
+**Lifecycle:**
+1. Observer writes entry to `## Open`: `- [CONF] agent: insight (timestamp)`
+2. Observer identifies routing target (specific agent MEMORY.md or skill insights.md)
+3. Observer writes insight to target file's `## Pending Review`
+4. Observer updates PLAYBOOK entry to `## Resolved`: `- [Resolved] agent: insight -> routed to <path> (date)`
 
-| Value | Meaning |
-|-------|---------|
-| `completed` | Agent finished normally (`end_turn` or `stop_sequence`) |
-| `stopped` | Hit `max_tokens` OR `stop_hook_active: true` at SubagentStop |
-| `errored` | Unreadable/empty transcript, or last `stop_reason` is not in `{tool_use, end_turn, stop_sequence, max_tokens}` |
+If the routing target is unclear, the entry remains in ## Open for manual review during /evolve.
 
-**Important:** transient `tool_fail` events do NOT force `errored`. An agent that hit a timeout, retried, and finished is `completed`. The `tool_fails` count in `complete` exposes the failure count for anyone who cares.
+## 3-Layer Scope Tests
 
-## File Layout
+Every candidate must pass exactly one of these three questions:
 
-```
-.claude/logs/runs/
-├── .active/                        # ephemeral; cleared at SubagentStop
-│   └── <agent_id>.ptr              # absolute path to the in-progress run file
-└── <iso_ts>__<agent_type>__<agent_id>.jsonl
-```
+| # | Question | YES means | Target |
+|---|----------|-----------|--------|
+| Q1 | Does this change how a specific skill or method runs? | Tool technique, library pattern, script convention, procedural step | `.claude/skills/<skill>/insights.md` |
+| Q2 | Would a fresh instance of this agent need this to do its job? | Agent behavior, decision, cross-task pattern | `.claude/agent-memory/<agent>/MEMORY.md` |
+| Q3 | Does this change how agents hand off or coordinate? | Inter-agent protocol, handoff, resource conflict, workflow sequencing | `.claude/PLAYBOOK.md` (routed to target) |
 
-Files are created at dispatch and finalized (chronologically rewritten, `complete` appended) when the agent's `SubagentStop` hook fires. The rewrite is atomic: a `.tmp` file is written then renamed.
-
-## Canonical settings.json Hook Block
-
-This is the source of truth for Task 9. Six registrations, all pointing at `obs.js` with the event as `argv[2]`.
-
-```jsonc
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Agent",
-        "hooks": [{
-          "type": "command",
-          "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js dispatch",
-          "timeout": 5,
-          "async": true
-        }]
-      },
-      {
-        "matcher": "*",
-        "hooks": [{
-          "type": "command",
-          "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js tool_pre",
-          "timeout": 5,
-          "async": true
-        }]
-      }
-    ],
-    "PostToolUse": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js tool_post",
-        "timeout": 5,
-        "async": true
-      }]
-    }],
-    "PostToolUseFailure": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js tool_fail",
-        "timeout": 5,
-        "async": true
-      }]
-    }],
-    "PermissionDenied": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js permission_denied",
-        "timeout": 5,
-        "async": true
-      }]
-    }],
-    "SubagentStop": [{
-      "hooks": [{
-        "type": "command",
-        "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js subagent_stop",
-        "timeout": 15
-      }]
-    }]
-  }
-}
-```
-
-`subagent_stop` is **synchronous** (no `async: true`). The chronological rewrite must complete before the run file is considered final. All other hooks are async.
-
-**Note on the shipped `SubagentStop` array:** the actual `.claude/settings.json` also co-registers `check-memory-limit.js` and `check-definition-signals.js` alongside `obs.js subagent_stop`. Those are unrelated to observability (memory-usage guard + agent-definition signal checks) and were already present before this skill shipped. They are kept because they run at the same hook event and don't conflict with observability's use of the transcript.
-
-## Compressed Summaries (Recommended First Step)
-
-Raw run JSONLs can be hundreds of KB. For most debug questions, start with the summarizer — it emits a ~2-5KB markdown digest (top-5 slowest tools, all failures, all permission denials, one-line reasoning timeline, extended thinking excerpts, capped/errored warnings).
-
-```bash
-node .claude/scripts/obs-summarize.js                    # most recent run
-node .claude/scripts/obs-summarize.js <agent-id>         # prefix match
-node .claude/scripts/obs-summarize.js path/to/run.jsonl  # explicit path
-```
-
-Fall back to the raw JSONL recipes below when the summary doesn't show enough detail.
-
-## Tunables (Env Vars)
-
-- `OBS_TRUNCATE_KB=N` — when set, truncate any string field in input/output larger than N*1024 chars to `head[:200] + marker + tail[-50:]`. Default: `0` (no truncation; full fidelity preserved).
-- `OBS_MAX_RUN_MB=N` — per-run size cap in MB. Default: `100`. On overflow, a single `log_capped` event is appended and further appends are dropped. Protects against runaway edge cases.
-
-All string fields larger than 10KB always get a sibling `<key>_len` hint field carrying the byte length, even when truncation is off — useful for spotting bloated outputs at a glance.
+Zero passes = reject ("no-scope-match"). Multiple passes = reject ("ambiguous-scope").
 
 ## Debug Recipes
 
-### Wrong output — cross-reference tool outputs with agent reasoning
+Direct obs.jsonl queries. Replace `<project>` with project slug.
 
-Find the `tool_post` that returned unexpected data, then read the `assistant_message` that follows it to see what the agent concluded from that output.
-
+**List all runs (unique agent_ids):**
 ```bash
 node -e "
-const lines = require('fs').readFileSync('.claude/logs/runs/<run>.jsonl','utf8')
+const lines = require('fs').readFileSync('.claude/logs/observations/<project>/obs.jsonl','utf8')
   .trim().split('\n').map(JSON.parse);
-lines.filter(e => e.event === 'tool_post' || e.event === 'assistant_message')
-  .forEach(e => console.log(e.ts, e.event,
-    e.event === 'tool_post'
-      ? JSON.stringify(e.output).slice(0, 100)
-      : e.text.slice(0, 120)
-  ));
+const ids = [...new Set(lines.map(e => e.agent_id || '(main)'))];
+ids.forEach(id => console.log(id));
 "
 ```
 
-### Slow run — find the expensive tool calls
-
-Sort `tool_post` events by `duration_ms` descending. The top entries are the bottleneck.
-
+**Find slowest tool calls in a run:**
 ```bash
 node -e "
-const lines = require('fs').readFileSync('.claude/logs/runs/<run>.jsonl','utf8')
+const lines = require('fs').readFileSync('.claude/logs/observations/<project>/obs.jsonl','utf8')
   .trim().split('\n').map(JSON.parse);
-lines.filter(e => e.event === 'tool_post')
-  .sort((a, b) => (b.duration_ms || 0) - (a.duration_ms || 0))
+lines.filter(e => e.event === 'tool_post' && e.agent_id === '<agent-id>')
+  .sort((a,b) => (b.duration_ms||0) - (a.duration_ms||0))
   .slice(0, 5)
-  .forEach(e => console.log(e.duration_ms + 'ms', e.tool, JSON.stringify(e.input).slice(0, 80)));
+  .forEach(e => console.log(e.duration_ms+'ms', e.tool_name, (e.input||'').slice(0,80)));
 "
 ```
 
-### Permission walls — what was denied and why
-
+**Find all failures:**
 ```bash
 node -e "
-const lines = require('fs').readFileSync('.claude/logs/runs/<run>.jsonl','utf8')
+const lines = require('fs').readFileSync('.claude/logs/observations/<project>/obs.jsonl','utf8')
+  .trim().split('\n').map(JSON.parse);
+lines.filter(e => e.event === 'tool_fail')
+  .forEach(e => console.log(e.ts, e.agent_id||'(main)', e.tool_name, (e.error||'').slice(0,120)));
+"
+```
+
+**Find permission denials:**
+```bash
+node -e "
+const lines = require('fs').readFileSync('.claude/logs/observations/<project>/obs.jsonl','utf8')
   .trim().split('\n').map(JSON.parse);
 lines.filter(e => e.event === 'permission_denied')
-  .forEach(e => console.log(e.ts, e.tool, e.reason, JSON.stringify(e.input).slice(0, 100)));
+  .forEach(e => console.log(e.ts, e.agent_id||'(main)', e.tool_name));
 "
 ```
 
-## Extending the Schema
+**Filter events by agent:**
+```bash
+node -e "
+const lines = require('fs').readFileSync('.claude/logs/observations/<project>/obs.jsonl','utf8')
+  .trim().split('\n').map(JSON.parse);
+lines.filter(e => e.agent_id === '<agent-id>')
+  .forEach(e => console.log(e.ts, e.event, e.tool_name || ''));
+"
+```
 
-Fields are additive. Unknown fields on existing events are ignored. To add a new event type: add a handler in `.claude/hooks/obs.js`, add the event name to the dispatch table, and document the shape here.
-
-## Opt-Out (Forward-Looking, Not v1)
-
-Built-in agents (`Explore`, `Plan`, `general-purpose`) are excluded by default. To log a specific built-in ad hoc, open `.claude/hooks/obs.js` and remove its name from `BUILTIN_AGENT_TYPES`. An `OBS_INCLUDE_BUILTIN=1` env var to toggle this globally is planned but not implemented in v1.
+**Get agent reasoning timeline:**
+```bash
+node -e "
+const lines = require('fs').readFileSync('.claude/logs/observations/<project>/obs.jsonl','utf8')
+  .trim().split('\n').map(JSON.parse);
+lines.filter(e => e.event === 'assistant_message' && e.agent_id === '<agent-id>')
+  .forEach(e => console.log(e.ts, (e.text||'').slice(0,120)));
+"
+```
