@@ -76,9 +76,9 @@ Plans:
   4. agent-observability skill covers the full observation pipeline including observer system, /evolve command, event schema, and PLAYBOOK routing (D-11: pipeline-learning merged into agent-observability)
 **Plans:** 3 plans
 Plans:
-- [ ] 04-01-PLAN.md — PLAYBOOK.md redesign (Open/Resolved) + agent-protocols thin rewrite
-- [ ] 04-02-PLAN.md — Observer.md PLAYBOOK routing update + obs-summarize.js path fix
-- [ ] 04-03-PLAN.md — Agent-observability comprehensive rewrite (merged pipeline-learning) + cleanup audit
+- [x] 04-01-PLAN.md — PLAYBOOK.md redesign (Open/Resolved) + agent-protocols thin rewrite
+- [x] 04-02-PLAN.md — Observer.md PLAYBOOK routing update + obs-summarize.js path fix
+- [x] 04-03-PLAN.md — Agent-observability comprehensive rewrite (merged pipeline-learning) + cleanup audit
 
 ### Phase 5: Memory Lifecycle
 **Goal**: Memory files stay healthy over time through confidence decay, consolidation, and capacity management
