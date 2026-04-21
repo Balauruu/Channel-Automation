@@ -23,7 +23,7 @@ function getClaudeDir() {
 
 // -- Evidence pointer stripping regexes --------------------------------------
 
-const memoryPointerRe = / \(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\)$/;
+const memoryPointerRe = / \(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?Z?\)$/;
 const insightPointerRe = / \(from: [a-z][a-z0-9-]*, \d{4}-\d{2}-\d{2}T\d{2}:\d{2}\)$/;
 
 // -- Core functions ----------------------------------------------------------
