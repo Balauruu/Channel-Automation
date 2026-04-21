@@ -237,7 +237,7 @@ function promote() {
     if (!permanentSection) {
       // Create ## Permanent section immediately before ## Pending Review
       const pendingLineIdx = pendingSection.startLine;
-      const insertLines = ['## Permanent', ''];
+      const insertLines = pendingLineIdx > 0 ? ['', '## Permanent', ''] : ['## Permanent', ''];
       // Add promoted entries
       for (const fe of fileEntries) {
         insertLines.push(fe.promoted);
