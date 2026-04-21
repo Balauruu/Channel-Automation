@@ -89,7 +89,7 @@ Plans:
   2. When a memory file approaches the 200-line cap, /evolve proposes merging related entries, removing stale ones, or promoting key insights -- not just deleting
 **Plans:** 2 plans
 Plans:
-- [ ] 05-01-PLAN.md — Decay subcommands (decay/decay-remove/decay-upgrade) in evolve.js + smoke tests
+- [x] 05-01-PLAN.md — Decay subcommands (decay/decay-remove/decay-upgrade) in evolve.js + smoke tests
 - [ ] 05-02-PLAN.md — Evolve SKILL.md lifecycle wiring (decay, consolidation, unified summary) + observer consolidation mode
 
 ## Progress
@@ -103,4 +103,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Observer Agent | 3/3 | Complete    | 2026-04-21 |
 | 3. Evolve Command | 0/2 | Planning complete | - |
 | 4. Agent Consumption | 0/3 | Planning complete | - |
-| 5. Memory Lifecycle | 0/2 | Planning complete | - |
+| 5. Memory Lifecycle | 1/2 | Executing | - |
