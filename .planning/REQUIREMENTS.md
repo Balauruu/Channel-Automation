@@ -39,10 +39,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **MEML-01**: Entries include categorical confidence tag inline: `[HIGH]`, `[MED]`, or `[LOW]`
 - [ ] **MEML-02**: Decay rules: LOW entries expire after 14 days, MED after 30 days (HIGH entries persist indefinitely)
-- [ ] **MEML-03**: agent-protocols skill rewritten thin — no signals, no project-memories, no scratchpad; adds PLAYBOOK read at task start
+- [ ] **MEML-03**: agent-protocols skill rewritten thin — no signals, no project-memories, no scratchpad; agents consume memory passively (D-02: observer routes PLAYBOOK entries to agent MEMORY.md instead of agents reading PLAYBOOK directly)
 - [ ] **MEML-04**: PLAYBOOK.md uses Open/Resolved sections; observer manages lifecycle (writes new entries, proposes resolution when absorbed)
 - [ ] **MEML-05**: agent-observability skill fully rewritten for new paths (obs.jsonl), new schema, new debug recipes
-- [ ] **MEML-06**: pipeline-learning skill created documenting the observer system, /evolve command, event schema
+- [ ] **MEML-06**: observation pipeline documented in agent-observability skill covering observer system, /evolve command, event schema, and PLAYBOOK routing (D-11: merged into agent-observability instead of separate skill)
 
 ## v2 Requirements
 

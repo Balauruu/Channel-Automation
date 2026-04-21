@@ -70,10 +70,10 @@ Plans:
 **Depends on**: Phase 3
 **Requirements**: MEML-03, MEML-04, MEML-05, MEML-06
 **Success Criteria** (what must be TRUE):
-  1. Every pipeline agent's task-start sequence includes reading PLAYBOOK.md for open coordination entries (via updated agent-protocols)
+  1. The observer routes cross-agent coordination insights from PLAYBOOK.md to individual agent MEMORY.md files; agents consume insights passively via their injected memory (D-02: agents never read PLAYBOOK directly)
   2. PLAYBOOK.md uses Open/Resolved sections; the observer writes new cross-agent insights to Open and proposes resolution when the target agent absorbs the insight
   3. agent-observability skill documents the new obs.jsonl paths, event schema, and debug recipes (no references to old paths or schemas)
-  4. A pipeline-learning skill exists documenting the observer system, /evolve command, and event schema for agent self-reference
+  4. agent-observability skill covers the full observation pipeline including observer system, /evolve command, event schema, and PLAYBOOK routing (D-11: pipeline-learning merged into agent-observability)
 **Plans:** 3 plans
 Plans:
 - [ ] 04-01-PLAN.md — PLAYBOOK.md redesign (Open/Resolved) + agent-protocols thin rewrite
