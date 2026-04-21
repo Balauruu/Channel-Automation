@@ -279,16 +279,15 @@ function promote() {
       const insertLines = fileEntries.map(fe => fe.promoted);
       newLines.splice(insertAt, 0, ...insertLines);
 
-      // Calculate shift for pending section lines
-      const shift = insertLines.length;
-
-      // Remove entries from Pending Review (positions shifted by insertion above)
-      // Only entries whose original line was after the insertion point got shifted
-      const entryLinesToRemove = pendingSection.entries
-        .map(e => e.line >= insertAt ? e.line + shift : e.line)
-        .sort((a, b) => b - a);
-      for (const lineIdx of entryLinesToRemove) {
-        newLines.splice(lineIdx, 1);
+      // Re-parse after insertion to get fresh line positions for Pending Review
+      const updatedContent = newLines.join('\n');
+      const updatedSections = parseSections(updatedContent);
+      const updatedPending = updatedSections.find(s => s.heading === 'Pending Review');
+      if (updatedPending) {
+        updatedPending.entries
+          .map(e => e.line)
+          .sort((a, b) => b - a)
+          .forEach(lineIdx => newLines.splice(lineIdx, 1));
       }
     }
 
