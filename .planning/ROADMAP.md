@@ -17,6 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Evolve Command** - Create /evolve human review gate that dispatches observer and presents pending entries for approve/edit/revert
 - [ ] **Phase 4: Agent Consumption** - Rewrite agent-protocols and skills so pipeline agents read PLAYBOOK.md and use updated memory paths
 - [ ] **Phase 5: Memory Lifecycle** - Add confidence decay, consolidation, and capacity management for long-running memory files
+- [ ] **Phase 6: Old Memory Cleanup** - Remove all traces of the old broken memory system so the codebase only contains the new unified memory system
 
 ## Phase Details
 
@@ -95,7 +96,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -103,4 +104,14 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Observer Agent | 3/3 | Complete    | 2026-04-21 |
 | 3. Evolve Command | 0/2 | Planning complete | - |
 | 4. Agent Consumption | 0/3 | Planning complete | - |
-| 5. Memory Lifecycle | 2/2 | Verifying | - |
+| 5. Memory Lifecycle | 2/2 | Complete | 2026-04-21 |
+| 6. Old Memory Cleanup | 0/0 | Not planned | - |
+
+### Phase 6: Old Memory Cleanup
+**Goal**: Remove all traces of the old broken memory system (project-memories/, signals.yaml, stale agent-memory references, deprecated skill insights, dead code in agent definitions) so the codebase only contains the new unified memory system
+**Depends on**: Phase 5
+**Requirements**: TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 6 to break down)
