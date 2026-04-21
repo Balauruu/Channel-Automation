@@ -37,6 +37,7 @@ feedback/
 .claude/tests/*.js
 !.claude/tests/smoke-test-observe.js
 !.claude/tests/eval-observer.js
+!.claude/tests/eval-evolve.js
 
 # ── Docs (specs, plans, roadmap — local working docs) ────────────────────────
 docs/
