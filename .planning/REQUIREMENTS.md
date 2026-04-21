@@ -19,14 +19,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Observer
 
-- [ ] **OBSV-01**: @observer subagent (Sonnet 4.6) reads obs.jsonl and extracts reusable learnings from completed runs
-- [ ] **OBSV-02**: Observer filters runs by agent_id presence (subagent) vs absence (main conversation)
-- [ ] **OBSV-03**: Each candidate is classified against 3 scope-test questions; candidates that don't clearly pass exactly one test are rejected
-- [ ] **OBSV-04**: Observer writes entries to ## Pending Review section in target memory file with evidence citations
-- [ ] **OBSV-05**: Observer deduplicates against existing entries in target memory files before writing
-- [ ] **OBSV-06**: Observer does not observe its own runs (self-loop prevention via agent_id filtering)
-- [ ] **OBSV-07**: Observer tracks cursor position in obs.jsonl (knows where it left off between invocations)
-- [ ] **OBSV-08**: Rejected candidates are logged with reason so observer can improve signal-to-noise over time
+- [x] **OBSV-01**: @observer subagent (Sonnet 4.6) reads obs.jsonl and extracts reusable learnings from completed runs
+- [x] **OBSV-02**: Observer filters runs by agent_id presence (subagent) vs absence (main conversation)
+- [x] **OBSV-03**: Each candidate is classified against 3 scope-test questions; candidates that don't clearly pass exactly one test are rejected
+- [x] **OBSV-04**: Observer writes entries to ## Pending Review section in target memory file with evidence citations
+- [x] **OBSV-05**: Observer deduplicates against existing entries in target memory files before writing
+- [x] **OBSV-06**: Observer does not observe its own runs (self-loop prevention via agent_id filtering)
+- [x] **OBSV-07**: Observer tracks cursor position in obs.jsonl (knows where it left off between invocations)
+- [x] **OBSV-08**: Rejected candidates are logged with reason so observer can improve signal-to-noise over time
 
 ### Evolve Command
 
@@ -37,7 +37,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Memory Layer
 
-- [ ] **MEML-01**: Entries include categorical confidence tag inline: `[HIGH]`, `[MED]`, or `[LOW]`
+- [x] **MEML-01**: Entries include categorical confidence tag inline: `[HIGH]`, `[MED]`, or `[LOW]`
 - [ ] **MEML-02**: Decay rules: LOW entries expire after 14 days, MED after 30 days (HIGH entries persist indefinitely)
 - [ ] **MEML-03**: agent-protocols skill rewritten thin — no signals, no project-memories, no scratchpad; adds PLAYBOOK read at task start
 - [ ] **MEML-04**: PLAYBOOK.md uses Open/Resolved sections; observer manages lifecycle (writes new entries, proposes resolution when absorbed)
@@ -80,15 +80,15 @@ Deferred to future release. Tracked but not in current roadmap.
 | CAPT-05 | Phase 1 | Complete (01-02, verified 01-03) |
 | CAPT-06 | Phase 1 | Complete (01-01) |
 | CAPT-07 | Phase 1 | Complete (01-01) |
-| OBSV-01 | Phase 2 | Pending |
-| OBSV-02 | Phase 2 | Pending |
-| OBSV-03 | Phase 2 | Pending |
-| OBSV-04 | Phase 2 | Pending |
-| OBSV-05 | Phase 2 | Pending |
-| OBSV-06 | Phase 2 | Pending |
-| OBSV-07 | Phase 2 | Pending |
-| OBSV-08 | Phase 2 | Pending |
-| MEML-01 | Phase 2 | Pending |
+| OBSV-01 | Phase 2 | Complete |
+| OBSV-02 | Phase 2 | Complete |
+| OBSV-03 | Phase 2 | Complete |
+| OBSV-04 | Phase 2 | Complete |
+| OBSV-05 | Phase 2 | Complete |
+| OBSV-06 | Phase 2 | Complete |
+| OBSV-07 | Phase 2 | Complete |
+| OBSV-08 | Phase 2 | Complete |
+| MEML-01 | Phase 2 | Complete |
 | EVLV-01 | Phase 3 | Pending |
 | EVLV-02 | Phase 3 | Pending |
 | EVLV-03 | Phase 3 | Pending |

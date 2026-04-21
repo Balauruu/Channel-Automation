@@ -13,7 +13,7 @@ Transform the broken memory implementation into a functioning learn-from-runs pi
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Capture Hardening** - Battle-harden pipeline-observe.sh to produce reliably valid JSONL from both main conversations and subagent events
-- [ ] **Phase 2: Observer Agent** - Build @observer subagent that reads obs.jsonl, classifies learnings via scope-tests, and writes to memory with confidence tags
+- [x] **Phase 2: Observer Agent** - Build @observer subagent that reads obs.jsonl, classifies learnings via scope-tests, and writes to memory with confidence tags (completed 2026-04-21)
 - [ ] **Phase 3: Evolve Command** - Create /evolve human review gate that dispatches observer and presents pending entries for approve/edit/revert
 - [ ] **Phase 4: Agent Consumption** - Rewrite agent-protocols and skills so pipeline agents read PLAYBOOK.md and use updated memory paths
 - [ ] **Phase 5: Memory Lifecycle** - Add confidence decay, consolidation, and capacity management for long-running memory files
@@ -46,11 +46,11 @@ Plans:
   3. The observer does not produce entries for its own runs (no self-loop)
   4. Duplicate learnings already present in target memory files are not re-proposed
   5. On second invocation, the observer processes only new events (cursor-based incremental reads)
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 Plans:
-- [ ] 02-01-PLAN.md — Bootstrap write targets (PLAYBOOK.md, Pending Review sections, observer MEMORY.md)
-- [ ] 02-02-PLAN.md — Eval test scaffold and fixture data (format validation, self-loop, cursor, rejections)
-- [ ] 02-03-PLAN.md — Observer agent definition (system prompt, scope-test, few-shot examples, guardrails)
+- [x] 02-01-PLAN.md — Bootstrap write targets (PLAYBOOK.md, Pending Review sections, observer MEMORY.md)
+- [x] 02-02-PLAN.md — Eval test scaffold and fixture data (format validation, self-loop, cursor, rejections)
+- [x] 02-03-PLAN.md — Observer agent definition (system prompt, scope-test, few-shot examples, guardrails)
 
 ### Phase 3: Evolve Command
 **Goal**: User can run /evolve to trigger observation and then review, approve, edit, or revert pending memory entries with full control
@@ -90,7 +90,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Capture Hardening | 3/3 | Complete | 2026-04-20 |
-| 2. Observer Agent | 0/3 | Planned | - |
+| 2. Observer Agent | 3/3 | Complete    | 2026-04-21 |
 | 3. Evolve Command | 0/TBD | Not started | - |
 | 4. Agent Consumption | 0/TBD | Not started | - |
 | 5. Memory Lifecycle | 0/TBD | Not started | - |
