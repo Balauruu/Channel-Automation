@@ -10,14 +10,15 @@ Dark mysteries documentary video production pipeline.
 - `.claude/agents/` -- Agent definitions
 - `.claude/skills/` -- Shared skills (agent-protocols)
 - `.claude/agent-memory/` -- Per-agent persistent memory (universal, cross-project)
-- `.claude/project-memories/` -- Per-project agent notes (project-scoped, archived with project)
+- `.claude/PLAYBOOK.md` -- Cross-agent coordination log (observer-managed, Open/Resolved lifecycle)
 - `.claude/references/` -- Reference guides (skill crafting)
-- `.claude/feedback/` -- Cross-agent feedback signals (signals.yaml)
-- `.claude/logs/` -- Agent dispatch/completion session logs
+- `.claude/logs/` -- Agent dispatch/completion session logs and observations/ (obs.jsonl per project)
 - `.claude/tests/` -- Smoke tests and validation scripts
-- `.claude/hooks/` -- Pre/PostToolUse and SubagentStop hooks
+- `.claude/hooks/` -- Pre/PostToolUse and SubagentStop hooks (pipeline-observe.js)
 - `.claude/scripts/` -- Python scripts (strategy/, editorial/, media/ subdirs)
+- `.claude/rules/` -- Modular on-demand rules (git-workflow, etc.). Read when relevant; not auto-loaded.
 - `data/` -- SQLite databases (channel_assistant.db, asset_catalog.db)
+- `docs/` -- plans & specs
 - `channel/strategy/` -- Strategy outputs (competitors.json, analysis, topics)
 - `channel/voice-analysis/` -- Style-extractor workspace (reconstructed scripts)
 - `projects/` -- Per-documentary outputs

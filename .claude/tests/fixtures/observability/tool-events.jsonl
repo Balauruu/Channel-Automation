@@ -1,5 +1,0 @@
-{"ts":"2026-04-17T10-00-00-000Z","event":"dispatch","session_id":"s","agent_type":"researcher","agent_id":"a1","cwd":"/tmp","prompt":"find X"}
-{"ts":"2026-04-17T10-00-01-000Z","event":"tool_pre","tool":"Bash","tool_use_id":"t1","input":{"command":"ls"}}
-{"ts":"2026-04-17T10-00-01-500Z","event":"tool_post","tool":"Bash","tool_use_id":"t1","duration_ms":null,"output":{"stdout":"ok"}}
-{"ts":"2026-04-17T10-00-03-000Z","event":"tool_pre","tool":"Bash","tool_use_id":"t2","input":{"command":"fail"}}
-{"ts":"2026-04-17T10-00-03-200Z","event":"tool_fail","tool":"Bash","tool_use_id":"t2","duration_ms":null,"error":"boom","interrupted":false}
