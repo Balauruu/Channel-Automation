@@ -89,9 +89,9 @@ node .claude/scripts/memory/evolve.js decay
 Parse the JSON output. Store the result as `decay_result`.
 
 The `decay_result` contains:
-- `expired` -- array of files with expired entries. Each file entry has a `path`, `type`, and `entries` array. Each entry has `global_index`, `line`, `text`, `confidence`, `age_days`, and `ttl_days`.
+- `expired` -- flat array of expired entries. Each entry has: `global_index`, `path`, `type`, `line`, `text`, `confidence`, `age_days`, and `ttl_days`.
 - `capacity_warnings` -- array of files at or above 180 lines. Each has `path`, `type`, and `lines`.
-- `total_expired` -- total count of expired entries across all files.
+- `total_expired` -- total count of expired entries.
 
 ## Step 5: Consolidation Check
 
@@ -272,7 +272,7 @@ node .claude/scripts/memory/evolve.js decay-upgrade {kept_idx1} {kept_idx2} ...
 
 Parse the JSON output. Store the result as `upgrade_result`.
 
-**If user pressed Enter (kept all):** ALL expired entries get upgraded. Collect all `global_index` values from `decay_result.expired[*].entries[*].global_index` and run `decay-upgrade` with all of them.
+**If user pressed Enter (kept all):** ALL expired entries get upgraded. Collect all `global_index` values from `decay_result.expired` (each item has a top-level `global_index` field) and run `decay-upgrade` with all of them.
 
 Display action summary (omit lines with zero count):
 
