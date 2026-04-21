@@ -62,8 +62,8 @@ Plans:
   3. After /evolve completes, promoted entries are in their final memory sections and reverted entries leave no trace in the working tree
 **Plans:** 2 plans
 Plans:
-- [ ] 03-01-PLAN.md — evolve.js helper script (scan/promote/revert subcommands) + eval tests
-- [ ] 03-02-PLAN.md — evolve SKILL.md (observer dispatch, summary display, revert interaction)
+- [x] 03-01-PLAN.md — evolve.js helper script (scan/promote/revert subcommands) + eval tests
+- [x] 03-02-PLAN.md — evolve SKILL.md (observer dispatch, summary display, revert interaction)
 
 ### Phase 4: Agent Consumption
 **Goal**: All pipeline agents read PLAYBOOK.md at task start for cross-agent coordination, and supporting skills reflect the new memory system paths and schema
