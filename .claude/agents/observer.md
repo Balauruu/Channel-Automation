@@ -232,7 +232,7 @@ After processing all runs in this invocation, write the updated cursor:
 {"byte_offset": <new_offset>, "last_epoch_ms": <epoch_ms_of_last_processed_event>, "last_run_id": "<agent_id_of_last_processed_run>"}
 ```
 
-The `byte_offset` should reflect the byte position just past the last complete event processed. Calculate by summing the byte lengths of all processed lines from the chunk.
+Calculate new `byte_offset` as: `cursor.byte_offset + sum of Buffer.byteLength(line + '\n', 'utf8')` for each processed JSONL line. Use `Buffer.byteLength`, not string `.length`, to handle multibyte characters correctly. Note: `tail -c` uses 1-based offsets; `byte_offset=0` means "read from the start" (pass `+1` to `tail -c`).
 
 **Crash safety:** Only update the cursor AFTER all writes for the batch succeed. If a write fails mid-batch, do NOT advance the cursor past the failed run -- this ensures the run is reprocessed on the next invocation.
 
