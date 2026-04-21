@@ -169,18 +169,20 @@ git add .claude/agent-memory/researcher/MEMORY.md
 git add .claude/PLAYBOOK.md
 ```
 
-Commit with a descriptive message:
+Commit with a descriptive message (use gross counts -- what was actually
+written/removed -- so the commit reflects file operations performed):
 
-- If no reverts: `evolve: promote {N} entries to permanent memory`
-- If reverts happened: `evolve: promote {N} entries, revert {M} entries`
+- If no reverts: `evolve: promote {promote_result.total} entries to permanent memory`
+- If reverts happened: `evolve: promote {promote_result.total} entries, revert {revert_result.total} entries`
 
 ## Step 8: Done
 
-Display the final summary:
+Display the final summary (use net promoted count so the user sees the
+effective result):
 
 ```
-Evolution complete. {N} entries promoted, {M} reverted.
+Evolution complete. {promote_result.total - revert_result.total} entries promoted, {revert_result.total} reverted.
 ```
 
-Where N is the net promoted count (total promoted minus reverted) and M is
-the reverted count (0 if no reverts).
+Where `promote_result.total` is the gross promoted count and
+`revert_result.total` is the number of entries reverted (0 if no reverts).
