@@ -210,7 +210,6 @@ function promote() {
       // Now clear entries from ## Pending Review (which shifted down)
       // Recalculate positions after insertion
       const shift = insertLines.length;
-      const newPendingStart = pendingLineIdx + shift;
       // Remove entry lines from Pending Review section
       // Find the entries in the new array (they shifted by `shift`)
       const entryLinesToRemove = pendingSection.entries
