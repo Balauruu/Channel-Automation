@@ -1,82 +1,44 @@
 ---
 phase: 04-agent-consumption
-verified: 2026-04-21T15:00:00Z
-status: gaps_found
-score: 6/8 must-haves verified
+verified: 2026-04-21T16:30:00Z
+status: passed
+score: 8/8 must-haves verified
 overrides_applied: 0
-gaps:
-  - truth: "Every pipeline agent's task-start sequence includes reading PLAYBOOK.md for open coordination entries (via updated agent-protocols)"
-    status: failed
-    reason: >
-      The implementation deliberately inverted this. Decision D-02 in 04-CONTEXT.md
-      states agents NEVER read PLAYBOOK.md. agent-protocols SKILL.md has no PLAYBOOK.md
-      read instruction, and the CONTEXT.md <specifics> section explicitly acknowledges
-      the deviation from MEML-03 requirement text and ROADMAP SC-1. The observation
-      pipeline routes PLAYBOOK entries to individual agent MEMORY.md files instead of
-      having agents read PLAYBOOK directly. This is an architectural decision, not an
-      oversight, but it directly contradicts the ROADMAP success criterion as written.
-    artifacts:
-      - path: ".claude/skills/agent-protocols/SKILL.md"
-        issue: "No instruction to read PLAYBOOK.md at task start -- deliberately omitted per D-02"
-    missing:
-      - "Either add PLAYBOOK.md read instruction to agent-protocols (implementing SC-1 literally),
-         OR update ROADMAP SC-1 to reflect the D-02 design (observer routes to agent MEMORY.md
-         instead of agents reading PLAYBOOK), OR add a formal override accepted_by the project owner"
-
-  - truth: "A pipeline-learning skill exists documenting the observer system, /evolve command, and event schema for agent self-reference"
-    status: failed
-    reason: >
-      No standalone pipeline-learning skill exists at .claude/skills/pipeline-learning/SKILL.md.
-      Decision D-11 in 04-CONTEXT.md merged pipeline-learning into agent-observability.
-      This is an intentional architectural decision that satisfies the functional requirement
-      (the content is present in agent-observability) but the ROADMAP SC-4 specifically requires
-      a pipeline-learning skill to "exist." The skill path does not exist. REQUIREMENTS.md
-      MEML-06 reads "pipeline-learning skill created documenting the observer system, /evolve
-      command, and event schema." No such skill was created.
-    artifacts:
-      - path: ".claude/skills/pipeline-learning/SKILL.md"
-        issue: "File does not exist -- content merged into agent-observability per D-11"
-    missing:
-      - "Either create .claude/skills/pipeline-learning/SKILL.md (even as a thin redirect to
-         agent-observability), OR update ROADMAP SC-4 and REQUIREMENTS.md MEML-06 to reflect
-         the merged scope (no separate skill), OR add a formal override accepted_by the project owner"
+re_verification:
+  previous_status: gaps_found
+  previous_score: 6/8
+  gaps_closed:
+    - "Every pipeline agent reads PLAYBOOK.md at task start (SC-1) -- resolved by ROADMAP SC-1 update to reflect D-02: observer routes PLAYBOOK entries to agent MEMORY.md; agents consume passively"
+    - "A pipeline-learning skill exists documenting observer system, /evolve, event schema (SC-4) -- resolved by ROADMAP SC-4 update to reflect D-11: pipeline-learning merged into agent-observability"
+  gaps_remaining: []
+  regressions: []
 ---
 
 # Phase 4: Agent Consumption Verification Report
 
 **Phase Goal:** All pipeline agents read PLAYBOOK.md at task start for cross-agent coordination, and supporting skills reflect the new memory system paths and schema
-**Verified:** 2026-04-21T15:00:00Z
-**Status:** gaps_found
-**Re-verification:** No -- initial verification
+**Verified:** 2026-04-21T16:30:00Z
+**Status:** passed
+**Re-verification:** Yes -- after ROADMAP SC-1, SC-4 and REQUIREMENTS MEML-03, MEML-06 updated to reflect architectural decisions D-02 and D-11
 
 ## Goal Achievement
 
 ### Observable Truths
 
-The must-haves are the union of ROADMAP.md Success Criteria (non-negotiable) and PLAN frontmatter truths. ROADMAP SCs 1 and 4 conflict with implementation decisions D-02 and D-11. SC 2, 3 are fully satisfied.
+ROADMAP SCs 1 and 4 were updated after initial verification to align with architectural decisions D-02 and D-11. The implementation was always correct; the ROADMAP/REQUIREMENTS.md now match it. All 8 truths pass.
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | Every pipeline agent reads PLAYBOOK.md at task start (SC-1) | FAILED | agent-protocols SKILL.md has no PLAYBOOK read instruction -- D-02 explicitly prohibits it |
-| 2 | PLAYBOOK.md uses Open/Resolved; observer writes to Open, marks Resolved (SC-2) | VERIFIED | PLAYBOOK.md confirmed: ## Open and ## Resolved present; observer Step 8 routing branch confirmed |
-| 3 | agent-observability documents obs.jsonl paths, schema, debug recipes; no stale refs (SC-3) | VERIFIED | 232-line skill with logs/observations path, event schema, Q1/Q2/Q3, 6 debug recipes; zero stale refs |
-| 4 | A pipeline-learning skill exists documenting observer system, /evolve, event schema (SC-4) | FAILED | No .claude/skills/pipeline-learning/SKILL.md -- content merged into agent-observability per D-11 |
+| 1 | The observer routes cross-agent coordination insights to agent MEMORY.md; agents consume passively via injected memory -- no direct PLAYBOOK read (SC-1, D-02) | VERIFIED | agent-protocols SKILL.md: memory "auto-injected and read-only" with no PLAYBOOK read instruction. observer.md Step 8: PLAYBOOK routing branch writes Q3 entries to `.claude/agent-memory/<agent>/MEMORY.md ## Pending Review` then resolves PLAYBOOK entry |
+| 2 | PLAYBOOK.md uses Open/Resolved; observer writes to Open, marks Resolved when routed (SC-2) | VERIFIED | PLAYBOOK.md confirmed: ## Open and ## Resolved sections present. observer.md Step 8 documents complete Open -> route -> Resolved lifecycle in a single pass |
+| 3 | agent-observability documents obs.jsonl paths, schema, debug recipes; no stale refs (SC-3) | VERIFIED | 232-line skill: logs/observations path, full event schema table, 7 event types, truncation caps, 6 debug recipes; zero stale refs to old paths |
+| 4 | agent-observability covers the full observation pipeline including observer system, /evolve, event schema, and PLAYBOOK routing (SC-4, D-11: pipeline-learning merged) | VERIFIED | Confirmed sections: ## Observer System (10-step pipeline), ## /evolve Command, ## Event Schema, ## PLAYBOOK Routing, ## 3-Layer Scope Tests, ## Debug Recipes. No separate pipeline-learning skill needed or expected |
 | 5 | PLAYBOOK.md has ## Open and ## Resolved with no ## Pending Review or ## Permanent (PLAN 01 truth) | VERIFIED | File confirmed: Open + Resolved present; Pending Review + Permanent absent |
-| 6 | agent-protocols is ~20 lines, read-only, no signals/project-memories/scratchpad (PLAN 01 truth) | VERIFIED | 24 lines; all dead references absent; read-only language confirmed |
-| 7 | Observer Step 8 has PLAYBOOK routing branch for Q3 passes (PLAN 02 truth) | VERIFIED | "PLAYBOOK.md routing (Q3 pass targets only)" section present in Step 8; 10 steps preserved |
+| 6 | agent-protocols is ~20 lines, read-only, no signals/project-memories/scratchpad (PLAN 01 truth) | VERIFIED | 24 lines; all dead references absent; read-only language confirmed; no signals, no project-memories, no scratchpad |
+| 7 | Observer Step 8 has PLAYBOOK routing branch for Q3 passes (PLAN 02 truth) | VERIFIED | "PLAYBOOK.md routing (Q3 pass targets only)" section in Step 8 with full 4-step lifecycle; 10 steps preserved |
 | 8 | obs-summarize.js references logs/observations, no logs/runs, renamed resolveObsFile (PLAN 02 truth) | VERIFIED | All checks pass; syntax valid |
 
-**Score:** 6/8 truths verified
-
-### ROADMAP vs. Implementation Conflict (Root Cause Analysis)
-
-Both gaps share the same root cause: the ROADMAP was not updated to reflect architectural decisions made during phase planning.
-
-- **SC-1 vs. D-02:** ROADMAP says "agents read PLAYBOOK.md at task start." D-02 says "Agents never read PLAYBOOK.md -- observer routes entries to agents instead." The CONTEXT.md `<specifics>` section (line 103-104) acknowledges this: "MEML-03 requirement text says 'adds PLAYBOOK read at task start' but per D-02, agents don't read PLAYBOOK." The deviation was known, documented, and implemented. The ROADMAP and REQUIREMENTS.md were not updated to match.
-
-- **SC-4 vs. D-11:** ROADMAP says "A pipeline-learning skill exists." D-11 says "Merge pipeline-learning into agent-observability." The 04-03-SUMMARY.md confirms the merge was executed and the content is present in agent-observability. The ROADMAP SC-4 was never updated to reflect the merge decision.
-
-**Assessment:** Both deviations are intentional and architecturally sound. The implementation is internally consistent. The gaps are documentation gaps -- the ROADMAP/REQUIREMENTS.md were not kept in sync with phase decisions.
+**Score:** 8/8 truths verified
 
 ### Required Artifacts
 
@@ -86,8 +48,7 @@ Both gaps share the same root cause: the ROADMAP was not updated to reflect arch
 | `.claude/skills/agent-protocols/SKILL.md` | Ultra-thin read-only protocol | VERIFIED | 24 lines; ## Memory + ## Project Context only; no dead refs |
 | `.claude/agents/observer.md` | Observer with PLAYBOOK routing capability | VERIFIED | Step 8 PLAYBOOK branch, Protocol Overrides updated, 10 steps |
 | `.claude/scripts/obs-summarize.js` | Updated to logs/observations path | VERIFIED | resolveObsFile, logs/observations, syntax OK |
-| `.claude/skills/agent-observability/SKILL.md` | 200+ line comprehensive rewrite | VERIFIED | 232 lines, 8 sections, all required content |
-| `.claude/skills/pipeline-learning/SKILL.md` | Separate pipeline-learning skill | MISSING | Does not exist -- merged into agent-observability per D-11 |
+| `.claude/skills/agent-observability/SKILL.md` | Comprehensive rewrite covering merged pipeline-learning scope | VERIFIED | 232 lines, 8 sections, observer system + /evolve + event schema + PLAYBOOK routing |
 
 ### Key Link Verification
 
@@ -117,36 +78,35 @@ Not applicable -- all deliverables are prompt files and documentation. No dynami
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|-------------|-------------|--------|----------|
-| MEML-03 | 04-01 | agent-protocols rewritten thin, no signals/project-memories/scratchpad, adds PLAYBOOK read | PARTIAL | Rewrite is confirmed (24 lines, clean). "Adds PLAYBOOK read at task start" not implemented per D-02 -- deviation acknowledged in CONTEXT.md but REQUIREMENTS.md not updated |
+| MEML-03 | 04-01 | agent-protocols rewritten thin; agents consume memory passively (D-02: observer routes PLAYBOOK entries to agent MEMORY.md) | SATISFIED | 24-line SKILL.md: read-only memory injection, no signals/project-memories/scratchpad. REQUIREMENTS.md updated to reflect passive consumption model |
 | MEML-04 | 04-01, 04-02 | PLAYBOOK.md uses Open/Resolved; observer manages lifecycle | SATISFIED | PLAYBOOK.md Open/Resolved confirmed; observer Step 8 routing confirmed; evolve.js exclusion confirmed |
 | MEML-05 | 04-03 | agent-observability rewritten for new paths, schema, debug recipes | SATISFIED | 232-line skill with logs/observations, event schema, Q1/Q2/Q3, 6 recipes; no stale refs |
-| MEML-06 | 04-03 | pipeline-learning skill created | NOT SATISFIED | No .claude/skills/pipeline-learning/SKILL.md -- content merged into agent-observability per D-11. REQUIREMENTS.md MEML-06 not updated to reflect merge |
+| MEML-06 | 04-03 | Observation pipeline documented in agent-observability (D-11: merged into agent-observability instead of separate skill) | SATISFIED | REQUIREMENTS.md updated: no separate pipeline-learning skill expected. agent-observability covers observer system, /evolve, event schema, PLAYBOOK routing |
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
 | `.claude/settings.local.json` | - | `signals.yaml` reference | Info | Local config allowlist entry -- pre-existing, not Phase 4 scope, no runtime effect |
-| ROADMAP.md | 73-76 | SC-1 and SC-4 contradict D-02 and D-11 | Warning | Documentation drift -- ROADMAP not updated to reflect phase planning decisions |
-| `.planning/REQUIREMENTS.md` | 43, 46 | MEML-03 and MEML-06 text not updated post-decisions | Warning | Traceability gap -- requirements text contradicts implemented design |
 
-No stub patterns, placeholder implementations, hardcoded empty data, or unimplemented handlers found in any Phase 4 deliverable.
+No stub patterns, placeholder implementations, hardcoded empty data, or unimplemented handlers found in any Phase 4 deliverable. Documentation drift anti-patterns (ROADMAP/REQUIREMENTS mismatch) resolved by updates to SC-1, SC-4, MEML-03, and MEML-06.
 
 ### Human Verification Required
 
 None -- all deliverables are static markdown/JS files verifiable programmatically.
 
-### Gaps Summary
+### Summary
 
-Two gaps block a clean pass. Both stem from the same root cause: architectural decisions (D-02, D-11) made during phase planning deviated from the ROADMAP Success Criteria, and the ROADMAP/REQUIREMENTS.md were not updated to reflect those decisions.
+All 8 must-haves now pass. The two initial gaps were documentation drift, not implementation defects: the ROADMAP and REQUIREMENTS were not updated when architectural decisions D-02 (agents never read PLAYBOOK directly -- observer routes to MEMORY.md) and D-11 (pipeline-learning merged into agent-observability) were made during phase planning. The ROADMAP SC-1 and SC-4 updates, and the REQUIREMENTS MEML-03 and MEML-06 updates, bring the contract into alignment with the implementation.
 
-**Gap 1 -- SC-1: Agents reading PLAYBOOK.md at task start.** The implementation inverts this: instead of agents reading PLAYBOOK, the observer routes PLAYBOOK entries to individual agent MEMORY.md files. This is a sound architectural choice (agents are passive consumers; PLAYBOOK is observer-exclusive). The CONTEXT.md explicitly documents the deviation. Resolution requires either: (a) implementing a thin PLAYBOOK read in agent-protocols, (b) updating ROADMAP SC-1 and REQUIREMENTS.md MEML-03 to reflect the routing model, or (c) an explicit override acceptance.
-
-**Gap 2 -- SC-4: pipeline-learning skill existence.** The content is present in agent-observability (232-line merged skill covering observer, /evolve, event schema, scope tests, PLAYBOOK routing). Decision D-11 explicitly merged the scope. REQUIREMENTS.md MEML-06 says "pipeline-learning skill created" -- no file was created. Resolution requires either: (a) creating a minimal pipeline-learning skill (even a redirect stub), (b) updating ROADMAP SC-4 and REQUIREMENTS.md MEML-06 to mark MEML-06 satisfied by merger, or (c) an explicit override acceptance.
-
-The functional implementation is complete and internally consistent. All five deliverable files are substantive, wired, and free of stale references. The gaps are contract gaps (ROADMAP vs. decisions), not implementation gaps.
+The implementation is internally consistent across all five deliverables:
+- agent-protocols is passively injected, read-only, 24 lines
+- PLAYBOOK.md uses Open/Resolved with observer-exclusive write access
+- observer.md Step 8 routes Q3 entries to agent MEMORY.md in a single pass
+- agent-observability documents the full merged pipeline scope (observer + /evolve + event schema + PLAYBOOK routing)
+- obs-summarize.js references the correct logs/observations path
 
 ---
 
-_Verified: 2026-04-21T15:00:00Z_
+_Verified: 2026-04-21T16:30:00Z_
 _Verifier: Claude (gsd-verifier)_
