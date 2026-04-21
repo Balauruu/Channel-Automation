@@ -43,14 +43,14 @@ Agents learn from past runs and don't repeat mistakes — knowledge persists acr
 
 ## Context
 
-### Current State (Broken)
+### Current State
 
-- pipeline-observe.sh exists (342 lines) but only captures subagent events — main conversation is invisible
-- No actual logging is happening in practice
-- Information bleeds between layers: agent-specific knowledge ends up in PLAYBOOK.md
-- agent-protocols skill still references deleted `project-memories/` directory and `signals.yaml`
-- 11 agent MEMORY.md files and 8 skill insights.md files exist but aren't systematically maintained
-- PLAYBOOK.md skeleton exists but isn't populated by any automated system
+- pipeline-observe.js (PostToolUse/SubagentStop hook) captures all conversation events to `.claude/logs/observations/<project>/obs.jsonl` with 10MB rotation and 30-day archive purge
+- @observer subagent (Sonnet 4.6) reads obs.jsonl incrementally, extracts learnings, classifies via 3-layer scope tests, writes to ## Pending Review sections with confidence tags
+- /evolve command dispatches observer then presents pending entries for promote/edit/revert with git-based rollback
+- Confidence decay: LOW entries expire after 14 days, MED after 30 days, with consolidation proposals at 200-line cap
+- PLAYBOOK.md uses Open/Resolved lifecycle; observer routes cross-agent insights to target agent MEMORY.md files
+- agent-protocols rewritten thin (no signals, no project-memories, no scratchpad); agents consume memory passively
 
 ### What Failed (Prior Attempts)
 
