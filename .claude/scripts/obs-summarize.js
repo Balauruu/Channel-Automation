@@ -6,8 +6,8 @@
 //   node .claude/scripts/obs-summarize.js <run-file-or-agent-id-prefix>
 //
 // When given a full path, summarizes that file. When given a prefix that
-// matches uniquely one file in .claude/logs/runs/, summarizes that. When
-// called with no args and the runs dir exists, summarizes the most recent.
+// matches uniquely one file in .claude/logs/observations/<project>/obs.jsonl, summarizes that. When
+// called with no args and the observations dir exists, summarizes the most recent.
 //
 // Output sections:
 //   - Header (agent, outcome, duration, totals)
@@ -35,21 +35,22 @@ function readJsonl(file) {
     .filter(Boolean);
 }
 
-function resolveRunFile(arg) {
-  const runsDir = path.resolve(process.env.CLAUDE_PROJECT_DIR || '.', '.claude', 'logs', 'runs');
+function resolveObsFile(arg) {
+  const obsDir = path.resolve(process.env.CLAUDE_PROJECT_DIR || '.', '.claude', 'logs', 'observations');
   if (!arg) {
-    if (!fs.existsSync(runsDir)) throw new Error(`no runs dir at ${runsDir}`);
-    const files = fs.readdirSync(runsDir).filter(f => f.endsWith('.jsonl'));
-    if (!files.length) throw new Error(`no run files in ${runsDir}`);
-    files.sort();
-    return path.join(runsDir, files[files.length - 1]);
+    if (!fs.existsSync(obsDir)) throw new Error(`no observations dir at ${obsDir}`);
+    const projects = fs.readdirSync(obsDir).filter(f => fs.statSync(path.join(obsDir, f)).isDirectory());
+    if (!projects.length) throw new Error(`no project dirs in ${obsDir}`);
+    // Pick the most recently modified project subdirectory
+    projects.sort((a, b) => fs.statSync(path.join(obsDir, b, 'obs.jsonl')).mtimeMs - fs.statSync(path.join(obsDir, a, 'obs.jsonl')).mtimeMs);
+    return path.join(obsDir, projects[0], 'obs.jsonl');
   }
   if (fs.existsSync(arg) && fs.statSync(arg).isFile()) return path.resolve(arg);
-  if (!fs.existsSync(runsDir)) throw new Error(`no runs dir at ${runsDir}`);
-  const matches = fs.readdirSync(runsDir).filter(f => f.includes(arg) && f.endsWith('.jsonl'));
-  if (matches.length === 0) throw new Error(`no run file matches "${arg}"`);
-  if (matches.length > 1) throw new Error(`"${arg}" matches ${matches.length} files; be more specific`);
-  return path.join(runsDir, matches[0]);
+  if (!fs.existsSync(obsDir)) throw new Error(`no observations dir at ${obsDir}`);
+  const matches = fs.readdirSync(obsDir).filter(f => f.includes(arg) && fs.existsSync(path.join(obsDir, f, 'obs.jsonl')));
+  if (matches.length === 0) throw new Error(`no project matches "${arg}" in ${obsDir}`);
+  if (matches.length > 1) throw new Error(`"${arg}" matches ${matches.length} projects; be more specific`);
+  return path.join(obsDir, matches[0], 'obs.jsonl');
 }
 
 function firstLine(s, max) {
@@ -207,7 +208,7 @@ function summarize(runFile) {
 function main() {
   const arg = process.argv[2];
   try {
-    const runFile = resolveRunFile(arg);
+    const runFile = resolveObsFile(arg);
     process.stdout.write(summarize(runFile));
   } catch (err) {
     process.stderr.write(`obs-summarize error: ${err.message}\n`);
@@ -217,4 +218,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { summarize, resolveRunFile };
+module.exports = { summarize, resolveObsFile };
