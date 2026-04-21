@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 // .claude/scripts/memory/evolve.js
-// Deterministic file operations for /evolve command: scan, promote, revert.
+// Deterministic file operations for /evolve command: scan, promote, revert,
+// decay, decay-remove, decay-upgrade.
 // Usage:
 //   node .claude/scripts/memory/evolve.js scan
 //   node .claude/scripts/memory/evolve.js promote
 //   node .claude/scripts/memory/evolve.js revert <global_index> [<global_index> ...]
+//   node .claude/scripts/memory/evolve.js decay
+//   node .claude/scripts/memory/evolve.js decay-remove <global_index> [<global_index> ...]
+//   node .claude/scripts/memory/evolve.js decay-upgrade <global_index> [<global_index> ...]
 
 'use strict';
 
@@ -25,6 +29,13 @@ function getClaudeDir() {
 
 const memoryPointerRe = / \(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?Z?\)$/;
 const insightPointerRe = / \(from: [a-z][a-z0-9-]*, \d{4}-\d{2}-\d{2}T\d{2}:\d{2}\)$/;
+
+// -- Decay timestamp and confidence extraction regexes -----------------------
+
+const memoryTimestampRe = /\((\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?Z?)\)$/;
+const insightsTimestampRe = /\(from: [a-z][a-z0-9-]*, (\d{4}-\d{2}-\d{2}T\d{2}:\d{2})\)$/;
+const legacyDateRe = /^- \[(\d{4}-\d{2}-\d{2})\]/;
+const confidenceRe = /\[(HIGH|MED|LOW)\]/;
 
 // -- Core functions ----------------------------------------------------------
 
@@ -115,6 +126,35 @@ function stripPointer(entry) {
  */
 function relativePath(absPath) {
   return path.relative(getProjectRoot(), absPath).split(path.sep).join('/');
+}
+
+/**
+ * Extract a Date from an entry's trailing timestamp pointer.
+ * For insights files: tries insightsTimestampRe, then legacyDateRe fallback.
+ * For memory/playbook files: tries memoryTimestampRe.
+ * Returns a Date on match, null if no timestamp found.
+ */
+function extractTimestamp(entryText, fileType) {
+  if (fileType === 'insights') {
+    const m = insightsTimestampRe.exec(entryText);
+    if (m) return new Date(m[1]);
+    const legacy = legacyDateRe.exec(entryText);
+    if (legacy) return new Date(legacy[1]);
+    return null;
+  }
+  // memory or playbook
+  const m = memoryTimestampRe.exec(entryText);
+  if (m) return new Date(m[1]);
+  return null;
+}
+
+/**
+ * Extract the confidence level (HIGH, MED, or LOW) from an entry.
+ * Returns the matched string or null if none found.
+ */
+function extractConfidence(entryText) {
+  const m = confidenceRe.exec(entryText);
+  return m ? m[1] : null;
 }
 
 /**
@@ -366,6 +406,288 @@ function revert(indices) {
   return result;
 }
 
+/**
+ * Scan all target files (excluding PLAYBOOK.md) for expired ## Permanent entries.
+ * LOW entries expire after 14 days, MED entries after 30 days.
+ * HIGH entries and entries without timestamps are never flagged.
+ * Also reports capacity warnings for files at 180+ lines.
+ * Returns structured JSON with expired entries and capacity warnings.
+ */
+function decay() {
+  const targetFiles = discoverTargetFiles();
+  const result = {
+    command: 'decay',
+    expired: [],
+    capacity_warnings: [],
+    total_expired: 0
+  };
+
+  let globalIndex = 1;
+
+  for (const target of targetFiles) {
+    // Skip PLAYBOOK.md — it uses Open/Resolved lifecycle, not Permanent (D-03, Pitfall 4)
+    if (target.type === 'playbook') continue;
+
+    const content = fs.readFileSync(target.path, 'utf8').replace(/\r\n/g, '\n');
+    const lines = content.split('\n');
+
+    // Capacity check: warn at 180+ lines (D-08)
+    if (lines.length >= 180) {
+      result.capacity_warnings.push({
+        path: relativePath(target.path),
+        type: target.type,
+        lines: lines.length
+      });
+    }
+
+    const sections = parseSections(content);
+    const permanentSection = sections.find(s => s.heading === 'Permanent');
+
+    if (!permanentSection || permanentSection.entries.length === 0) continue;
+
+    for (const entry of permanentSection.entries) {
+      const conf = extractConfidence(entry.text);
+
+      // HIGH never decays; null confidence = legacy entry treated as non-decayable (Pitfall 5)
+      if (conf === 'HIGH' || !conf) {
+        globalIndex++;
+        continue;
+      }
+
+      const ts = extractTimestamp(entry.text, target.type);
+
+      // No timestamp = cannot compute age, skip
+      if (!ts) {
+        globalIndex++;
+        continue;
+      }
+
+      const ageDays = (Date.now() - ts.getTime()) / (1000 * 60 * 60 * 24);
+      const ttl = conf === 'LOW' ? 14 : 30; // MEML-02
+
+      if (ageDays >= ttl) {
+        result.expired.push({
+          global_index: globalIndex,
+          path: relativePath(target.path),
+          type: target.type,
+          line: entry.line,
+          text: entry.text,
+          confidence: conf,
+          age_days: Math.floor(ageDays),
+          ttl_days: ttl
+        });
+      }
+
+      globalIndex++;
+    }
+  }
+
+  result.total_expired = result.expired.length;
+  return result;
+}
+
+/**
+ * Remove specific ## Permanent entries by global index (decay confirmed).
+ * Re-scans all target files (excluding PLAYBOOK.md) for Permanent entries,
+ * then removes those matching the requested indices.
+ * Removes in descending line order to avoid index corruption.
+ */
+function decayRemove(indices) {
+  // Validate and parse indices
+  const parsedIndices = [];
+  const errors = [];
+
+  for (const idx of indices) {
+    const parsed = parseInt(idx, 10);
+    if (isNaN(parsed) || parsed < 1) {
+      errors.push({ index: idx, error: 'Invalid index: must be a positive integer' });
+    } else {
+      parsedIndices.push(parsed);
+    }
+  }
+
+  // Discover files and assign global indices to Permanent entries (skip playbook)
+  const targetFiles = discoverTargetFiles();
+  const indexMap = [];
+  let globalIndex = 1;
+
+  for (const target of targetFiles) {
+    if (target.type === 'playbook') continue;
+
+    const content = fs.readFileSync(target.path, 'utf8').replace(/\r\n/g, '\n');
+    const sections = parseSections(content);
+    const permanentSection = sections.find(s => s.heading === 'Permanent');
+
+    if (!permanentSection || permanentSection.entries.length === 0) continue;
+
+    for (const entry of permanentSection.entries) {
+      indexMap.push({
+        globalIndex: globalIndex,
+        filePath: target.path,
+        line: entry.line,
+        entry: entry.text
+      });
+      globalIndex++;
+    }
+  }
+
+  // Check for out-of-range indices
+  const maxIndex = indexMap.length;
+  for (const idx of parsedIndices) {
+    if (idx > maxIndex) {
+      errors.push({ index: String(idx), error: `Index ${idx} out of range (max: ${maxIndex})` });
+    }
+  }
+
+  // Collect entries to remove (only valid, in-range ones)
+  const toRemove = parsedIndices
+    .filter(idx => idx <= maxIndex)
+    .map(idx => indexMap[idx - 1]);
+
+  // Group by file path
+  const byFile = new Map();
+  for (const item of toRemove) {
+    if (!byFile.has(item.filePath)) byFile.set(item.filePath, []);
+    byFile.get(item.filePath).push(item);
+  }
+
+  const removed = [];
+
+  // Process each file (remove lines in descending order to avoid offset corruption)
+  for (const [filePath, items] of byFile) {
+    const content = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
+    const lines = content.split('\n');
+
+    // Sort by line number descending (highest first)
+    items.sort((a, b) => b.line - a.line);
+
+    for (const item of items) {
+      lines.splice(item.line, 1);
+      removed.push({
+        global_index: item.globalIndex,
+        path: relativePath(item.filePath),
+        entry: item.entry
+      });
+    }
+
+    fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
+  }
+
+  // Sort removed by global_index for consistent output
+  removed.sort((a, b) => a.global_index - b.global_index);
+
+  const result = {
+    command: 'decay-remove',
+    removed: removed,
+    total: removed.length
+  };
+
+  if (errors.length > 0) {
+    result.errors = errors;
+  }
+
+  return result;
+}
+
+/**
+ * Upgrade specific ## Permanent entries from [LOW] or [MED] to [HIGH] confidence.
+ * Re-scans all target files (excluding PLAYBOOK.md) for Permanent entries,
+ * then upgrades confidence tags for those matching the requested indices.
+ */
+function decayUpgrade(indices) {
+  // Validate and parse indices
+  const parsedIndices = [];
+  const errors = [];
+
+  for (const idx of indices) {
+    const parsed = parseInt(idx, 10);
+    if (isNaN(parsed) || parsed < 1) {
+      errors.push({ index: idx, error: 'Invalid index: must be a positive integer' });
+    } else {
+      parsedIndices.push(parsed);
+    }
+  }
+
+  // Discover files and assign global indices to Permanent entries (skip playbook)
+  const targetFiles = discoverTargetFiles();
+  const indexMap = [];
+  let globalIndex = 1;
+
+  for (const target of targetFiles) {
+    if (target.type === 'playbook') continue;
+
+    const content = fs.readFileSync(target.path, 'utf8').replace(/\r\n/g, '\n');
+    const sections = parseSections(content);
+    const permanentSection = sections.find(s => s.heading === 'Permanent');
+
+    if (!permanentSection || permanentSection.entries.length === 0) continue;
+
+    for (const entry of permanentSection.entries) {
+      indexMap.push({
+        globalIndex: globalIndex,
+        filePath: target.path,
+        line: entry.line,
+        entry: entry.text
+      });
+      globalIndex++;
+    }
+  }
+
+  // Check for out-of-range indices
+  const maxIndex = indexMap.length;
+  for (const idx of parsedIndices) {
+    if (idx > maxIndex) {
+      errors.push({ index: String(idx), error: `Index ${idx} out of range (max: ${maxIndex})` });
+    }
+  }
+
+  // Collect entries to upgrade (only valid, in-range ones)
+  const toUpgrade = parsedIndices
+    .filter(idx => idx <= maxIndex)
+    .map(idx => indexMap[idx - 1]);
+
+  // Group by file path
+  const byFile = new Map();
+  for (const item of toUpgrade) {
+    if (!byFile.has(item.filePath)) byFile.set(item.filePath, []);
+    byFile.get(item.filePath).push(item);
+  }
+
+  const upgraded = [];
+
+  // Process each file — replace [LOW] or [MED] with [HIGH] in-place
+  for (const [filePath, items] of byFile) {
+    const content = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
+    const lines = content.split('\n');
+
+    for (const item of items) {
+      lines[item.line] = lines[item.line].replace(/\[LOW\]/, '[HIGH]').replace(/\[MED\]/, '[HIGH]');
+      upgraded.push({
+        global_index: item.globalIndex,
+        path: relativePath(item.filePath),
+        entry: lines[item.line]
+      });
+    }
+
+    fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
+  }
+
+  // Sort upgraded by global_index for consistent output
+  upgraded.sort((a, b) => a.global_index - b.global_index);
+
+  const result = {
+    command: 'decay-upgrade',
+    upgraded: upgraded,
+    total: upgraded.length
+  };
+
+  if (errors.length > 0) {
+    result.errors = errors;
+  }
+
+  return result;
+}
+
 // -- CLI dispatch ------------------------------------------------------------
 
 if (require.main === module) {
@@ -373,11 +695,14 @@ if (require.main === module) {
   try {
     let result;
     switch (COMMAND) {
-      case 'scan':    result = scan(); break;
-      case 'promote': result = promote(); break;
-      case 'revert':  result = revert(process.argv.slice(3)); break;
+      case 'scan':          result = scan(); break;
+      case 'promote':       result = promote(); break;
+      case 'revert':        result = revert(process.argv.slice(3)); break;
+      case 'decay':         result = decay(); break;
+      case 'decay-remove':  result = decayRemove(process.argv.slice(3)); break;
+      case 'decay-upgrade': result = decayUpgrade(process.argv.slice(3)); break;
       default:
-        process.stderr.write('Usage: node evolve.js <scan|promote|revert> [args]\n');
+        process.stderr.write('Usage: node evolve.js <scan|promote|revert|decay|decay-remove|decay-upgrade> [args]\n');
         process.exit(1);
     }
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
@@ -387,4 +712,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { scan, promote, revert, discoverTargetFiles, parseSections, stripPointer };
+module.exports = { scan, promote, revert, decay, decayRemove, decayUpgrade, extractTimestamp, extractConfidence, discoverTargetFiles, parseSections, stripPointer };
