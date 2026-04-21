@@ -105,13 +105,19 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Evolve Command | 0/2 | Planning complete | - |
 | 4. Agent Consumption | 0/3 | Planning complete | - |
 | 5. Memory Lifecycle | 2/2 | Complete | 2026-04-21 |
-| 6. Old Memory Cleanup | 0/0 | Not planned | - |
+| 6. Old Memory Cleanup | 0/2 | Planning complete | - |
 
 ### Phase 6: Old Memory Cleanup
 **Goal**: Remove all traces of the old broken memory system (project-memories/, signals.yaml, stale agent-memory references, deprecated skill insights, dead code in agent definitions) so the codebase only contains the new unified memory system
 **Depends on**: Phase 5
-**Requirements**: TBD
-**Plans:** 0 plans
-
+**Requirements**: CLEANUP-01, CLEANUP-02, CLEANUP-03, CLEANUP-04, CLEANUP-05
+**Success Criteria** (what must be TRUE):
+  1. All 8 deprecated files (obs.js, check-definition-signals.js, autoresearch skill, old test fixtures) are removed from git tracking
+  2. CLAUDE.md Folder Map has no dead entries and includes PLAYBOOK.md and observations/ paths
+  3. PROJECT.md Current State describes the working unified memory system
+  4. Codebase maps describe the new system with no old-system references
+  5. Full grep audit confirms zero stale old-system references in any live file
+**Plans:** 2 plans
 Plans:
-- [ ] TBD (run /gsd-plan-phase 6 to break down)
+- [ ] 06-01-PLAN.md — File deletions, CLAUDE.md/gitignore/PROJECT.md updates, cleanup commit
+- [ ] 06-02-PLAN.md — Codebase map regeneration, full grep audit, verification commit

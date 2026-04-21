@@ -44,6 +44,14 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **MEML-05**: agent-observability skill fully rewritten for new paths (obs.jsonl), new schema, new debug recipes
 - [ ] **MEML-06**: observation pipeline documented in agent-observability skill covering observer system, /evolve command, event schema, and PLAYBOOK routing (D-11: merged into agent-observability instead of separate skill)
 
+### Cleanup
+
+- [ ] **CLEANUP-01**: All deprecated files removed from git (obs.js, check-definition-signals.js, autoresearch skill, old test fixtures)
+- [ ] **CLEANUP-02**: CLAUDE.md Folder Map accurate — no dead entries (project-memories/, feedback/), includes new system paths (PLAYBOOK.md, observations/)
+- [ ] **CLEANUP-03**: PROJECT.md Current State reflects working unified memory system, not broken state
+- [ ] **CLEANUP-04**: Codebase maps regenerated to describe new system (no old-system references)
+- [ ] **CLEANUP-05**: Full grep audit confirms zero stale old-system references in any live file
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -98,12 +106,17 @@ Deferred to future release. Tracked but not in current roadmap.
 | MEML-06 | Phase 4 | Pending |
 | EVLV-04 | Phase 5 | Pending |
 | MEML-02 | Phase 5 | Pending |
+| CLEANUP-01 | Phase 6 | Pending |
+| CLEANUP-02 | Phase 6 | Pending |
+| CLEANUP-03 | Phase 6 | Pending |
+| CLEANUP-04 | Phase 6 | Pending |
+| CLEANUP-05 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 25 total
-- Mapped to phases: 25
+- v1 requirements: 30 total
+- Mapped to phases: 30
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-20*
-*Last updated: 2026-04-20 after roadmap phase mapping*
+*Last updated: 2026-04-21 after Phase 6 planning*
