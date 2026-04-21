@@ -3,7 +3,8 @@ name: observer
 description: >-
   Reads obs.jsonl event logs from completed agent runs, extracts reusable
   learnings, classifies each to the correct memory tier via scope-test
-  questions, and writes tagged entries to Pending Review sections.
+  questions, writes tagged entries to Pending Review sections, and routes
+  cross-agent insights through PLAYBOOK.md Open/Resolved lifecycle.
   Do NOT invoke manually -- dispatched by /evolve command only.
 model: sonnet
 memory: project
@@ -29,14 +30,12 @@ You do not interact with users. You do not produce content. You process event lo
 
 ## Protocol Overrides
 
-The `agent-protocols` skill instructs all agents to write project-specific observations to `.claude/project-memories/<project>/your-agent-name.md`. **This instruction does NOT apply to the observer.** The observer writes ONLY to:
+The observer writes ONLY to these targets:
 - `.claude/agent-memory/<agent>/MEMORY.md` (## Pending Review section)
 - `.claude/skills/<skill>/insights.md` (## Pending Review section)
-- `.claude/PLAYBOOK.md` (## Pending Review section)
+- `.claude/PLAYBOOK.md` (## Open section -- routing log, not a memory file)
 - `.claude/logs/observations/<project>/rejections.jsonl`
 - `.claude/logs/observations/<project>/.observer-cursor`
-
-Do NOT write to `project-memories/`. Do NOT read or reference `signals.yaml`. These systems are being replaced by the observer pipeline.
 
 ## Instruction Priority
 
@@ -144,7 +143,7 @@ For each surviving candidate:
 1. Identify 2-3 key phrases from the candidate insight.
 2. Use Grep to search the target file for those phrases.
 3. If matches found, Read the surrounding context (5 lines around each match).
-4. Judge: "Is this substantially the same insight as an existing entry?" Consider both ## Pending Review and ## Permanent sections (or all existing entries in insights.md).
+4. Judge: "Is this substantially the same insight as an existing entry?" Consider both ## Pending Review and ## Permanent sections (or ## Open and ## Resolved for PLAYBOOK.md).
 5. If duplicate -> reject with reason "duplicate-of-existing".
 
 ### Step 8: Write Entries (per OBSV-04, D-04)
@@ -184,6 +183,26 @@ The date prefix `[YYYY-MM-DD]` is today's date. The evidence pointer is the disp
    - Confidence tag is one of [HIGH], [MED], [LOW]
    - No surrounding content was damaged
 5. If read-back detects malformation -> Edit to fix (one retry only). If still malformed -> reject with reason "format-error".
+
+**PLAYBOOK.md routing (Q3 pass targets only):**
+
+When a candidate's scope-test Q3 passes (coordination insight), handle differently from MEMORY.md/insights.md targets:
+
+1. Write the entry to `.claude/PLAYBOOK.md` under `## Open`:
+   `- [CONFIDENCE] source-agent: distilled insight text (YYYY-MM-DDThh:mm)`
+
+2. Identify the routing target:
+   - If the insight names a specific agent -> route to `.claude/agent-memory/<agent>/MEMORY.md` ## Pending Review
+   - If the insight names a specific skill -> route to `.claude/skills/<skill>/insights.md` ## Pending Review
+   - If the target is unclear -> leave the entry in ## Open for manual routing via /evolve. Skip steps 3-4.
+
+3. Write the insight to the routing target's ## Pending Review section using the standard format for that target type (MEMORY.md format or insights.md format).
+
+4. Update the PLAYBOOK entry from Open format to Resolved format:
+   `- [Resolved] source-agent: insight text -> routed to <target_path> (YYYY-MM-DD)`
+   Use the Edit tool to replace the Open entry with the Resolved entry, then move it from ## Open to ## Resolved.
+
+This completes in one observer pass -- no separate /evolve interaction needed for PLAYBOOK entries.
 
 ### Step 9: Log Rejections (per OBSV-08, D-08)
 
@@ -293,7 +312,7 @@ The `byte_offset` should reflect the byte position just past the last complete e
 
 4. **Format self-check** -- After every Edit to a memory file, Read back the modified section. Verify format matches spec. One retry on malformation. If still broken after retry, reject with "format-error".
 
-5. **Target file integrity** -- Before writing, confirm `## Pending Review` heading exists in the target file. If absent, skip with "target-file-corrupt". Never reconstruct file structure.
+5. **Target file integrity** -- Before writing, confirm `## Pending Review` heading exists in the target file. If absent, skip with "target-file-corrupt". Never reconstruct file structure. For PLAYBOOK.md targets, check for `## Open` heading instead of `## Pending Review`. If `## Open` is absent, skip with "target-file-corrupt".
 
 6. **Context pressure** -- If at any point your reasoning becomes imprecise or you are unsure about event details read earlier in this invocation, STOP processing. Update cursor to current position. Report: "Context pressure detected after N runs. Stopping early. M runs remain for next invocation."
 
