@@ -77,7 +77,7 @@ function discoverTargetFiles() {
  * Line numbers are 0-based.
  */
 function parseSections(content) {
-  const lines = content.split('\n');
+  const lines = content.replace(/\r\n/g, '\n').split('\n');
   const sections = [];
   let current = null;
 
@@ -130,7 +130,7 @@ function scan() {
   };
 
   for (const target of targetFiles) {
-    const content = fs.readFileSync(target.path, 'utf8');
+    const content = fs.readFileSync(target.path, 'utf8').replace(/\r\n/g, '\n');
     const sections = parseSections(content);
     const pendingSection = sections.find(s => s.heading === 'Pending Review');
 
@@ -169,7 +169,8 @@ function promote() {
   let globalIndex = 1;
 
   for (const target of targetFiles) {
-    const content = fs.readFileSync(target.path, 'utf8');
+    const rawContent = fs.readFileSync(target.path, 'utf8');
+    const content = rawContent.replace(/\r\n/g, '\n');
     const lines = content.split('\n');
     const sections = parseSections(content);
     const pendingSection = sections.find(s => s.heading === 'Pending Review');
@@ -291,7 +292,7 @@ function revert(indices) {
   let globalIndex = 1;
 
   for (const target of targetFiles) {
-    const content = fs.readFileSync(target.path, 'utf8');
+    const content = fs.readFileSync(target.path, 'utf8').replace(/\r\n/g, '\n');
     const sections = parseSections(content);
     const permanentSection = sections.find(s => s.heading === 'Permanent');
 
@@ -332,7 +333,7 @@ function revert(indices) {
 
   // Process each file (remove lines in descending order to avoid offset corruption)
   for (const [filePath, items] of byFile) {
-    const content = fs.readFileSync(filePath, 'utf8');
+    const content = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
     const lines = content.split('\n');
 
     // Sort by line number descending (highest first per Pitfall 3)
