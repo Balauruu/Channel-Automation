@@ -327,6 +327,7 @@ function revert(indices) {
   // Discover files and assign global indices to Permanent entries
   const targetFiles = discoverTargetFiles();
   const indexMap = []; // [{globalIndex, filePath, lineInFile, entry}]
+  const contentCache = new Map(); // Cache content read during index-building
   let globalIndex = 1;
 
   for (const target of targetFiles) {
@@ -335,6 +336,8 @@ function revert(indices) {
     const permanentSection = sections.find(s => s.heading === 'Permanent');
 
     if (!permanentSection || permanentSection.entries.length === 0) continue;
+
+    contentCache.set(target.path, content);
 
     for (const entry of permanentSection.entries) {
       indexMap.push({
@@ -370,9 +373,9 @@ function revert(indices) {
   const reverted = [];
 
   // Process each file (remove lines in descending order to avoid offset corruption)
+  // Use cached content from index-building pass to keep line positions aligned
   for (const [filePath, items] of byFile) {
-    const content = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
-    const lines = content.split('\n');
+    const lines = contentCache.get(filePath).split('\n');
 
     // Sort by line number descending (highest first per Pitfall 3)
     items.sort((a, b) => b.line - a.line);
@@ -508,6 +511,7 @@ function decayRemove(indices) {
   // Discover files and assign global indices to Permanent entries (skip playbook)
   const targetFiles = discoverTargetFiles();
   const indexMap = [];
+  const contentCache = new Map(); // Cache content read during index-building
   let globalIndex = 1;
 
   for (const target of targetFiles) {
@@ -518,6 +522,8 @@ function decayRemove(indices) {
     const permanentSection = sections.find(s => s.heading === 'Permanent');
 
     if (!permanentSection || permanentSection.entries.length === 0) continue;
+
+    contentCache.set(target.path, content);
 
     for (const entry of permanentSection.entries) {
       indexMap.push({
@@ -553,9 +559,9 @@ function decayRemove(indices) {
   const removed = [];
 
   // Process each file (remove lines in descending order to avoid offset corruption)
+  // Use cached content from index-building pass to keep line positions aligned
   for (const [filePath, items] of byFile) {
-    const content = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
-    const lines = content.split('\n');
+    const lines = contentCache.get(filePath).split('\n');
 
     // Sort by line number descending (highest first)
     items.sort((a, b) => b.line - a.line);
