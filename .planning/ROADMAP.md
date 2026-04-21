@@ -60,7 +60,10 @@ Plans:
   1. Running /evolve dispatches the observer for new runs, then presents all ## Pending Review entries grouped by target file (insights first, then MEMORY, then PLAYBOOK)
   2. For each entry, the user can promote (move to permanent section), edit then promote, or revert (delete entry with git revert if needed)
   3. After /evolve completes, promoted entries are in their final memory sections and reverted entries leave no trace in the working tree
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — evolve.js helper script (scan/promote/revert subcommands) + eval tests
+- [ ] 03-02-PLAN.md — evolve SKILL.md (observer dispatch, summary display, revert interaction)
 
 ### Phase 4: Agent Consumption
 **Goal**: All pipeline agents read PLAYBOOK.md at task start for cross-agent coordination, and supporting skills reflect the new memory system paths and schema
@@ -91,6 +94,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Capture Hardening | 3/3 | Complete | 2026-04-20 |
 | 2. Observer Agent | 3/3 | Complete    | 2026-04-21 |
-| 3. Evolve Command | 0/TBD | Not started | - |
+| 3. Evolve Command | 0/2 | Planning complete | - |
 | 4. Agent Consumption | 0/TBD | Not started | - |
 | 5. Memory Lifecycle | 0/TBD | Not started | - |
