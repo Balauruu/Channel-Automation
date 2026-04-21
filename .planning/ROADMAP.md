@@ -74,7 +74,11 @@ Plans:
   2. PLAYBOOK.md uses Open/Resolved sections; the observer writes new cross-agent insights to Open and proposes resolution when the target agent absorbs the insight
   3. agent-observability skill documents the new obs.jsonl paths, event schema, and debug recipes (no references to old paths or schemas)
   4. A pipeline-learning skill exists documenting the observer system, /evolve command, and event schema for agent self-reference
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 04-01-PLAN.md — PLAYBOOK.md redesign (Open/Resolved) + agent-protocols thin rewrite
+- [ ] 04-02-PLAN.md — Observer.md PLAYBOOK routing update + obs-summarize.js path fix
+- [ ] 04-03-PLAN.md — Agent-observability comprehensive rewrite (merged pipeline-learning) + cleanup audit
 
 ### Phase 5: Memory Lifecycle
 **Goal**: Memory files stay healthy over time through confidence decay, consolidation, and capacity management
@@ -95,5 +99,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Capture Hardening | 3/3 | Complete | 2026-04-20 |
 | 2. Observer Agent | 3/3 | Complete    | 2026-04-21 |
 | 3. Evolve Command | 0/2 | Planning complete | - |
-| 4. Agent Consumption | 0/TBD | Not started | - |
+| 4. Agent Consumption | 0/3 | Planning complete | - |
 | 5. Memory Lifecycle | 0/TBD | Not started | - |
