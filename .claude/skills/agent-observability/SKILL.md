@@ -89,11 +89,11 @@ Default cap for unlisted tools: 2 KB input, 2 KB output.
 
 The `@observer` agent (Sonnet, dispatched by /evolve only) processes obs.jsonl incrementally via a 10-step pipeline:
 
-1. **Load cursor** -- reads byte offset from `.observer-cursor`
-2. **Read events** -- reads obs.jsonl from cursor position
-3. **Group by run** -- segments events by agent_id
-4. **Filter self** -- skips runs where agent_id contains "observer"
-5. **Classify candidates** -- applies scope-test questions (see below)
+1. **Resume** -- reads byte offset from `.observer-cursor`
+2. **Load events** -- reads obs.jsonl from cursor position, filters self-observation events
+3. **Group by run** -- segments events by agent_id into dispatch/complete brackets
+4. **Extract candidates** -- reads each run holistically, extracts 0-3 candidate learnings
+5. **Classify (scope-test)** -- applies 3 scope-test questions, exactly one must pass
 6. **Score confidence** -- assigns [HIGH], [MED], or [LOW]
 7. **Deduplicate** -- checks target files for existing entries
 8. **Write entries** -- appends to target file's Pending Review (or PLAYBOOK Open for Q3)
