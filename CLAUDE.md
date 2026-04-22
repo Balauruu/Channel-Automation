@@ -11,7 +11,6 @@ Dark mysteries documentary video production pipeline.
 - `.claude/skills/` -- Shared skills (agent-protocols)
 - `.claude/agent-memory/` -- Per-agent persistent memory (universal, cross-project)
 - `.claude/PLAYBOOK.md` -- Cross-agent coordination log (observer-managed, Open/Resolved lifecycle)
-- `.claude/references/` -- Reference guides (skill crafting)
 - `.claude/logs/` -- Agent dispatch/completion session logs and observations/ (obs.jsonl per project)
 - `.claude/tests/` -- Smoke tests and validation scripts
 - `.claude/hooks/` -- Pre/PostToolUse and SubagentStop hooks (pipeline-observe.js)
@@ -31,7 +30,6 @@ Dark mysteries documentary video production pipeline.
 | @writer | Editorial | Generate a script from research |
 | @strategy | Strategy | Competitor analysis, topic generation, project init |
 | @style-extractor | Editorial | Extract or refine channel narrator voice |
-| @editorial-lead | Editorial | Quality gate research dossiers and scripts |
 | @visual-researcher | Media | Visual intent definition and resource gathering |
 | @visual-planner | Media | Shotlist generation and b-roll curation |
 | @asset-processor | Media | CLIP embeddings, asset downloads, semantic search |
