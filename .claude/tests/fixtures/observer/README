@@ -1,0 +1,31 @@
+# Observer Test Fixtures
+
+Each fixture represents a specific observer eval scenario.
+
+## run-researcher-success.jsonl
+- Type: Happy path (complete run with extractable learnings)
+- Expected: 1-2 candidates extracted (error-recovery pattern, possibly large-file strategy)
+- Expected target: .claude/skills/crawl4ai-scraping/insights.md (Python path fix)
+- Expected confidence: [HIGH] (explicit error + fix in same run)
+
+## run-observer-selfloop.jsonl
+- Type: Self-loop bait (OBSV-06)
+- Expected: Observer events (agent_id "observer-xyz789") SKIPPED entirely
+- Expected: Researcher events (agent_id "researcher-def456") processed normally
+- Validates: Self-loop prevention filter
+
+## run-with-errors.jsonl
+- Type: Error-heavy run with retry patterns
+- Expected: 1-2 candidates (retry strategy, large-file handling)
+- Expected target: .claude/agent-memory/writer/MEMORY.md (reading strategy)
+- Expected confidence: [MED] (single instance, sound reasoning)
+
+## orphan-tool-events.jsonl
+- Type: Main conversation events (no run boundaries)
+- Expected: 0 candidates (no dispatch/complete brackets, skip these)
+- Validates: OBSV-02 agent_id filtering
+
+## malformed-lines.jsonl
+- Type: Corruption resilience
+- Expected: Valid lines parsed, invalid lines skipped without crashing
+- Validates: JSONL parsing robustness

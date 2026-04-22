@@ -2,22 +2,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js dispatch",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      },
-      {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js tool_pre",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js tool_pre",
             "timeout": 5,
             "async": true
           }
@@ -30,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js tool_post",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js tool_post",
             "timeout": 5,
             "async": true
           }
@@ -43,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js tool_fail",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js tool_fail",
             "timeout": 5,
             "async": true
           }
@@ -56,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js permission_denied",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js permission_denied",
             "timeout": 5,
             "async": true
           }
@@ -68,17 +57,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/obs.js subagent_stop",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js subagent_stop",
             "timeout": 15
           },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-memory-limit.js",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-definition-signals.js",
             "timeout": 5
           }
         ]

@@ -10,7 +10,6 @@ memory: project
 color: green
 skills:
   - agent-protocols
-  - documentary-research
   - structured-output
 tools:
   - Read

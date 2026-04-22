@@ -37,3 +37,6 @@
 
 ## Open Questions
 - [2026-04-11] Confirm with user whether scoring scale should standardize at 1-5 (agent rubric) or 1-10 (user request) for future topic generation runs
+
+## Pending Review
+

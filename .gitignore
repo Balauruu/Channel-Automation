@@ -9,21 +9,17 @@ data/*.db
 # Per-documentary project outputs
 projects/
 
+# Python bytecode cache
+__pycache__/
+
 # Node modules
 node_modules/
 
-# ── GSD planning scaffolding (internal build artifacts) ───────────────────────
-.planning/
+# ── GSD planning scaffolding ──────────────────────────────────────────────────
+# .planning/ is tracked in git (commit_docs: true)
 
 # ── Channel identity & working data (local, user-configured) ─────────────────
 channel/
-
-# ── Feedback signal files (cross-agent state, regenerated per session) ─────────
-feedback/
-.claude/feedback/
-
-# ── Project-scoped agent memories ─────────────────────────────────────────────
-.claude/project-memories/
 
 # ── Local-only settings ───────────────────────────────────────────────────────
 .claude/settings.local.json
@@ -35,8 +31,10 @@ feedback/
 # ── Tests — ignore local ad-hoc .js scripts at the tests/ root, but track ────
 # ── versioned suites (smoke-test-*) and structured subdirectories (fixtures/).
 .claude/tests/*.js
-!.claude/tests/smoke-test-observability.js
-!.claude/tests/smoke-test-pipeline.js
+!.claude/tests/smoke-test-observe.js
+!.claude/tests/smoke-test-evolve.js
+!.claude/tests/eval-observer.js
+!.claude/tests/eval-evolve.js
 
 # ── Docs (specs, plans, roadmap — local working docs) ────────────────────────
 docs/
