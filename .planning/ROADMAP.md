@@ -108,8 +108,8 @@ Plans:
   6. ROADMAP.md shows Phases 3, 4, 5 as complete with dates
 **Plans:** 2 plans
 Plans:
-- [ ] 07-01-PLAN.md — Override acceptance, observer stale ref cleanup, agent-observability /evolve flow update
-- [ ] 07-02-PLAN.md — REQUIREMENTS.md checkbox updates, ROADMAP.md completion dates, audit annotations
+- [x] 07-01-PLAN.md — Override acceptance, observer stale ref cleanup, agent-observability /evolve flow update
+- [x] 07-02-PLAN.md — REQUIREMENTS.md checkbox updates, ROADMAP.md completion dates, audit annotations
 
 ## Progress
 
