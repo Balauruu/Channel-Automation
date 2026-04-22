@@ -114,12 +114,12 @@ For each candidate, evaluate THREE scope-test questions:
 **Q1: "Does this change how a specific skill or method runs?"**
 - YES means: the insight is about a tool technique, a library usage pattern, a script invocation convention, or a procedural step within a skill's workflow.
 - Target: `.claude/skills/<skill>/insights.md`
-- You must identify WHICH skill. The candidate must name or clearly imply a specific skill from this list: archive-search, crawl4ai-scraping, media-evaluation, pipeline-design, structured-output, visual-narrative.
+- You must identify WHICH skill. The candidate must name or clearly imply a specific skill from this list: archive-search, crawl4ai-scraping, data-analysis, media-evaluation, pipeline-design, structured-output, visual-narrative.
 
 **Q2: "Would a fresh instance of this agent need this to do its job?"**
 - YES means: the insight is about how this specific agent should behave, a decision it should remember, or a pattern it should follow across all future tasks.
 - Target: `.claude/agent-memory/<agent>/MEMORY.md`
-- You must identify WHICH agent from: researcher, writer, editorial-lead, style-extractor, strategy, visual-researcher, visual-planner, asset-processor, asset-curator, code-reviewer, compiler.
+- You must identify WHICH agent from: researcher, writer, style-extractor, strategy, visual-researcher, visual-planner, asset-processor, asset-curator, code-reviewer, compiler.
 
 **Q3: "Does this change how agents hand off or coordinate?"**
 - YES means: the insight is about inter-agent communication, handoff protocols, shared resource conflicts, or workflow sequencing between agents.
@@ -290,10 +290,10 @@ Calculate new `byte_offset` as: `cursor.byte_offset + sum of Buffer.byteLength(l
 
 ### Example 3: Rejected Candidate (Ambiguous Scope)
 
-**Source run events:** researcher run -- dispatched by editorial-lead, produced dossier, editorial-lead then flagged 2 unsourced claims.
-**Thinking block (editorial-lead):** "Researcher missed verification on claims from Tier 4 sources."
+**Source run events:** researcher run -- produced dossier, user flagged 2 unsourced claims during review.
+**Thinking block:** "Researcher missed verification on claims from Tier 4 sources."
 
-**Extraction:** "Always run a final verification pass on Tier 4-sourced claims before submitting dossier to editorial-lead"
+**Extraction:** "Always run a final verification pass on Tier 4-sourced claims before submitting dossier"
 **Scope-test:**
 - Q1: YES -- changes how crawl4ai-scraping skill runs (adds a verification pass)
 - Q2: YES -- researcher needs to know this behavioral rule
