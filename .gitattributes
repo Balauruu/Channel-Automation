@@ -1,0 +1,25 @@
+# Force LF line endings in the repo, regardless of OS or core.autocrlf.
+# Git stores LF; working copies get LF on checkout (no CRLF conversion).
+* text=auto eol=lf
+
+# Explicitly binary — never touch these
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mp4 binary
+*.mov binary
+*.avi binary
+*.mkv binary
+*.webm binary
+*.mp3 binary
+*.wav binary
+*.flac binary
+*.ogg binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
