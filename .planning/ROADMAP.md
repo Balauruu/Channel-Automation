@@ -106,6 +106,10 @@ Plans:
   4. EVLV-03 override in 03-VERIFICATION.md has accepted_by/accepted_at filled in
   5. REQUIREMENTS.md checkboxes are `[x]` for all 8 verified requirements (EVLV-01, EVLV-02, MEML-03..06, EVLV-04, MEML-02)
   6. ROADMAP.md shows Phases 3, 4, 5 as complete with dates
+**Plans:** 2 plans
+Plans:
+- [ ] 07-01-PLAN.md — Override acceptance, observer stale ref cleanup, agent-observability /evolve flow update
+- [ ] 07-02-PLAN.md — REQUIREMENTS.md checkbox updates, ROADMAP.md completion dates, audit annotations
 
 ## Progress
 
@@ -120,7 +124,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Agent Consumption | 0/3 | Planning complete | - |
 | 5. Memory Lifecycle | 2/2 | Complete | 2026-04-21 |
 | 6. Old Memory Cleanup | 2/2 | Complete | 2026-04-22 |
-| 7. Milestone Close-Out | 0/0 | Not started | - |
+| 7. Milestone Close-Out | 0/2 | Planned | - |
 
 ### Phase 6: Old Memory Cleanup
 **Goal**: Remove all traces of the old broken memory system (project-memories/, signals.yaml, stale agent-memory references, deprecated skill insights, dead code in agent definitions) so the codebase only contains the new unified memory system
