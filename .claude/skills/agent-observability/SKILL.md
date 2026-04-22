@@ -133,13 +133,28 @@ User-invoked skill that orchestrates the learning cycle:
 1. Dispatch @observer to process new obs.jsonl events
 2. Scan all memory files for ## Pending Review entries (`evolve.js scan`)
 3. Auto-promote all entries to ## Permanent (`evolve.js promote`)
-4. Display grouped numbered summary (insights files first, then MEMORY files, then PLAYBOOK)
-5. Offer revert by number -- user can undo specific promotions
-6. Commit changes
+4. Decay scan -- flag expired entries by confidence TTL (`evolve.js decay`)
+5. Consolidation check -- if any file hits capacity warning (180+ lines), dispatch @observer in consolidation mode to propose rewrite of ## Permanent section
+6. Display unified summary with continuous numbering: promoted entries (insights, MEMORY, PLAYBOOK), expired entries, capacity warnings
+7. User interaction -- revert promoted entries and/or remove expired entries by number
+8. Execute actions -- revert (`evolve.js revert`), remove expired (`evolve.js decay-remove`), upgrade kept expired to [HIGH] (`evolve.js decay-upgrade`)
+9. Commit changes (targeted `git add` of modified files only)
+10. Display final evolution summary
 
 PLAYBOOK.md is excluded from evolve.js scan/promote (its Open/Resolved lifecycle is managed by the observer, not /evolve).
 
-Helper script: `.claude/scripts/memory/evolve.js` with subcommands: `scan`, `promote <file> <entry>`, `revert <file> <entry>`
+Helper script: `.claude/scripts/memory/evolve.js` with subcommands:
+- `scan` -- discover all memory files, return pending entry counts as JSON
+- `promote` -- move all Pending Review entries to Permanent sections, return promoted array as JSON
+- `revert <idx> [<idx> ...]` -- remove promoted entries from Permanent by global index
+- `decay` -- scan Permanent sections for expired entries (LOW > 14d, MED > 30d), return expired array and capacity warnings
+- `decay-remove <idx> [<idx> ...]` -- delete expired entries by decay global index
+- `decay-upgrade <idx> [<idx> ...]` -- upgrade expired entries to [HIGH] confidence (making them permanent)
+
+Decay TTL rules:
+- LOW confidence entries expire after 14 days
+- MED confidence entries expire after 30 days
+- HIGH confidence entries never expire
 
 ## PLAYBOOK Routing
 

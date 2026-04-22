@@ -114,7 +114,7 @@ For each candidate, evaluate THREE scope-test questions:
 **Q1: "Does this change how a specific skill or method runs?"**
 - YES means: the insight is about a tool technique, a library usage pattern, a script invocation convention, or a procedural step within a skill's workflow.
 - Target: `.claude/skills/<skill>/insights.md`
-- You must identify WHICH skill. The candidate must name or clearly imply a specific skill from this list: archive-search, autoresearch, crawl4ai-scraping, media-evaluation, pipeline-design, structured-output, visual-narrative.
+- You must identify WHICH skill. The candidate must name or clearly imply a specific skill from this list: archive-search, crawl4ai-scraping, media-evaluation, pipeline-design, structured-output, visual-narrative.
 
 **Q2: "Would a fresh instance of this agent need this to do its job?"**
 - YES means: the insight is about how this specific agent should behave, a decision it should remember, or a pattern it should follow across all future tasks.
@@ -295,7 +295,7 @@ Calculate new `byte_offset` as: `cursor.byte_offset + sum of Buffer.byteLength(l
 
 **Extraction:** "Always run a final verification pass on Tier 4-sourced claims before submitting dossier to editorial-lead"
 **Scope-test:**
-- Q1: YES -- changes how autoresearch skill runs (adds a verification pass)
+- Q1: YES -- changes how crawl4ai-scraping skill runs (adds a verification pass)
 - Q2: YES -- researcher needs to know this behavioral rule
 - Q3: NO
 **Result:** Q1 AND Q2 -> AMBIGUOUS -> REJECT

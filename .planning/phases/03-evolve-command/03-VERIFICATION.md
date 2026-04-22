@@ -3,12 +3,12 @@ phase: 03-evolve-command
 verified: 2026-04-21T09:30:00Z
 status: human_needed
 score: 5/6 must-haves verified
-overrides_applied: 0
+overrides_applied: 1
 overrides:
   - must_have: "User can revert specific entries by number after seeing the summary"
     reason: "EVLV-03 edit option explicitly removed by decision D-04 (locked, documented in 03-RESEARCH.md). Auto-promote-then-revert replaces per-entry edit/approve flow. Roadmap SC-2 wording 'edit then promote' was superseded by D-04. The revert capability covers the spirit of user control."
-    accepted_by: ""
-    accepted_at: ""
+    accepted_by: "Balauruu"
+    accepted_at: "2026-04-22"
 human_verification:
   - test: "Run /evolve in a live Claude Code session and verify end-to-end flow"
     expected: "Observer dispatches, pending entries are promoted, numbered summary appears grouped by insights/memory/playbook, revert prompt appears, reverts execute correctly, git commit is made"
