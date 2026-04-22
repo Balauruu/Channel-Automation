@@ -12,22 +12,22 @@ Agents learn from past runs and don't repeat mistakes — knowledge persists acr
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Single capture hook (pipeline-observe.js) handles both main conversation and subagent events — Phase 1
+- [x] All events written to single `obs.jsonl` per project — observer filters by `agent_id` presence — Phase 1
+- [x] File at `.claude/logs/observations/<project>/obs.jsonl` with 10MB rotation — Phase 1
+- [x] @observer subagent (Sonnet 4.6) reads obs.jsonl and extracts learnings — Phase 2
+- [x] Observer classifies candidates against 3 scope-test questions as enforcement checklist — Phase 2
+- [x] Observer writes to ## Pending Review sections in memory files (lightweight staging) — Phase 2
+- [x] /evolve promotes Pending Review entries or reverts (git history as rollback) — Phase 3
+- [x] Categorical confidence tagging: HIGH/MED/LOW inline with decay (LOW=14d, MED=30d) — Phase 5
+- [x] Single `/evolve` command: dispatches observer + reviews recent additions (can revert) — Phase 3
+- [x] PLAYBOOK.md redesigned as cross-agent message bus — Phase 4
+- [x] agent-protocols rewritten (thin — no signals, no project-memories, no scratchpad) — Phase 4
+- [x] agent-observability skill rewritten for new paths and schema — Phase 7
 
 ### Active
 
-- [ ] Single capture hook (pipeline-observe.sh) handles both main conversation and subagent events
-- [ ] All events written to single `obs.jsonl` per project — observer filters by `agent_id` presence
-- [ ] File at `.claude/logs/observations/<project>/obs.jsonl` with 10MB rotation
-- [ ] @observer subagent (Sonnet 4.6) reads both streams and extracts learnings
-- [ ] Observer classifies candidates against 3 scope-test questions as enforcement checklist
-- [ ] Observer writes to ## Pending Review sections in memory files (lightweight staging)
-- [ ] /evolve promotes Pending Review entries or reverts (git history as rollback)
-- [ ] Categorical confidence tagging: HIGH/MED/LOW inline with decay (LOW=14d, MED=30d)
-- [ ] Single `/evolve` command: dispatches observer + reviews recent additions (can revert)
-- [ ] PLAYBOOK.md redesigned as cross-agent message bus (research needed for optimal shape)
-- [ ] agent-protocols rewritten (thin — no signals, no project-memories, no scratchpad)
-- [ ] agent-observability skill rewritten for new paths and schema
+(All requirements validated — milestone v1.0 complete)
 
 ### Out of Scope
 
@@ -115,4 +115,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-21 after Phase 5 (Memory Lifecycle) completion — all 5 milestone phases complete*
+*Last updated: 2026-04-22 after Phase 7 (Milestone Close-Out) — all 7 phases complete, milestone v1.0 done*
