@@ -197,23 +197,6 @@ Machine-readable outputs must follow consistent schema conventions so downstream
 - **Scores**: Numeric 0.0-1.0 for normalized scores, integer 1-5 for tier/rating scales.
 - **Null handling**: Use `null` for unknown values, never empty string `""`. Omit optional fields entirely if not applicable.
 
-### Topic Brief Schema (Strategy Output)
-
-```json
-{
-  "topic_id": "T001",
-  "title": "The Dyatlov Pass Incident",
-  "category": "unsolved_mystery",
-  "hook": "Nine hikers fled their tent in -30C, and six decades later we still don't know why.",
-  "estimated_sources": 45,
-  "competition_score": 0.72,
-  "visual_potential": 0.85,
-  "recommended_angle": "Focus on the 2019 Russian investigation reopening",
-  "generated_date": "2026-04-10T14:30:00Z",
-  "status": "proposed"
-}
-```
-
 ### Asset Manifest Schema (Media Output)
 
 ```json

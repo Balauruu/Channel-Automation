@@ -96,3 +96,15 @@ These rules emerged during the 2026-04-18 session and are seed context for any f
 - "Test pipeline agents on ≥2 maximally different topics before locking."
 - "Tags like `[DETERMINISTIC]`/`[HEURISTIC]` are thinking patterns — don't leak them into agent outputs."
 - Full framework: `.claude/skills/pipeline-design/SKILL.md`.
+
+### Entry 6 — Strategy CLI path bugs (trend_scanner + cli.py)
+
+The strategy CLI scripts (`.claude/scripts/strategy/channel_assistant/cli.py`) were ported from a previous project layout and have multiple hardcoded paths that don't match the current directory structure:
+
+- `_get_project_root()` looks for `AGENTS.md` (doesn't exist) — should look for `CLAUDE.md`
+- `_run_trend_scan()` references `root / "strategy" / "channel" / "channel.md"` — actual: `root / "channel" / "channel.md"`
+- `cmd_analyze()` writes to `root / "strategy" / "competitors" / "analysis.md"` — actual: `root / "channel" / "strategy" / "analysis.md"`
+- Multiple references to `.pi/multi-team/prompts/` and `.pi/multi-team/scratch/` — this directory structure doesn't exist
+- `cmd_topics()` references prompt files that were never migrated
+
+The `add` and `scrape` subcommands work (they use database paths from the Registry/Database objects). The `analyze` and `topics` subcommands likely break on path resolution. Fix requires updating all hardcoded paths in `cli.py` and `_run_trend_scan()` to match the current project layout (`channel/`, `channel/strategy/`).
