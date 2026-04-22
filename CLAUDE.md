@@ -41,7 +41,14 @@ Dark mysteries documentary video production pipeline.
 
 ## Architecture Rules
 
-- Agents are user-invoked only. Type @agent-name to delegate.
-- No auto-routing. No auto-dispatch. User decides what to delegate.
-- Human checkpoints: after topic generation (present and WAIT), after asset processing (present and WAIT).
 - Shared behavioral protocols are injected via the agent-protocols skill in each agent's skills: field.
+- Before editing anything in `.claude/agents/` or `.claude/skills/`, invoke the `pipeline-design` skill (audit framework + 7 anti-patterns).
+
+### Task Classification
+Before writing any code, classify the task:
+- **[HEURISTIC]** — requires judgment, narrative design, or evaluation → solve via prompts/skills, write no code
+- **[DETERMINISTIC]** — requires structured data manipulation, scraping, or rendering → write code
+
+## Billing
+
+- All LLM calls in pipeline features MUST route through Claude Code subagent dispatches (covered by the Claude Max subscription). Direct `api.anthropic.com` / `ANTHROPIC_API_KEY` calls are metered separately and MUST NOT be introduced without explicit confirmation.

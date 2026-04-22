@@ -4,7 +4,7 @@ description: >-
   Framework for auditing and designing pipeline agents and skills. Use when
   auditing an existing agent or skill, designing a new one, or reviewing
   the pipeline for bloat, overlap, stale references, or overfitting to
-  test cases. Provides decision rules (global skill vs agent-body vs
+  test cases. Provides decision rules ( skill vs agent-body vs
   bundled reference), script-failure policy, generalization audit
   pattern, and a one-at-a-time audit workflow.
 user-invocable: true
@@ -25,18 +25,18 @@ Before starting work:
    - Even if empty, this confirms the learning loop is active
 2. Read `./CLAUDE.md` for the project folder map and agent reference table
 
-## Decision Rule: Global Skill vs Agent-Body vs Bundled Reference
+## Decision Rule:  Skill vs Agent-Body vs Bundled Reference
 
 Every piece of domain knowledge lives in exactly one of three places.
 
 | Placement | When to choose |
 |-----------|----------------|
-| **Global skill** (`.claude/skills/<name>/SKILL.md`) | Meta behavior (memory lifecycle, observability, structured output) OR shared across ≥2 agents |
+| ** skill** (`.claude/skills/<name>/SKILL.md`) | Meta behavior (memory lifecycle, observability, structured output) OR shared across ≥2 agents |
 | **Agent body** (inline in `.claude/agents/<agent>.md`) | Single-consumer domain knowledge tightly coupled to the agent's procedure |
 | **Bundled reference** (`.claude/agents/<agent>/references/<topic>.md`) | Single-consumer domain knowledge that is bulky and reads well on-demand |
 
 **Tests:**
-- Shared by ≥2 agents? → global skill.
+- Shared by ≥2 agents? →  skill.
 - Single consumer + tight coupling to procedure? → merge into agent body.
 - Single consumer + bulky + on-demand? → bundled reference.
 
