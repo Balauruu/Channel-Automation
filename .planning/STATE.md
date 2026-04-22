@@ -2,33 +2,33 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 6 context gathered
-last_updated: "2026-04-21T19:28:46.920Z"
-last_activity: 2026-04-21 -- Phase --phase execution started
+status: complete
+stopped_at: Phase 6 Plan 02 complete
+last_updated: "2026-04-22T10:10:00.000Z"
+last_activity: 2026-04-22 -- Phase 06 Plan 02 executed
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 15
-  completed_plans: 13
-  percent: 87
+  completed_plans: 15
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-20)
+See: .planning/PROJECT.md (updated 2026-04-22)
 
 **Core value:** Agents learn from past runs and don't repeat mistakes -- knowledge persists across sessions with clear scope boundaries.
-**Current focus:** Phase --phase — 06
+**Current focus:** Phase 06 — COMPLETE
 
 ## Current Position
 
-Phase: --phase (06) — EXECUTING
-Plan: 1 of --name
-Status: Executing Phase --phase
-Last activity: 2026-04-21 -- Phase --phase execution started
+Phase: 06 (old-memory-cleanup) — COMPLETE
+Plan: 2 of 2
+Status: All plans complete — milestone v1.0 done
+Last activity: 2026-04-22 -- Phase 06 Plan 02 executed
 
 Progress: [##########] 100%
 
@@ -75,6 +75,9 @@ Recent decisions affecting current work:
 - [01-02]: Aggregate stats from obs.jsonl scan (not transcript) since tool events already captured by Plan 01
 - [01-03]: Updated .gitignore to allow smoke-test-observe.js (was blocked by .claude/tests/*.js pattern)
 - [01-03]: Staged deprecated test file deletions alongside settings.json update for clean D-06 closure
+- [06-02]: obs.js grep matches in codebase maps are all obs.jsonl/obs-summarize.js/pipeline-observe.js substrings -- new system, not stale
+- [06-02]: settings.local.json had two surviving stale entries (mkdir feedback, cp signals.yaml) -- Plan 01 cleanup missed gitignored file; fixed in Plan 02 audit
+- [06-02]: .planning/PROJECT.md and ROADMAP.md old-system term matches are requirement descriptions naming removed items -- narrative, not actionable
 
 ### Pending Todos
 
@@ -82,9 +85,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 1 has existing code (pipeline-observe.sh, 342 lines) -- plan must account for refactor vs rewrite decision
-- Phase 2 observer prompt engineering is the hardest design problem (per research)
-- Phase 3 /evolve UX within CLI context needs prototyping (research flag)
+None -- milestone v1.0 complete.
 
 ## Deferred Items
 
@@ -96,8 +97,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 6 context gathered
-Resume file: --resume-file
+Last session: 2026-04-22
+Stopped at: Phase 06 Plan 02 complete — milestone v1.0 done
+Resume file: None
 
-**Planned Phase:** 06 (Old Memory Cleanup) — 2 plans — 2026-04-21T19:27:17.101Z
+**Completed:** 06 (Old Memory Cleanup) — 2/2 plans — 2026-04-22

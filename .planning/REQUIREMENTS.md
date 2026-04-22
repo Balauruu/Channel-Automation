@@ -49,8 +49,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **CLEANUP-01**: All deprecated files removed from git (obs.js, check-definition-signals.js, autoresearch skill, old test fixtures)
 - [ ] **CLEANUP-02**: CLAUDE.md Folder Map accurate — no dead entries (project-memories/, feedback/), includes new system paths (PLAYBOOK.md, observations/)
 - [ ] **CLEANUP-03**: PROJECT.md Current State reflects working unified memory system, not broken state
-- [ ] **CLEANUP-04**: Codebase maps regenerated to describe new system (no old-system references)
-- [ ] **CLEANUP-05**: Full grep audit confirms zero stale old-system references in any live file
+- [x] **CLEANUP-04**: Codebase maps regenerated to describe new system (no old-system references)
+- [x] **CLEANUP-05**: Full grep audit confirms zero stale old-system references in any live file
 
 ## v2 Requirements
 
