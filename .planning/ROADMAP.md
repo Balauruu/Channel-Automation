@@ -14,8 +14,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Capture Hardening** - Battle-harden pipeline-observe.sh to produce reliably valid JSONL from both main conversations and subagent events
 - [x] **Phase 2: Observer Agent** - Build @observer subagent that reads obs.jsonl, classifies learnings via scope-tests, and writes to memory with confidence tags (completed 2026-04-21)
-- [x] **Phase 3: Evolve Command** - Create /evolve human review gate that dispatches observer and presents pending entries for approve/edit/revert
-- [x] **Phase 4: Agent Consumption** - Rewrite agent-protocols and skills so pipeline agents read PLAYBOOK.md and use updated memory paths
+- [x] **Phase 3: Evolve Command** - Create /evolve human review gate that dispatches observer and presents pending entries for approve/edit/revert (completed 2026-04-21)
+- [x] **Phase 4: Agent Consumption** - Rewrite agent-protocols and skills so pipeline agents read PLAYBOOK.md and use updated memory paths (completed 2026-04-21)
 - [x] **Phase 5: Memory Lifecycle** - Add confidence decay, consolidation, and capacity management for long-running memory files
 - [x] **Phase 6: Old Memory Cleanup** - Remove all traces of the old broken memory system so the codebase only contains the new unified memory system (completed 2026-04-22)
 - [ ] **Phase 7: Milestone Close-Out** - Fix integration gaps, verification gaps, and tracking drift identified by v1 audit
@@ -120,8 +120,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 |-------|----------------|--------|-----------|
 | 1. Capture Hardening | 3/3 | Complete | 2026-04-20 |
 | 2. Observer Agent | 3/3 | Complete    | 2026-04-21 |
-| 3. Evolve Command | 0/2 | Planning complete | - |
-| 4. Agent Consumption | 0/3 | Planning complete | - |
+| 3. Evolve Command | 2/2 | Complete | 2026-04-21 |
+| 4. Agent Consumption | 3/3 | Complete | 2026-04-21 |
 | 5. Memory Lifecycle | 2/2 | Complete | 2026-04-21 |
 | 6. Old Memory Cleanup | 2/2 | Complete | 2026-04-22 |
 | 7. Milestone Close-Out | 0/2 | Planned | - |

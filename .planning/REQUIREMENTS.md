@@ -30,25 +30,25 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Evolve Command
 
-- [ ] **EVLV-01**: Single /evolve command dispatches observer for new runs then reviews ## Pending Review entries
-- [ ] **EVLV-02**: Review presents entries grouped by target file (insights.md files, then MEMORY.md files, then PLAYBOOK.md)
+- [x] **EVLV-01**: Single /evolve command dispatches observer for new runs then reviews ## Pending Review entries
+- [x] **EVLV-02**: Review presents entries grouped by target file (insights.md files, then MEMORY.md files, then PLAYBOOK.md)
 - [ ] **EVLV-03**: For each entry, user can: promote (move to final section), edit (modify then promote), revert (delete entry, git revert if needed)
-- [ ] **EVLV-04**: Memory consolidation: when a file approaches 200-line cap, /evolve proposes merging, removing, or promoting entries (not just deleting)
+- [x] **EVLV-04**: Memory consolidation: when a file approaches 200-line cap, /evolve proposes merging, removing, or promoting entries (not just deleting)
 
 ### Memory Layer
 
 - [x] **MEML-01**: Entries include categorical confidence tag inline: `[HIGH]`, `[MED]`, or `[LOW]`
-- [ ] **MEML-02**: Decay rules: LOW entries expire after 14 days, MED after 30 days (HIGH entries persist indefinitely)
-- [ ] **MEML-03**: agent-protocols skill rewritten thin — no signals, no project-memories, no scratchpad; agents consume memory passively (D-02: observer routes PLAYBOOK entries to agent MEMORY.md instead of agents reading PLAYBOOK directly)
-- [ ] **MEML-04**: PLAYBOOK.md uses Open/Resolved sections; observer manages lifecycle (writes new entries, proposes resolution when absorbed)
-- [ ] **MEML-05**: agent-observability skill fully rewritten for new paths (obs.jsonl), new schema, new debug recipes
-- [ ] **MEML-06**: observation pipeline documented in agent-observability skill covering observer system, /evolve command, event schema, and PLAYBOOK routing (D-11: merged into agent-observability instead of separate skill)
+- [x] **MEML-02**: Decay rules: LOW entries expire after 14 days, MED after 30 days (HIGH entries persist indefinitely)
+- [x] **MEML-03**: agent-protocols skill rewritten thin — no signals, no project-memories, no scratchpad; agents consume memory passively (D-02: observer routes PLAYBOOK entries to agent MEMORY.md instead of agents reading PLAYBOOK directly)
+- [x] **MEML-04**: PLAYBOOK.md uses Open/Resolved sections; observer manages lifecycle (writes new entries, proposes resolution when absorbed)
+- [x] **MEML-05**: agent-observability skill fully rewritten for new paths (obs.jsonl), new schema, new debug recipes
+- [x] **MEML-06**: observation pipeline documented in agent-observability skill covering observer system, /evolve command, event schema, and PLAYBOOK routing (D-11: merged into agent-observability instead of separate skill)
 
 ### Cleanup
 
-- [ ] **CLEANUP-01**: All deprecated files removed from git (obs.js, check-definition-signals.js, autoresearch skill, old test fixtures)
-- [ ] **CLEANUP-02**: CLAUDE.md Folder Map accurate — no dead entries (project-memories/, feedback/), includes new system paths (PLAYBOOK.md, observations/)
-- [ ] **CLEANUP-03**: PROJECT.md Current State reflects working unified memory system, not broken state
+- [x] **CLEANUP-01**: All deprecated files removed from git (obs.js, check-definition-signals.js, autoresearch skill, old test fixtures)
+- [x] **CLEANUP-02**: CLAUDE.md Folder Map accurate — no dead entries (project-memories/, feedback/), includes new system paths (PLAYBOOK.md, observations/)
+- [x] **CLEANUP-03**: PROJECT.md Current State reflects working unified memory system, not broken state
 - [x] **CLEANUP-04**: Codebase maps regenerated to describe new system (no old-system references)
 - [x] **CLEANUP-05**: Full grep audit confirms zero stale old-system references in any live file
 
@@ -97,20 +97,20 @@ Deferred to future release. Tracked but not in current roadmap.
 | OBSV-07 | Phase 2 | Complete |
 | OBSV-08 | Phase 2 | Complete |
 | MEML-01 | Phase 2 | Complete |
-| EVLV-01 | Phase 3 | Pending |
-| EVLV-02 | Phase 3 | Pending |
+| EVLV-01 | Phase 3 | Complete |
+| EVLV-02 | Phase 3 | Complete |
 | EVLV-03 | Phase 3 | Pending |
-| MEML-03 | Phase 4 | Pending |
-| MEML-04 | Phase 4 | Pending |
-| MEML-05 | Phase 4 | Pending |
-| MEML-06 | Phase 4 | Pending |
-| EVLV-04 | Phase 5 | Pending |
-| MEML-02 | Phase 5 | Pending |
-| CLEANUP-01 | Phase 6 | Pending |
-| CLEANUP-02 | Phase 6 | Pending |
-| CLEANUP-03 | Phase 6 | Pending |
-| CLEANUP-04 | Phase 6 | Pending |
-| CLEANUP-05 | Phase 6 | Pending |
+| MEML-03 | Phase 4 | Complete |
+| MEML-04 | Phase 4 | Complete |
+| MEML-05 | Phase 4 | Complete |
+| MEML-06 | Phase 4 | Complete |
+| EVLV-04 | Phase 5 | Complete |
+| MEML-02 | Phase 5 | Complete |
+| CLEANUP-01 | Phase 6 | Complete |
+| CLEANUP-02 | Phase 6 | Complete |
+| CLEANUP-03 | Phase 6 | Complete |
+| CLEANUP-04 | Phase 6 | Complete |
+| CLEANUP-05 | Phase 6 | Complete |
 
 ### Gap Closure (Phase 7)
 
@@ -127,4 +127,4 @@ Phase 7 closes audit gaps that are not implementation work but verification and 
 
 ---
 *Requirements defined: 2026-04-20*
-*Last updated: 2026-04-21 after Phase 6 planning*
+*Last updated: 2026-04-22 after Phase 7 milestone close-out*
