@@ -1,6 +1,6 @@
 # Technology Stack
 
-**Analysis Date:** 2026-04-20
+**Analysis Date:** 2026-04-22
 
 ## Languages
 
@@ -9,8 +9,7 @@
 - Markdown — Agent definitions (`.claude/agents/*.md`), skill specifications (`.claude/skills/*/SKILL.md`), project outputs
 
 **Secondary:**
-- JavaScript (Node.js) — Hooks (`check-memory-limit.js`), smoke tests (`smoke-test-*.js`), observability summarizer (`obs-summarize.js`)
-- Bash — Pipeline observability hook (`pipeline-observe.sh`), registered in `.claude/settings.json`
+- JavaScript (Node.js) — Hooks (`pipeline-observe.js`, `check-memory-limit.js`), smoke tests (`smoke-test-*.js`), evaluation scripts (`eval-*.js`), observability summarizer (`obs-summarize.js`), memory management (`evolve.js`)
 
 ## Runtime
 
@@ -19,7 +18,7 @@
 - GPU/ML Python env: `C:/Users/iorda/miniconda3/envs/perception-models/python.exe` (CLIP embeddings, CUDA inference)
 - General Python envs: `C:\Users\iorda\venvs\<env-name>` (via `--prefix`)
 - Node.js — Required for hooks and smoke tests (runs via `node` directly, no package.json)
-- Windows 11 + bash (Git Bash) — hooks and shell scripts use bash syntax
+- Windows 11 + Git Bash — hooks and shell scripts use bash syntax
 
 **Package Manager:**
 - Conda — Primary Python environment manager
@@ -33,12 +32,13 @@
 - PE-Core-L14-336 (Perception Encoder) — Custom CLIP-based vision-language model for video frame embeddings; loaded from `C:/Users/iorda/repos/perception_models`
 
 **Build/Dev:**
-- No build system — Scripts are run directly via `python -m <module>` or `python <script.py>`
+- No build system — Scripts are run directly via `python -m <module>` or `node <script.js>`
 - No bundler, transpiler, or build step
 
 **Testing:**
-- Custom JavaScript smoke tests — `smoke-test-pipeline.js`, `smoke-test-paths.js`, `smoke-test-skills.js`, `smoke-test-agents.js`, `smoke-test-observability.js`
-- Python unit tests — `.claude/scripts/strategy/tests/` directory (contents not tracked in git)
+- Custom JavaScript smoke tests — `smoke-test-observe.js`, `smoke-test-evolve.js`
+- Custom JavaScript evaluation scripts — `eval-observer.js`, `eval-evolve.js`
+- Python unit tests — `.claude/scripts/strategy/tests/` directory
 
 ## Key Dependencies
 
@@ -63,7 +63,7 @@
 - `ffmpeg` / `ffprobe` — Video decoding, frame extraction, re-encoding to 24fps, clip export, validation
 
 **Infrastructure (JavaScript):**
-- `fs`, `path` (Node.js stdlib) — All JS files use only Node.js built-ins, zero npm dependencies
+- `fs`, `path`, `child_process`, `os` (Node.js stdlib) — All JS files use only Node.js built-ins, zero npm dependencies
 
 ## Configuration
 
@@ -74,7 +74,6 @@
   - Editorial: `PYTHONPATH=.claude/scripts/editorial`
   - Strategy: `PYTHONPATH=.claude/scripts/strategy`
 - `CLAUDE_PROJECT_DIR` — Used by hooks to resolve project root
-- `PE_PYTHON` — Hardcoded in `embed.py` to `C:/Users/iorda/miniconda3/envs/perception-models/python.exe`
 
 **Claude Code Settings:**
 - `.claude/settings.json` — Hook registration (PreToolUse, PostToolUse, PostToolUseFailure, PermissionDenied, SubagentStop)
@@ -86,7 +85,7 @@
 ## Platform Requirements
 
 **Development:**
-- Windows 11 with Git Bash (hooks use bash syntax)
+- Windows 11 with Git Bash (hooks use bash-compatible syntax via Node.js)
 - NVIDIA GPU with CUDA (RTX 4070 Laptop, 8GB VRAM) — Required for PE-Core CLIP model inference
 - Conda with `perception-models` environment for GPU/ML scripts
 - `yt-dlp` on PATH — Required for strategy scraping and media downloads
@@ -100,4 +99,4 @@
 
 ---
 
-*Stack analysis: 2026-04-20*
+*Stack analysis: 2026-04-22*

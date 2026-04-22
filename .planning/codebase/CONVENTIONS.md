@@ -1,30 +1,29 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-04-20
+**Analysis Date:** 2026-04-22
 
 ## Language Mix
 
 This project has two distinct code layers with different conventions:
 
 - **Python** (``.claude/scripts/``): Pipeline automation scripts (researcher, strategy, media). Run via ``python -m <package>`` with conda envs.
-- **JavaScript (Node.js CommonJS)** (``.claude/tests/``, ``.claude/scripts/obs-summarize.js``, ``.claude/hooks/``): Smoke tests, hook scripts, and observability tooling. Run via ``node``.
+- **JavaScript (Node.js CommonJS)** (``.claude/tests/``, ``.claude/scripts/obs-summarize.js``, ``.claude/scripts/memory/evolve.js``, ``.claude/hooks/``): Smoke tests, hook scripts, memory management, and observability tooling. Run via ``node``.
 - **Markdown** (``.claude/agents/``, ``.claude/skills/``): Agent definitions and skill specifications with YAML frontmatter.
-- **Bash** (``.claude/hooks/pipeline-observe.sh``): The main observability hook. Embeds inline Python via ``python -c`` blocks.
 
 ## Naming Patterns
 
 **Python files:**
 - ``snake_case.py`` for all module files: ``fetcher.py``, ``url_builder.py``, ``trend_scanner.py``
-- Package directories use ``snake_case`` with hyphens only at the skill level: ``.claude/scripts/editorial/researcher/``, ``.claude/scripts/strategy/channel_assistant/``
+- Package directories use ``snake_case``: ``.claude/scripts/editorial/researcher/``, ``.claude/scripts/strategy/channel_assistant/``
 - ``__init__.py`` + ``__main__.py`` + ``cli.py`` pattern for runnable packages
 
 **JavaScript files:**
-- ``kebab-case.js`` for all files: ``smoke-test-agents.js``, ``obs-summarize.js``, ``check-memory-limit.js``
-- Test files prefixed with ``smoke-test-``: ``smoke-test-paths.js``, ``smoke-test-skills.js``
+- ``kebab-case.js`` for all files: ``smoke-test-observe.js``, ``obs-summarize.js``, ``check-memory-limit.js``, ``evolve.js``
+- Test files: ``smoke-test-<domain>.js`` (structural validation), ``eval-<domain>.js`` (quality evaluation)
 
 **Markdown files:**
-- Agent definitions: ``kebab-case.md`` matching agent name: ``researcher.md``, ``visual-planner.md``
-- Skill specifications: ``SKILL.md`` (uppercase) inside a ``kebab-case`` directory: ``.claude/skills/autoresearch/SKILL.md``
+- Agent definitions: ``kebab-case.md`` matching agent name: ``researcher.md``, ``observer.md``, ``visual-planner.md``
+- Skill specifications: ``SKILL.md`` (uppercase) inside a ``kebab-case`` directory: ``.claude/skills/evolve/SKILL.md``
 - Memory files: ``MEMORY.md`` (uppercase) inside agent-name directory: ``.claude/agent-memory/researcher/MEMORY.md``
 
 **Python functions:**
@@ -78,11 +77,11 @@ This project has two distinct code layers with different conventions:
 **Python import patterns:**
 - Deferred imports for heavy/optional dependencies: ``from crawl4ai import AsyncWebCrawler  # noqa: PLC0415`` inside function bodies
 - Relative imports within packages: ``from .analyzer import compute_channel_stats``
-- ``sys.path.insert(0, ...)`` used in media scripts for local module resolution (e.g., ``embed.py``)
+- ``sys.path.insert(0, ...)`` used in media scripts for local module resolution (fragile; see CONCERNS.md)
 
 **JavaScript imports:**
 - CommonJS ``require()`` only (no ESM): ``const fs = require('fs')``
-- ``path.resolve(__dirname, '..')`` for project root resolution
+- ``path.resolve(__dirname, '..')`` or ``path.resolve(__dirname, '..', '..')`` for project root resolution (check existing files for the correct level -- hooks use one level, tests use two)
 
 **Path Aliases:**
 - None. All imports use relative paths or ``sys.path`` manipulation.
@@ -168,8 +167,6 @@ This project has two distinct code layers with different conventions:
 
 **JavaScript:** ``console.log()`` for test output, ``process.stderr.write()`` for error diagnostics in hooks
 
-**Bash hooks:** ``sys.stderr.write()`` from embedded Python for parse errors; main hook is silent on success
-
 ## Comments
 
 **When to comment:**
@@ -203,9 +200,10 @@ def fetch_with_retry(
 **JavaScript comments:**
 - File-header comments describe purpose and usage:
   ```javascript
-  // tests/smoke-test-agents.js
-  // Phase 3 Agent Migration & Memory validation
-  // Run: node tests/smoke-test-agents.js
+  // .claude/tests/smoke-test-observe.js
+  // Smoke tests for pipeline-observe.js hook
+  // Covers: CAPT-01 through CAPT-07
+  // Run: node .claude/tests/smoke-test-observe.js
   ```
 
 ## Function Design
@@ -250,13 +248,20 @@ def fetch_with_retry(
 - Body starts with ``# Title`` then ``## Identity`` section
 - References channel context with ``@channel/channel.md``
 - Includes ``<project_context>`` block
+- Agents do NOT write to memory files -- observer handles all memory writes
 
 **Skill definition format** (`.claude/skills/<name>/SKILL.md`):
 - YAML frontmatter with: ``name``, ``description``, ``user-invocable: true|false``
 - Pipeline skills add ``disable-model-invocation: true``
-- Body has ``## Phase 0: Context Loading`` as first operational section
+- Body has ``## Phase 0: Context Loading`` as first operational section (expertise skills) or Instructions section (dispatcher skills)
 - Task classification tags: ``[HEURISTIC]`` and ``[DETERMINISTIC]``
 - Companion ``insights.md`` file with ``Append new insights below this line`` marker
+
+**Memory file conventions** (`.claude/agent-memory/<agent>/MEMORY.md`):
+- Permanent entries: ``- [HIGH/MED/LOW] description`` (confidence tagged by observer)
+- Pending Review section: ``## Pending Review`` -- entries awaiting /evolve promotion
+- Agents read MEMORY.md as reference only; observer writes all entries
+- 200-line limit enforced by ``check-memory-limit.js`` SubagentStop hook
 
 **Git workflow convention** (from `.claude/rules/git-workflow.md`):
 - Use targeted ``git add <path>`` instead of ``git add -A`` in ``.claude/`` trees
@@ -267,23 +272,27 @@ def fetch_with_retry(
 **JSON conventions:**
 - ``json.dumps(..., ensure_ascii=False, indent=2)`` for human-readable files
 - ``encoding="utf-8"`` on all file reads/writes via ``Path.read_text()`` / ``Path.write_text()``
-- JSONL format for observability logs and transcripts (one JSON object per line)
+- JSONL format for observability logs (one JSON object per line, ``.jsonl`` extension)
 
 **Timestamps:**
 - UTC everywhere: ``datetime.now(timezone.utc)``
 - ISO 8601 format: ``"%Y-%m-%dT%H:%M:%SZ"``
-- Filenames use dash-separated time (Windows-safe): ``2026-04-17T10-00-00-000Z`` (no colons)
+- Filenames and JSONL timestamps use dash-separated time (Windows-safe): ``2026-04-17T10-00-00-000Z`` (no colons -- colons are illegal in Windows filenames)
+
+**Confidence tags (memory entries):**
+- ``[HIGH]`` -- Observer-assessed high-confidence learning (no decay)
+- ``[MED]`` -- Medium-confidence (30-day decay)
+- ``[LOW]`` -- Low-confidence (14-day decay)
+- Untagged entries are legacy (pre-observer system)
 
 **Secret scrubbing:**
 - Observability hooks apply regex-based secret scrubbing before logging:
-  ```python
-  _SECRET_RE = re.compile(
-      r'(?i)(api[_-]?key|token|secret|password|authorization|credentials?|auth)'
-      ...
-  )
+  ```javascript
+  // Matches common secret key names before writing to obs.jsonl
+  // pipeline-observe.js
   ```
-  Used in: ``.claude/hooks/pipeline-observe.sh``
+  Used in: ``.claude/hooks/pipeline-observe.js``
 
 ---
 
-*Convention analysis: 2026-04-20*
+*Convention analysis: 2026-04-22*

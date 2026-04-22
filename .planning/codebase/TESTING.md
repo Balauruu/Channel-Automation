@@ -1,31 +1,32 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-04-20
+**Analysis Date:** 2026-04-22
 
 ## Test Framework
 
-**JavaScript smoke tests (primary test suite):**
+**JavaScript smoke tests (structural validation):**
 - Runner: Node.js built-in (no framework). Raw ``node`` execution with custom test harness.
 - No assertion library -- tests use boolean ``check()`` functions returning ``true``/``false``.
 - Config: None. Tests are standalone scripts.
 
+**JavaScript evaluation scripts (quality validation):**
+- Runner: Node.js built-in. Evaluation harnesses for observer and evolve quality.
+- Located alongside smoke tests in ``.claude/tests/``.
+
 **Python tests (strategy package only):**
-- Runner: pytest 9.0.2 (evidence from ``__pycache__`` bytecode files)
+- Runner: pytest (evidence from ``__pycache__`` bytecode files)
 - Config: Not detected at project root. Likely pytest defaults.
-- Location: ``.claude/scripts/strategy/tests/`` (``__pycache__`` contains compiled test files but source ``.py`` files are not present on disk -- possibly generated or cleaned)
+- Location: ``.claude/scripts/strategy/tests/`` (source files may need restoration)
 
 **Run Commands:**
 ```bash
-# Run all JavaScript smoke tests (full pipeline validation)
-node .claude/tests/smoke-test-paths.js && node .claude/tests/smoke-test-skills.js && node .claude/tests/smoke-test-agents.js && node .claude/tests/smoke-test-pipeline.js && node .claude/tests/smoke-test-feedback.js && node .claude/tests/smoke-test-observability.js
+# Run smoke tests (pipeline structure validation)
+node .claude/tests/smoke-test-observe.js
+node .claude/tests/smoke-test-evolve.js
 
-# Run individual smoke test suites
-node .claude/tests/smoke-test-paths.js          # Windows paths + Phase 1 deliverables
-node .claude/tests/smoke-test-skills.js         # Skills library validation
-node .claude/tests/smoke-test-agents.js         # Agent definitions + memory
-node .claude/tests/smoke-test-pipeline.js       # Pipeline triggers + hooks
-node .claude/tests/smoke-test-feedback.js       # Feedback signal system
-node .claude/tests/smoke-test-observability.js  # Observability hook + merge logic
+# Run evaluation scripts (quality checks)
+node .claude/tests/eval-observer.js
+node .claude/tests/eval-evolve.js
 
 # Python strategy tests (if sources exist)
 PYTHONPATH=.claude/scripts/strategy python -m pytest .claude/scripts/strategy/tests/ -v
@@ -36,24 +37,29 @@ PYTHONPATH=.claude/scripts/strategy python -m pytest .claude/scripts/strategy/te
 **Location:** Centralized in ``.claude/tests/`` (not co-located with source).
 
 **Naming:**
-- JavaScript: ``smoke-test-<domain>.js`` where domain maps to a pipeline phase
-- Python: ``test_<module>.py`` (standard pytest naming, seen in ``__pycache__``)
+- JavaScript smoke tests: ``smoke-test-<domain>.js`` -- structural/existence validation
+- JavaScript eval scripts: ``eval-<domain>.js`` -- quality/correctness evaluation
+- Python: ``test_<module>.py`` (standard pytest naming)
 
 **Structure:**
 ```
 .claude/tests/
-    smoke-test-paths.js           # Phase 1: Windows paths + file existence
-    smoke-test-skills.js          # Phase 2: Skills library structure
-    smoke-test-agents.js          # Phase 3: Agent definitions + memory
-    smoke-test-pipeline.js        # Phase 4: Pipeline triggers + hook registration
-    smoke-test-feedback.js        # Phase 5: Feedback signal system
-    smoke-test-observability.js   # Phase 6: Observability hooks + merge/finalize
+    smoke-test-observe.js         # pipeline-observe.js hook validation (CAPT-01..CAPT-07)
+    smoke-test-evolve.js          # /evolve workflow validation
+    eval-observer.js              # @observer agent quality evaluation
+    eval-evolve.js                # /evolve workflow quality evaluation
     fixtures/
-        observability/
-            tool-events.jsonl     # Pre-built tool event sequences
-            transcript.jsonl      # Normal agent transcript
-            transcript-stopped.jsonl   # max_tokens transcript
-            transcript-errored.jsonl   # Unknown stop reason transcript
+        observer/
+            run-researcher-success.jsonl   # Normal researcher run obs.jsonl
+            run-with-errors.jsonl          # Run with tool failures
+            run-observer-selfloop.jsonl    # Observer dispatching itself (scope test)
+            orphan-tool-events.jsonl       # Tool events without dispatch context
+            malformed-lines.jsonl          # Malformed JSONL lines (robustness)
+            README                         # Fixture documentation
+        evolve/
+            memory.md                      # Sample MEMORY.md with pending entries
+            insights.md                    # Sample insights.md with pending entries
+            playbook.md                    # Sample PLAYBOOK.md with open entries
 ```
 
 ## Test Structure
@@ -97,28 +103,32 @@ process.exit(passed === total ? 0 : 1);
 ```
 
 **Test naming convention:** ``entity/property_being_checked`` using slash-separated namespacing:
-- ``researcher/frontmatter_has_name``
-- ``global/no_v5_paths_in_any_agent``
-- ``dispatch/creates_run_file_and_pointer``
-- ``merge/chronological_order_and_durations``
+- ``hook/writes_tool_pre_event``
+- ``hook/rotates_at_10mb``
+- ``evolve/presents_pending_entries``
+- ``global/no_legacy_obs_js_references``
 
 **Patterns:**
-- Setup: Inline within ``check()`` function. No shared setup/teardown.
-- Teardown: Manual cleanup (``fs.unlinkSync``, ``fs.rmdirSync``) inside ``check()``
+- Setup: Inline within ``check()`` function or using ``makeTmpProject()`` helper.
+- Teardown: Manual cleanup (``fs.rmSync``) inside ``check()``
 - Assertions: Pure boolean returns. On failure, the runner prints ``Expected: true, Got: false``.
 
 ## Mocking
 
 **Framework:** None. No mocking library used.
 
-**Approach:** Tests are primarily structural/integration -- they validate file existence, content patterns, and hook behavior by running real code against temp directories.
+**Approach:** Tests are primarily structural/integration -- they validate file existence, content patterns, and hook behavior by running real code against temp directories with fixture data.
 
 **Temp directory pattern for hook tests:**
 ```javascript
 function makeTmpProject() {
   const tmp = fs.mkdtempSync(path.join(require('os').tmpdir(), 'obs-test-'));
-  fs.mkdirSync(path.join(tmp, '.claude', 'logs', 'runs', '.active'), { recursive: true });
+  fs.mkdirSync(path.join(tmp, '.claude', 'logs', 'observations'), { recursive: true });
   return tmp;
+}
+
+function cleanTmpProject(tmpDir) {
+  fs.rmSync(tmpDir, { recursive: true, force: true });
 }
 
 function runHook(event, stdinJson, projectDir) {
@@ -129,7 +139,7 @@ function runHook(event, stdinJson, projectDir) {
   });
 }
 ```
-Used in: ``.claude/tests/smoke-test-observability.js``
+Used in: ``.claude/tests/smoke-test-observe.js``
 
 **What to mock:** Nothing is mocked -- tests exercise real file I/O and process execution.
 
@@ -140,36 +150,35 @@ Used in: ``.claude/tests/smoke-test-observability.js``
 
 ## Fixtures and Factories
 
-**Test data (JSONL fixtures):**
+**Test data (JSONL fixtures for observer tests):**
 ```jsonl
-{"ts":"2026-04-17T10-00-00-000Z","event":"dispatch","session_id":"s","agent_type":"researcher","agent_id":"a1","cwd":"/tmp","prompt":"find X"}
-{"ts":"2026-04-17T10-00-01-000Z","event":"tool_pre","tool":"Bash","tool_use_id":"t1","input":{"command":"ls"}}
+{"ts":"2026-04-17T10-00-00-000Z","epoch_ms":1713348000000,"event":"tool_pre","session_id":"s1","agent_id":"a1","tool":"Bash","tool_use_id":"t1","input":{"command":"ls"}}
+{"ts":"2026-04-17T10-00-01-000Z","epoch_ms":1713348001000,"event":"tool_post","session_id":"s1","agent_id":"a1","tool":"Bash","tool_use_id":"t1","output":"file1.md"}
 ```
-Located in: ``.claude/tests/fixtures/observability/``
+Located in: ``.claude/tests/fixtures/observer/``
 
-**Fixture files:**
-- ``tool-events.jsonl`` -- Pre-built sequence of dispatch + tool_pre + tool_post + tool_fail events
-- ``transcript.jsonl`` -- Normal 3-turn assistant transcript (tool_use + tool_use + end_turn)
-- ``transcript-stopped.jsonl`` -- Transcript ending with max_tokens stop reason
-- ``transcript-errored.jsonl`` -- Transcript ending with unknown stop reason
+**Test data (Markdown fixtures for evolve tests):**
+- ``memory.md`` -- Sample MEMORY.md with ``## Pending Review`` section containing HIGH/MED/LOW tagged entries
+- ``insights.md`` -- Sample insights.md with pending entries for promotion
+- ``playbook.md`` -- Sample PLAYBOOK.md with open cross-agent entries
+Located in: ``.claude/tests/fixtures/evolve/``
 
 **Synthetic data generation (in-test):**
 ```javascript
-// Generate a 500-turn transcript for perf testing
+// Generate a large obs.jsonl for performance testing
 const lines = [];
 for (let i = 0; i < 500; i++) {
   lines.push(JSON.stringify({
-    timestamp: `2026-04-17T10:0${Math.floor(i/60)}:${String(i%60).padStart(2,'0')}.500Z`,
-    message: {
-      role: 'assistant',
-      content: [{ type: 'text', text: `Turn ${i} output.` }],
-      stop_reason: i === 499 ? 'end_turn' : 'tool_use',
-      usage: { input_tokens: 1000 + i, output_tokens: 10, ... }
-    }
+    ts: `2026-04-17T10-00-${String(i).padStart(2,'0')}-000Z`,
+    epoch_ms: 1713348000000 + i * 1000,
+    event: 'tool_pre',
+    session_id: 's1',
+    agent_id: 'a1',
+    tool: 'Read',
+    tool_use_id: `t${i}`
   }));
 }
 ```
-Used in: ``smoke-test-observability.js`` ``merge/large_transcript_completes_under_budget`` test
 
 ## Coverage
 
@@ -179,63 +188,51 @@ Used in: ``smoke-test-observability.js`` ``merge/large_transcript_completes_unde
 
 ## Test Types
 
-**Smoke tests (primary):**
-- Validate structural integrity of the pipeline: file existence, frontmatter fields, content patterns, cross-reference consistency
-- 6 test files covering all pipeline phases
-- Total test cases: ~170+ across all suites
-- Run time: seconds (pure file I/O, no network)
+**Smoke tests (primary -- structural validation):**
+- Validate file existence, JSONL output format, hook behavior, content patterns
+- 2 test files covering the unified memory system components
+- Run time: seconds (file I/O + subprocess execution, no network)
+
+**Evaluation scripts (secondary -- quality validation):**
+- Validate observer learning extraction quality, evolve promotion workflow correctness
+- 2 evaluation scripts (`eval-observer.js`, `eval-evolve.js`)
 
 **Categories by test file:**
 
-| File | What it validates | Test count (approx) |
-|------|-------------------|---------------------|
-| ``smoke-test-paths.js`` | Windows path handling, Phase 1 file existence, content validation | 20 |
-| ``smoke-test-skills.js`` | Skill directory structure, SKILL.md frontmatter, Phase 0/Reflection sections | 82 |
-| ``smoke-test-agents.js`` | Agent definitions, frontmatter fields, memory file structure | 137 |
-| ``smoke-test-pipeline.js`` | Pipeline skill structure, agent dispatch refs, hook registration | 90 |
-| ``smoke-test-feedback.js`` | Signals.yaml structure, agent-protocols feedback lifecycle | 25 |
-| ``smoke-test-observability.js`` | Hook dispatch/tool events, merge/finalize, summarizer, perf budget | 30 |
+| File | What it validates | Domain |
+|------|-------------------|--------|
+| ``smoke-test-observe.js`` | pipeline-observe.js hook: event capture, JSONL format, rotation, secret scrubbing | CAPT-01..07 |
+| ``smoke-test-evolve.js`` | /evolve workflow: pending entry presentation, promote, revert, git integration | Evolve |
+| ``eval-observer.js`` | @observer quality: learning extraction accuracy, scope classification, PLAYBOOK routing | Observer |
+| ``eval-evolve.js`` | /evolve quality: correct entry parsing, git diff generation, confirmation flow | Evolve |
 
-**Hook integration tests (in smoke-test-observability.js):**
-- Run actual hook scripts via ``execFileSync`` against temp directories
-- Validate JSONL output format, event sequencing, pointer file lifecycle
-- Performance budget test: 500-turn transcript must merge under 3000ms
-- Environment variable overrides: ``OBS_TRUNCATE_KB``, ``OBS_MAX_RUN_MB``
+**Hook integration tests (in smoke-test-observe.js):**
+- Run actual hook script via ``execFileSync`` against temp directories
+- Validate JSONL output format, event sequencing
+- Environment variable overrides: ``PIPELINE_OBSERVE_DISABLED``, ``PIPELINE_SKIP_OBSERVE``
 
-**Optional integration test:**
-```javascript
-if (process.env.OBS_TEST_INTEGRATION === '1') {
-  testCases.push({
-    name: 'integration/live_dispatch_produces_run_file',
-    check: () => { /* requires manual Claude Code dispatch */ }
-  });
-}
-```
-Gated behind ``OBS_TEST_INTEGRATION=1`` env var. Requires manual interaction.
+**Unit tests:** Not used for JavaScript. Python ``test_*.py`` files (strategy package) follow pytest conventions.
 
-**Unit tests:** Not used for JavaScript. Python ``test_*.py`` files (strategy package) follow pytest conventions but source files are not currently on disk.
-
-**E2E tests:** Not used. The smoke tests serve as the closest equivalent -- they validate the full pipeline structure end-to-end without executing agent dispatch.
+**E2E tests:** Not used. Smoke tests serve as the closest equivalent -- they validate pipeline structure end-to-end without executing agent dispatch.
 
 ## Common Patterns
 
 **File existence testing:**
 ```javascript
 {
-  name: 'researcher_agent_exists',
-  check: () => fs.existsSync(path.join(projectRoot, '.claude', 'agents', 'researcher.md'))
+  name: 'hook_file_exists',
+  check: () => fs.existsSync(path.join(projectRoot, '.claude', 'hooks', 'pipeline-observe.js'))
 }
 ```
 
 **Content pattern testing (regex + includes):**
 ```javascript
 {
-  name: 'researcher/frontmatter_has_name',
+  name: 'hook/writes_epoch_ms_field',
   check: () => {
-    const content = fs.readFileSync(agentFile, 'utf8');
-    const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-    if (!fmMatch) return false;
-    return fmMatch[1].includes(`name: ${agent}`);
+    // run hook, read output
+    const lines = readJsonl(obsFile);
+    return lines.every(l => typeof l.epoch_ms === 'number');
   }
 }
 ```
@@ -252,46 +249,22 @@ function readJsonl(filePath) {
 **Negative testing (ensure legacy patterns are absent):**
 ```javascript
 {
-  name: 'global/no_v5_paths_in_any_agent',
+  name: 'global/no_logs_runs_dir_references',
   check: () => {
-    for (const agent of agents) {
-      const content = fs.readFileSync(agentFile, 'utf8');
-      if (content.includes('.pi/multi-team/')) return false;
-    }
-    return true;
-  }
-}
-```
-
-**Performance budget testing:**
-```javascript
-{
-  name: 'merge/large_transcript_completes_under_budget',
-  check: () => {
-    const t0 = Date.now();
-    mergeAndFinalize({ runFile, transcriptPath, stopHookInput });
-    const elapsed = Date.now() - t0;
-    if (elapsed >= 3000) {
-      console.log(`  [perf] ${elapsed}ms exceeds 3000ms budget`);
-      return false;
-    }
-    return true;
+    const content = fs.readFileSync(hookFile, 'utf8');
+    return !content.includes('logs/runs');
   }
 }
 ```
 
 **Loop-generated test cases (parametric testing without framework):**
 ```javascript
-for (const skill of pipelineSkills) {
+for (const event of ['tool_pre', 'tool_post', 'tool_fail', 'permission_denied']) {
   testCases.push({
-    name: `${skill}/directory_exists`,
-    check: () => fs.existsSync(skillDir)
-  });
-  testCases.push({
-    name: `${skill}/has_disable_model_invocation`,
+    name: `hook/handles_${event}_event`,
     check: () => {
-      const content = fs.readFileSync(skillMd, 'utf8');
-      return content.includes('disable-model-invocation: true');
+      // run hook with event, validate output
+      return true;
     }
   });
 }
@@ -302,13 +275,19 @@ for (const skill of pipelineSkills) {
 **To add a new smoke test suite:**
 1. Create ``.claude/tests/smoke-test-<domain>.js``
 2. Follow the ``testCases`` array + runner pattern from existing files
-3. Use ``path.resolve(__dirname, '..')`` or ``path.resolve(__dirname, '..', '..')`` for project root (check existing files -- some use one level, pipeline/observability use two)
-4. Add to the full-suite command chain in the header comment
+3. Use ``path.resolve(__dirname, '..', '..')`` for project root (two levels up from ``.claude/tests/``)
+4. Add to the run command documentation in the header comment
 5. Exit with ``process.exit(passed === total ? 0 : 1)``
 
+**To add an evaluation script:**
+1. Create ``.claude/tests/eval-<domain>.js``
+2. Evaluation scripts may have softer pass/fail criteria than smoke tests
+3. Document what "quality" means for the domain being evaluated
+
 **To add fixture data:**
-1. Place JSONL/JSON fixtures in ``.claude/tests/fixtures/<domain>/``
+1. Place JSONL/JSON/Markdown fixtures in ``.claude/tests/fixtures/<domain>/``
 2. Reference via ``path.join(projectRoot, '.claude', 'tests', 'fixtures', '<domain>', '<file>')``
+3. Update the ``README`` in the fixture directory if one exists
 
 **To add Python tests:**
 1. Place in ``.claude/scripts/<domain>/tests/``
@@ -318,4 +297,4 @@ for (const skill of pipelineSkills) {
 
 ---
 
-*Testing analysis: 2026-04-20*
+*Testing analysis: 2026-04-22*

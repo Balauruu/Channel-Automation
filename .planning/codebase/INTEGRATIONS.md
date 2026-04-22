@@ -1,6 +1,6 @@
 # External Integrations
 
-**Analysis Date:** 2026-04-20
+**Analysis Date:** 2026-04-22
 
 ## APIs & External Services
 
@@ -114,11 +114,16 @@
 
 **Pipeline Observability:**
 - Custom JSONL-based event logging system
-- Hook: `.claude/hooks/pipeline-observe.sh` — Captures all tool calls within subagent sessions
-- Events: `dispatch`, `tool_pre`, `tool_post`, `tool_fail`, `permission_denied`, `assistant_message`, `complete`
+- Hook: `.claude/hooks/pipeline-observe.js` (Node.js) — Captures all tool calls within subagent sessions
+- Events: `tool_pre`, `tool_post`, `tool_fail`, `permission_denied`, `subagent_stop` (and optionally `dispatch`, `assistant_message`, `complete`)
 - Output: `.claude/logs/observations/<project>/obs.jsonl` (rolling, 10MB rotation, 30-day archive purge)
 - Secret scrubbing: Regex-based redaction of API keys, tokens, passwords in logged data
-- Summarizer: `.claude/scripts/obs-summarize.js` — Compresses run file into ~2-5KB markdown summary
+- Summarizer: `.claude/scripts/obs-summarize.js` — Compresses obs.jsonl into ~2-5KB markdown summary
+
+**Memory Learning:**
+- Observer: `.claude/agents/observer.md` — Reads obs.jsonl, extracts learnings, writes Pending Review sections
+- Trigger: User invokes `/evolve` skill → dispatches `@observer` → presents pending entries
+- Promotion: User approves/edits/reverts via `evolve.js` UI with git-based rollback
 
 **Agent Memory Monitoring:**
 - Hook: `.claude/hooks/check-memory-limit.js` — Warns if agent `MEMORY.md` exceeds 200 lines (SubagentStop)
@@ -138,7 +143,7 @@
 
 **CI Pipeline:**
 - None — No GitHub Actions, no automated testing pipeline
-- Smoke tests run manually: `node .claude/tests/smoke-test-pipeline.js`
+- Smoke tests run manually: `node .claude/tests/smoke-test-observe.js`
 
 ## Environment Configuration
 
@@ -172,13 +177,15 @@
 
 | Event | Hook | Timeout | Purpose |
 |-------|------|---------|---------|
-| PreToolUse * | `pipeline-observe.sh tool_pre` | 5s (async) | Log tool inputs |
-| PostToolUse * | `pipeline-observe.sh tool_post` | 5s (async) | Log tool outputs |
-| PostToolUseFailure * | `pipeline-observe.sh tool_fail` | 5s (async) | Log tool failures |
-| PermissionDenied * | `pipeline-observe.sh permission_denied` | 5s (async) | Log denied actions |
-| SubagentStop | `pipeline-observe.sh subagent_stop` | 15s (sync) | Synthesize dispatch + complete events from transcript |
+| PreToolUse * | `pipeline-observe.js tool_pre` | 5s (async) | Log tool inputs to obs.jsonl |
+| PostToolUse * | `pipeline-observe.js tool_post` | 5s (async) | Log tool outputs to obs.jsonl |
+| PostToolUseFailure * | `pipeline-observe.js tool_fail` | 5s (async) | Log tool failures to obs.jsonl |
+| PermissionDenied * | `pipeline-observe.js permission_denied` | 5s (async) | Log denied actions to obs.jsonl |
+| SubagentStop | `pipeline-observe.js subagent_stop` | 15s (sync) | Synthesize agent completion event |
 | SubagentStop | `check-memory-limit.js` | 5s (sync) | Warn if MEMORY.md > 200 lines |
+
+All hooks are Node.js scripts invoked via `node "$CLAUDE_PROJECT_DIR"/.claude/hooks/<hook>.js <event>`.
 
 ---
 
-*Integration audit: 2026-04-20*
+*Integration audit: 2026-04-22*
