@@ -35,6 +35,7 @@ Dark mysteries documentary video production pipeline.
 | @asset-processor | Media | CLIP embeddings, asset downloads, semantic search |
 | @asset-curator | Media | Global video library management |
 | @code-reviewer | Meta | Code quality review and fixes |
+| @observer | Meta | Cross-agent coordination, PLAYBOOK management, pattern detection |
 | @compiler | Media | Edit sheet compilation for DaVinci Resolve |
 
 ## Architecture Rules
