@@ -9,6 +9,9 @@ data/*.db
 # Per-documentary project outputs
 projects/
 
+# Python bytecode cache
+__pycache__/
+
 # Node modules
 node_modules/
 
