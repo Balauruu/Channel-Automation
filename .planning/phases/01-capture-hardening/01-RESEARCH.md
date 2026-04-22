@@ -501,22 +501,22 @@ const completeEvent = {
 
 **Note:** A1 is well-supported by Windows NTFS documentation and community testing but not verified by a first-party Node.js guarantee. The 15% corruption in the current bash implementation and zero corruption in `check-memory-limit.js` (which uses this exact pattern) provides strong empirical evidence.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **SubagentStop transcript timing**
    - What we know: Hook docs say SubagentStop fires after subagent stops. Transcript path is provided.
    - What's unclear: Is the transcript guaranteed complete (all lines flushed) at hook fire time?
-   - Recommendation: Assume yes (empirical evidence from existing hook working). Add fallback for missing/empty transcript.
+   - RESOLVED: Assume yes (empirical evidence from existing hook working). Add fallback for missing/empty transcript via `fs.existsSync` check before read.
 
 2. **Concurrent rotation race (edge case)**
    - What we know: Two async hooks could both detect >= 10MB and try to rename.
    - What's unclear: Exact behavior of `fs.renameSync` when source no longer exists on Windows.
-   - Recommendation: Wrap rename in try/catch; if ENOENT, the file was already rotated by another process. The new write will create a fresh file.
+   - RESOLVED: Wrap rename in try/catch; if ENOENT, the file was already rotated by another process. The new write will create a fresh file. Plans implement this pattern.
 
 3. **hook_event_name vs argv[2]**
    - What we know: Hook docs show `hook_event_name` in stdin JSON. Current bash hook uses argv[1] for event type.
    - What's unclear: Whether stdin `hook_event_name` maps exactly to our event names (tool_pre vs PreToolUse).
-   - Recommendation: Use `process.argv[2]` as the canonical event type (matches current working pattern). Cross-reference with stdin `hook_event_name` for validation if needed.
+   - RESOLVED: Use `process.argv[2]` as the canonical event type (matches current working pattern and settings.json registration). Plans dispatch on argv[2].
 
 ## Environment Availability
 
