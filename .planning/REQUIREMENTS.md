@@ -112,6 +112,14 @@ Deferred to future release. Tracked but not in current roadmap.
 | CLEANUP-04 | Phase 6 | Pending |
 | CLEANUP-05 | Phase 6 | Pending |
 
+### Gap Closure (Phase 7)
+
+Phase 7 closes audit gaps that are not implementation work but verification and tracking:
+- EVLV-03 acceptance (D-04 override stamp)
+- CLEANUP-01..03 verification (write 06-VERIFICATION.md)
+- Integration stale refs (observer.md, agent-observability SKILL.md)
+- Checkbox and traceability updates for 8 verified requirements
+
 **Coverage:**
 - v1 requirements: 30 total
 - Mapped to phases: 30

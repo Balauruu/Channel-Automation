@@ -18,6 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Agent Consumption** - Rewrite agent-protocols and skills so pipeline agents read PLAYBOOK.md and use updated memory paths
 - [ ] **Phase 5: Memory Lifecycle** - Add confidence decay, consolidation, and capacity management for long-running memory files
 - [ ] **Phase 6: Old Memory Cleanup** - Remove all traces of the old broken memory system so the codebase only contains the new unified memory system
+- [ ] **Phase 7: Milestone Close-Out** - Fix integration gaps, verification gaps, and tracking drift identified by v1 audit
 
 ## Phase Details
 
@@ -93,10 +94,23 @@ Plans:
 - [x] 05-01-PLAN.md — Decay subcommands (decay/decay-remove/decay-upgrade) in evolve.js + smoke tests
 - [x] 05-02-PLAN.md — Evolve SKILL.md lifecycle wiring (decay, consolidation, unified summary) + observer consolidation mode
 
+### Phase 7: Milestone Close-Out
+**Goal**: Fix all integration gaps, verification gaps, and tracking drift identified by the v1 milestone audit so the milestone can be completed
+**Depends on**: Phase 6
+**Requirements**: Gap closure (EVLV-03 acceptance, CLEANUP-01..03 verification, integration stale refs, tracking drift)
+**Gap Closure:** Closes gaps from v1-MILESTONE-AUDIT.md
+**Success Criteria** (what must be TRUE):
+  1. observer.md contains no references to deleted entities (autoresearch skill, editorial-lead agent)
+  2. agent-observability SKILL.md documents the current 10-step /evolve flow including decay/decay-remove/decay-upgrade commands from Phase 5
+  3. 06-VERIFICATION.md exists and documents CLEANUP-01..05 verification results
+  4. EVLV-03 override in 03-VERIFICATION.md has accepted_by/accepted_at filled in
+  5. REQUIREMENTS.md checkboxes are `[x]` for all 8 verified requirements (EVLV-01, EVLV-02, MEML-03..06, EVLV-04, MEML-02)
+  6. ROADMAP.md shows Phases 3, 4, 5 as complete with dates
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -106,6 +120,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 4. Agent Consumption | 0/3 | Planning complete | - |
 | 5. Memory Lifecycle | 2/2 | Complete | 2026-04-21 |
 | 6. Old Memory Cleanup | 1/2 | In Progress | - |
+| 7. Milestone Close-Out | 0/0 | Not started | - |
 
 ### Phase 6: Old Memory Cleanup
 **Goal**: Remove all traces of the old broken memory system (project-memories/, signals.yaml, stale agent-memory references, deprecated skill insights, dead code in agent definitions) so the codebase only contains the new unified memory system
