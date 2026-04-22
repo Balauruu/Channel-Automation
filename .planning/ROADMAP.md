@@ -105,7 +105,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Evolve Command | 0/2 | Planning complete | - |
 | 4. Agent Consumption | 0/3 | Planning complete | - |
 | 5. Memory Lifecycle | 2/2 | Complete | 2026-04-21 |
-| 6. Old Memory Cleanup | 0/2 | Planning complete | - |
+| 6. Old Memory Cleanup | 1/2 | In Progress | - |
 
 ### Phase 6: Old Memory Cleanup
 **Goal**: Remove all traces of the old broken memory system (project-memories/, signals.yaml, stale agent-memory references, deprecated skill insights, dead code in agent definitions) so the codebase only contains the new unified memory system
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
   5. Full grep audit confirms zero stale old-system references in any live file
 **Plans:** 2 plans
 Plans:
-- [ ] 06-01-PLAN.md — File deletions, CLAUDE.md/gitignore/PROJECT.md updates, cleanup commit
+- [x] 06-01-PLAN.md — File deletions, CLAUDE.md/gitignore/PROJECT.md updates, cleanup commit
 - [ ] 06-02-PLAN.md — Codebase map regeneration, full grep audit, verification commit
