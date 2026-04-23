@@ -1,65 +1,8 @@
 {
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js tool_pre",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js tool_post",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js tool_fail",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PermissionDenied": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js permission_denied",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
     "SubagentStop": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pipeline-observe.js subagent_stop",
-            "timeout": 15
-          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-memory-limit.js",
