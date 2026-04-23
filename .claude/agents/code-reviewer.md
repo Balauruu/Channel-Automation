@@ -7,11 +7,11 @@ description: >-
   assessment.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
+effort: high
 memory: project
 color: yellow
 skills:
   - agent-protocols
-  - autoresearch
 ---
 
 <project_context>
