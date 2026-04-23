@@ -10,10 +10,8 @@ Dark mysteries documentary video production pipeline.
 - `.claude/agents/` -- Agent definitions
 - `.claude/skills/` -- Shared skills (agent-protocols)
 - `.claude/agent-memory/` -- Per-agent persistent memory (universal, cross-project)
-- `.claude/PLAYBOOK.md` -- Cross-agent coordination log (observer-managed, Open/Resolved lifecycle)
-- `.claude/logs/` -- Agent dispatch/completion session logs and observations/ (obs.jsonl per project)
 - `.claude/tests/` -- Smoke tests and validation scripts
-- `.claude/hooks/` -- Pre/PostToolUse and SubagentStop hooks (pipeline-observe.js)
+- `.claude/hooks/` -- SubagentStop hook (check-memory-limit.js)
 - `.claude/scripts/` -- Python scripts (strategy/, editorial/, media/ subdirs)
 - `.claude/rules/` -- Modular on-demand rules (git-workflow, etc.). Read when relevant; not auto-loaded.
 - `data/` -- SQLite databases (channel_assistant.db, asset_catalog.db)
@@ -35,7 +33,6 @@ Dark mysteries documentary video production pipeline.
 | @asset-processor | Media | CLIP embeddings, asset downloads, semantic search |
 | @asset-curator | Media | Global video library management |
 | @code-reviewer | Meta | Code quality review and fixes |
-| @observer | Meta | Cross-agent coordination, PLAYBOOK management, pattern detection |
 | @compiler | Media | Edit sheet compilation for DaVinci Resolve |
 
 ## Architecture Rules
