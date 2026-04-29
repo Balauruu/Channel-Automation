@@ -1,11 +1,13 @@
 """Source file aggregation into synthesis_input.md for the researcher skill.
 
-Reads all src_*.json and pass2_*.json files from the output directory's sources/
-subfolder and produces a flat markdown document (synthesis_input.md) for Claude to
-synthesize into Research.md and entity_index.json.
+Reads all src_*.json, pass2_*.json, and pass3_*.json files from the output
+directory's sources/ subfolder and produces a flat markdown document
+(synthesis_input.md) for Claude to synthesize into Research.md and entity_index.json.
+Each source is labeled with its originating pass so the synthesizer can
+distinguish broad survey, deep-dive, and targeted gap-fill provenance.
 
 Exported functions:
-    load_source_files  — glob and read src/pass2 JSON files from output_dir/sources/
+    load_source_files  — glob and read source JSON files from output_dir/sources/
     build_synthesis_input — format sources into synthesis markdown string
     write_synthesis_input — write the markdown string to output_dir/sources/synthesis_input.md
 """
@@ -14,8 +16,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-def load_source_files(output_dir: Path) -> tuple[list[dict], list[dict]]:
-    """Load all src_*.json and pass2_*.json source files from output_dir/sources/.
+def load_source_files(output_dir: Path) -> tuple[list[dict], list[dict], list[dict]]:
+    """Load all source JSON files from output_dir/sources/.
 
     Files are sorted by filename to ensure deterministic ordering.
     Files that fail to parse are silently skipped.
@@ -24,12 +26,13 @@ def load_source_files(output_dir: Path) -> tuple[list[dict], list[dict]]:
         output_dir: Root output directory (sources live in output_dir/sources/).
 
     Returns:
-        Tuple of (pass1_sources, pass2_sources) as lists of dicts.
-        Each list is sorted by filename. Either may be empty.
+        Tuple of (pass1, pass2, pass3) source lists. Each list is sorted by
+        filename. Any list may be empty.
     """
     sources_dir = output_dir / "sources"
     pass1: list[dict] = []
     pass2: list[dict] = []
+    pass3: list[dict] = []
 
     for src_file in sorted(sources_dir.glob("src_*.json")):
         try:
@@ -45,13 +48,21 @@ def load_source_files(output_dir: Path) -> tuple[list[dict], list[dict]]:
         except Exception:  # noqa: BLE001
             pass
 
-    return pass1, pass2
+    for src_file in sorted(sources_dir.glob("pass3_*.json")):
+        try:
+            data = json.loads(src_file.read_text(encoding="utf-8"))
+            pass3.append(data)
+        except Exception:  # noqa: BLE001
+            pass
+
+    return pass1, pass2, pass3
 
 
 def build_synthesis_input(
     topic: str,
     pass1: list[dict],
     pass2: list[dict],
+    pass3: list[dict],
     output_dir: Path,
 ) -> str:
     """Format source lists into a flat markdown document for Claude synthesis.
@@ -64,13 +75,18 @@ def build_synthesis_input(
         topic: The research topic string.
         pass1: List of Pass 1 source dicts (from src_*.json).
         pass2: List of Pass 2 source dicts (from pass2_*.json).
+        pass3: List of Pass 3 source dicts (from pass3_*.json).
         output_dir: The output directory path (included in header for Claude).
 
     Returns:
         Formatted markdown string.
     """
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    all_sources = [("Pass 1", s) for s in pass1] + [("Pass 2", s) for s in pass2]
+    all_sources = (
+        [("Pass 1", s) for s in pass1]
+        + [("Pass 2", s) for s in pass2]
+        + [("Pass 3", s) for s in pass3]
+    )
 
     # Partition into good and skipped
     good: list[tuple[str, dict]] = []
@@ -94,6 +110,7 @@ def build_synthesis_input(
     lines.append(f"**Total sources (usable):** {total_sources}")
     lines.append(f"**Pass 1 sources:** {len(pass1)}")
     lines.append(f"**Pass 2 sources:** {len(pass2)}")
+    lines.append(f"**Pass 3 sources:** {len(pass3)}")
     lines.append(f"**Output directory:** {output_dir}")
 
     # Include iteration metadata if manifest exists

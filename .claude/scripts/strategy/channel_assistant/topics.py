@@ -147,13 +147,17 @@ def write_topic_briefs(briefs: list[dict], output_path: Path) -> None:
             "hook": str,
             "timeline": list[str],
             "scores": {"obscurity": int, "complexity": int,
-                       "shock_factor": int, "verifiability": int},
+                       "shock_factor": int, "verifiability": int,
+                       "pillar_fit": int},
             "justification": {"obscurity": str, "complexity": str,
-                              "shock_factor": str, "verifiability": str},
+                              "shock_factor": str, "verifiability": str,
+                              "pillar_fit": str},
             "estimated_runtime_min": int,
             "duplicate_of": str | None,
             "tags": list[str],
         }
+
+    Scores are on a 1-10 scale across 5 dimensions; total maximum is 50.
     """
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -171,8 +175,9 @@ def write_topic_briefs(briefs: list[dict], output_path: Path) -> None:
         c = scores["complexity"]
         s = scores["shock_factor"]
         v = scores["verifiability"]
-        total = o + c + s + v
-        score_line = f"O:{o} C:{c} S:{s} V:{v} = {total}/20"
+        p = scores["pillar_fit"]
+        total = o + c + s + v + p
+        score_line = f"O:{o} C:{c} S:{s} V:{v} P:{p} = {total}/50"
 
         lines.append(f"## {i}. {brief['title']}")
         lines.append("")
@@ -192,10 +197,11 @@ def write_topic_briefs(briefs: list[dict], output_path: Path) -> None:
         # Scoring justification
         lines.append("**Scoring Justification:**")
         justification = brief.get("justification", {})
-        lines.append(f"- Obscurity ({o}/5): {justification.get('obscurity', '')}")
-        lines.append(f"- Complexity ({c}/5): {justification.get('complexity', '')}")
-        lines.append(f"- Shock Factor ({s}/5): {justification.get('shock_factor', '')}")
-        lines.append(f"- Verifiability ({v}/5): {justification.get('verifiability', '')}")
+        lines.append(f"- Obscurity ({o}/10): {justification.get('obscurity', '')}")
+        lines.append(f"- Complexity ({c}/10): {justification.get('complexity', '')}")
+        lines.append(f"- Shock Factor ({s}/10): {justification.get('shock_factor', '')}")
+        lines.append(f"- Verifiability ({v}/10): {justification.get('verifiability', '')}")
+        lines.append(f"- Pillar Fit ({p}/10): {justification.get('pillar_fit', '')}")
         lines.append("")
 
         # Optional tags
@@ -229,11 +235,12 @@ def format_chat_cards(briefs: list[dict]) -> str:
         c = scores["complexity"]
         s = scores["shock_factor"]
         v = scores["verifiability"]
-        total = o + c + s + v
+        p = scores["pillar_fit"]
+        total = o + c + s + v + p
 
-        # Visual score bar: ASCII-safe filled/empty blocks
+        # Visual score bar: ASCII-safe filled/empty blocks (1-10 scale, 5 dimensions, max 50)
         filled = total
-        empty = 20 - total
+        empty = 50 - total
         bar = "#" * filled + "-" * empty
 
         runtime = brief["estimated_runtime_min"]
@@ -244,8 +251,8 @@ def format_chat_cards(briefs: list[dict]) -> str:
             "",
             f"> {brief['hook']}",
             "",
-            f"**Score:** {bar} **{total}/20** "
-            f"(O:{o} C:{c} S:{s} V:{v})",
+            f"**Score:** {bar} **{total}/50** "
+            f"(O:{o} C:{c} S:{s} V:{v} P:{p})",
             f"**Pillar:** {pillar} | **Runtime:** ~{runtime} min",
         ]
 

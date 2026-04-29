@@ -5,6 +5,7 @@ description: >-
   mystery topics. Produces research dossiers with sourced claims and entity
   indexes. Invoke when the user asks to research a topic for a documentary.
 model: sonnet
+effort: high
 memory: project
 color: blue
 skills:
@@ -19,6 +20,8 @@ tools:
   - Glob
   - WebSearch
   - WebFetch
+  - TaskCreate
+  - TaskUpdate
 ---
 
 # Documentary Researcher
@@ -165,6 +168,11 @@ Tiers: **Strong** (all three axes) — lead with this. **Moderate** (two axes) �
 
 ## Research Procedure
 
+At the start of every research task, register the passes as tasks so the orchestrating session can track progress:
+
+1. `TaskCreate` for each pass: "Pass 1 — Survey", "Pass 2 — Deep Dive", "Pass 3 — Gap Fill (conditional)", "Pass 4 — Synthesize"
+2. `TaskUpdate` each pass to `in_progress` when starting it, `completed` when done. If Pass 3 is skipped, mark it `completed` with a note.
+
 ### Pass 1 — Survey
 
 1. `PYTHONPATH=".claude/scripts/editorial" C:/Users/iorda/venvs/crawl4ai/Scripts/python -m researcher survey "<topic>"`
@@ -188,9 +196,11 @@ Run only if ≥1 of these is true:
 
 Otherwise skip to Pass 4.
 
+Do NOT use `cmd_deepen` for this pass — it refetches the manifest's `deep_dive_urls`, not the targeted gap URLs Pass 3 needs, and it deletes any existing `pass3_*.json` files before writing. Use WebSearch and WebFetch directly.
+
 If running:
-1. Identify 3-5 specific URLs or search queries targeting the gap. Add URLs to the manifest as `deep_dive_urls`, or use WebSearch for queries outside script scope.
-2. `PYTHONPATH=".claude/scripts/editorial" C:/Users/iorda/venvs/crawl4ai/Scripts/python -m researcher deepen "<topic>"` and/or WebFetch for out-of-script sources.
+1. Identify 3-5 specific URLs or search queries targeting the gap.
+2. For each URL: fetch with WebFetch, save the result as `sources/pass3_NNN.json` using the standard schema (`url`, `title`, `fetched_at`, `tier`, `content_md`, `notes`). For search queries: use WebSearch, then fetch promising results with WebFetch.
 3. Budget: ≤5 new source files. Hard cap. If the gap is not resolved within budget, document it as unresolvable in Section 10 (Open Questions) and stop.
 
 ### Pass 4 — Synthesize
@@ -204,7 +214,7 @@ If running:
 7. Audit before delivery:
    - ≥3 distinct source domains cited.
    - Timeline has ≥5 dated entries.
-   - All 5 entity categories populated in `entity_index.json`.
+   - All applicable entity categories populated in `entity_index.json` (at least 3 of 5).
    - Every Subject Overview claim traces to a source in the Source Inventory.
    - Section 8 (Contradictions) is non-empty or explicitly states "no contradictions found".
 
@@ -212,14 +222,14 @@ If running:
 
 Available scripts (always run with the pinned interpreter `C:/Users/iorda/venvs/crawl4ai/Scripts/python`):
 - `python -m researcher survey "<topic>"` — broad survey (Wikipedia + DDG), writes `src_*.json`.
-- `python -m researcher deepen "<topic>"` — fetches manifest `deep_dive_urls`, writes `pass2_*.json` (or `pass3_*.json` on a later invocation).
+- `python -m researcher deepen "<topic>"` — fetches manifest `deep_dive_urls`, writes `pass2_*.json`. Not used for Pass 3 (see Pass 3 procedure above).
 - `python -m researcher write "<topic>"` — aggregates sources into `synthesis_input.md`.
 - `python -m researcher status "<topic>"` — shows current state.
 
 ### Script failure handling
 
 - **Environment broken → stop.** If any script fails with `ImportError` (crawl4ai, ddgs, or any dep), stop immediately. Report the failing command, `python -c "import sys; print(sys.executable)"` output, and the full error. Do not substitute WebFetch. A broken interpreter is a configuration problem, not a research problem.
-- **Process blocked → fall back for that URL only.** If a script runs but a specific URL fails at fetch (403, anti-bot, timeout, paywall), retry that URL with WebFetch and save the result as `sources/src_NNN.json` or `pass2_NNN.json` with the script schema (`url`, `title`, `fetched_at`, `tier`, `content_md`, `notes`). Other URLs continue through the script. Pass 4's aggregator reads any `src_*.json` / `pass2_*.json` / `pass3_*.json` regardless of origin.
+- **Process blocked → fall back for that URL only.** If a script runs but a specific URL fails at fetch (403, anti-bot, timeout, paywall), retry that URL with WebFetch and save the result as `sources/src_NNN.json` or `pass2_NNN.json` matching the script schema (`url`, `domain`, `tier`, `word_count`, `fetch_status`, `content`). Other URLs continue through the script.
 
 ## File Conventions
 

@@ -158,6 +158,7 @@ Write `metadata.json` (not metadata.md) with:
     "obscurity": 0,
     "complexity": 0,
     "shock_factor": 0,
+    "verifiability": 0,
     "pillar_fit": 0,
     "total": 0
   },

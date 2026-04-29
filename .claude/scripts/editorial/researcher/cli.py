@@ -2,8 +2,8 @@
 
 Subcommands:
     survey  — Pass 1: resolve output dir, fetch initial URLs, write src_*.json files.
-    deepen  — Pass 2: fetch targeted primary sources from evaluated manifest.
-    write   — Pass 3: aggregate sources into synthesis_input.md.
+    deepen  — Pass 2/3: fetch targeted primary sources from evaluated manifest.
+    write   — Pass 4: aggregate sources into synthesis_input.md.
     status  — Show current iteration state and convergence metrics.
 
 Usage:
@@ -343,21 +343,22 @@ def _collect_deep_dive_urls(manifest_path: Path) -> list[str]:
 
 
 def _get_fetched_urls(sources_dir: Path) -> set[str]:
-    """Return URLs already fetched in Pass 1 (src_*.json files)."""
+    """Return URLs already fetched across all passes."""
     fetched: set[str] = set()
-    for src_file in sources_dir.glob("src_*.json"):
-        try:
-            data = json.loads(src_file.read_text(encoding="utf-8"))
-            url = data.get("url")
-            if url:
-                fetched.add(url)
-        except Exception:  # noqa: BLE001
-            pass
+    for pattern in ("src_*.json", "pass2_*.json", "pass3_*.json"):
+        for src_file in sources_dir.glob(pattern):
+            try:
+                data = json.loads(src_file.read_text(encoding="utf-8"))
+                url = data.get("url")
+                if url:
+                    fetched.add(url)
+            except Exception:  # noqa: BLE001
+                pass
     return fetched
 
 
 def cmd_deepen(topic: str) -> None:
-    """Pass 2: fetch targeted primary sources from evaluated manifest."""
+    """Fetch targeted primary sources from evaluated manifest (pass 2 or 3)."""
     root = _get_project_root()
     output_dir = resolve_output_dir(root, topic)
 
@@ -366,45 +367,46 @@ def cmd_deepen(topic: str) -> None:
         print(f"Error: source_manifest.json not found at {manifest_path}", file=sys.stderr)
         sys.exit(1)
 
-    # Intermediate files go in sources/ subfolder
     sources_dir = output_dir / "sources"
     sources_dir.mkdir(parents=True, exist_ok=True)
 
-    # Clean previous Pass 2 artifacts
-    for old_file in sources_dir.glob("pass2_*.json"):
+    prefix = "pass3" if list(sources_dir.glob("pass2_*.json")) else "pass2"
+
+    for old_file in sources_dir.glob(f"{prefix}_*.json"):
         old_file.unlink()
 
     deep_dive_urls = _collect_deep_dive_urls(manifest_path)
     fetched_urls = _get_fetched_urls(sources_dir)
     deep_dive_urls = [u for u in deep_dive_urls if u not in fetched_urls]
 
-    # Budget guard: max 15 total files across both passes
-    pass1_count = len(list(sources_dir.glob("src_*.json")))
-    pass2_budget = 15 - pass1_count
+    existing_count = sum(
+        len(list(sources_dir.glob(p)))
+        for p in ("src_*.json", "pass2_*.json", "pass3_*.json")
+    )
+    budget = 15 - existing_count
 
-    if pass2_budget <= 0:
-        print(f"Budget exhausted: {pass1_count} src_*.json files already exist (max 15 total). Skipping Pass 2.")
+    if budget <= 0:
+        print(f"Budget exhausted: {existing_count} source files already exist (max 15 total). Skipping {prefix}.")
         return
 
     if not deep_dive_urls:
-        print("No deep-dive URLs found in manifest -- skip Pass 2 or re-evaluate sources")
+        print(f"No deep-dive URLs found in manifest -- skip {prefix} or re-evaluate sources")
         return
 
-    if len(deep_dive_urls) > pass2_budget:
-        skipped_due_to_budget = deep_dive_urls[pass2_budget:]
-        deep_dive_urls = deep_dive_urls[:pass2_budget]
-        print(f"Budget: {pass2_budget} slots available. Skipping {len(skipped_due_to_budget)} URL(s):")
+    if len(deep_dive_urls) > budget:
+        skipped_due_to_budget = deep_dive_urls[budget:]
+        deep_dive_urls = deep_dive_urls[:budget]
+        print(f"Budget: {budget} slots available. Skipping {len(skipped_due_to_budget)} URL(s):")
         for url in skipped_due_to_budget:
             print(f"  [budget-skip] {url}")
 
-    pass2_sources = _fetch_and_save(deep_dive_urls, sources_dir, "pass2", "pass2")
+    sources = _fetch_and_save(deep_dive_urls, sources_dir, prefix, prefix)
 
-    _print_summary_table(pass2_sources)
+    _print_summary_table(sources)
 
-    # Update manifest with pass2_sources and increment iteration
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["iteration"] = manifest.get("iteration", 1) + 1
-    manifest["pass2_sources"] = pass2_sources
+    manifest[f"{prefix}_sources"] = sources
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -414,21 +416,21 @@ def cmd_deepen(topic: str) -> None:
 
 
 def cmd_write(topic: str) -> None:
-    """Pass 3: aggregate all source files into synthesis_input.md."""
+    """Pass 4: aggregate all source files into synthesis_input.md."""
     root = _get_project_root()
     output_dir = resolve_output_dir(root, topic)
 
-    pass1, pass2 = load_source_files(output_dir)
+    pass1, pass2, pass3 = load_source_files(output_dir)
 
-    if not pass1 and not pass2:
+    if not pass1 and not pass2 and not pass3:
         print(f"No source files found in {output_dir}. Run survey first.")
         raise ValueError(f"No source files found in {output_dir}. Run survey first.")
 
-    content = build_synthesis_input(topic, pass1, pass2, output_dir)
+    content = build_synthesis_input(topic, pass1, pass2, pass3, output_dir)
     synthesis_path = write_synthesis_input(output_dir, content)
 
     print(f"Synthesis input ready: {synthesis_path}")
-    print(f"Pass 1 sources: {len(pass1)}  |  Pass 2 sources: {len(pass2)}")
+    print(f"Pass 1 sources: {len(pass1)}  |  Pass 2 sources: {len(pass2)}  |  Pass 3 sources: {len(pass3)}")
     print()
     print(
         "Aggregation complete. Read synthesis_input.md, "
@@ -456,8 +458,9 @@ def cmd_status(topic: str) -> None:
     # Source counts
     sources = manifest.get("sources", [])
     pass2 = manifest.get("pass2_sources", [])
-    ok = sum(1 for s in sources + pass2 if s.get("fetch_status") == "ok")
-    print(f"Sources: {len(sources)} pass1, {len(pass2)} pass2, {ok} succeeded")
+    pass3 = manifest.get("pass3_sources", [])
+    ok = sum(1 for s in sources + pass2 + pass3 if s.get("fetch_status") == "ok")
+    print(f"Sources: {len(sources)} pass1, {len(pass2)} pass2, {len(pass3)} pass3, {ok} succeeded")
 
     # Convergence
     conv = manifest.get("convergence", {})
@@ -493,10 +496,10 @@ def main() -> None:
     survey_parser = subparsers.add_parser("survey", help="Pass 1: fetch initial sources for a topic")
     survey_parser.add_argument("topic", help="Topic string (e.g. 'Jonestown Massacre')")
 
-    deepen_parser = subparsers.add_parser("deepen", help="Pass 2: fetch targeted primary sources")
+    deepen_parser = subparsers.add_parser("deepen", help="Pass 2/3: fetch targeted primary sources")
     deepen_parser.add_argument("topic", help="Topic string (same as used for survey)")
 
-    write_parser = subparsers.add_parser("write", help="Pass 3: aggregate sources into synthesis_input.md")
+    write_parser = subparsers.add_parser("write", help="Pass 4: aggregate sources into synthesis_input.md")
     write_parser.add_argument("topic", help="Topic string (same as used for survey/deepen)")
 
     status_parser = subparsers.add_parser("status", help="Show current iteration state and convergence metrics")

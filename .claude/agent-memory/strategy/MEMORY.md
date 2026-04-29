@@ -12,7 +12,7 @@
 - Topic generation rubric: anchored scoring with 5 dimensions (obscurity, complexity, shock factor, verifiability, pillar fit)
 
 ## Decisions
-- Topics scored across 5 dimensions: obscurity, complexity, shock factor, verifiability, pillar fit -- each on a 1-5 scale with anchored examples
+- Topics scored across 5 dimensions: obscurity, complexity, shock factor, verifiability, pillar fit -- each on a 1-10 scale with anchored examples (max total 50)
 - Topic briefs produce exactly 5 candidates ranked by total score descending -- never filter below a threshold
 - Near-duplicates tagged and included, never silently dropped -- use [Similar to:] or [DIFFERENT ANGLE:] tags
 - Tiebreaker order when scores are equal: shock factor > obscurity > verifiability
@@ -36,6 +36,5 @@
 - Hybrid angle (Institutional Failure + Victim-Focused Narrative) generates 1.5-2.5x median views across competitor data
 
 ## Open Questions
-- Confirm with user whether scoring scale should standardize at 1-5 (agent rubric) or 1-10 (user request) for future topic generation runs
 
 ## Archived

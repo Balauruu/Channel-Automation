@@ -10,7 +10,6 @@ Dark mysteries documentary video production pipeline.
 - `.claude/agents/` -- Agent definitions
 - `.claude/skills/` -- Shared skills (agent-protocols)
 - `.claude/agent-memory/` -- Per-agent persistent memory (universal, cross-project)
-- `.claude/tests/` -- Smoke tests and validation scripts
 - `.claude/hooks/` -- SubagentStop hook (check-memory-limit.js)
 - `.claude/scripts/` -- Python scripts (strategy/, editorial/, media/ subdirs)
 - `.claude/rules/` -- Modular on-demand rules (git-workflow, etc.). Read when relevant; not auto-loaded.

@@ -9,15 +9,14 @@
 - Research CLI: editorial/researcher/cli.py (survey, deepen, write, status)
 
 ## Decisions
-- 3-pass research pipeline: Survey (breadth) -> Deep Dive (depth) -> Synthesis (structure)
+- 4-pass research pipeline: Survey (breadth) -> Deep Dive (depth) -> Gap Fill (conditional) -> Synthesize (structure). Pass 3 runs only when entities are unresolved, a planned section has zero Tier 1-3 sources, or a contradiction needs targeted resolution.
 - Source hierarchy: court documents > government reports > contemporary news > books > retrospective articles > blogs > forums
 - Unverifiable claims marked [UNVERIFIED] and placed in Open Questions, never in main dossier body
 - Entity index uses structured IDs: P001 (people), L001 (locations), O001 (organizations), D001 (documents)
 - Topic must satisfy 3 of 4 channel criteria: obscurity, complexity, shock factor, verifiable
 - Source credibility table uses structured signals (type, corroboration, access quality) not scalar scores
 - Dossier targets ~2,000 words of curated content regardless of raw source volume -- distill, do not summarize
-- Replaced fixed 3-pass pipeline with adaptive iterative loop driven by autoresearch skill. Depth calibrated to topic complexity (2-8 iterations). Quality gates between passes. Convergence detection stops iteration when source saturation + claim classification + entity resolution + timeline consistency are met.
-- WebSearch/WebFetch added as fallback tools. Scripts remain primary; native tools used only when scripts fail or iterative loop needs search strategies scripts don't support.
+- WebSearch/WebFetch are first-class tools for Pass 3 (targeted gap fill); scripts (survey, deepen, write) cover Passes 1, 2, and 4.
 
 ## Patterns
 - Wikipedia is a starting point, never an endpoint -- follow its references to primary sources
@@ -34,5 +33,6 @@
 
 ## Open Questions
 - Install crawl4ai in the editorial conda env -- all researcher scripts fail without it; urllib.request is the fallback but loses DDG search capability
+- DDG link extraction fails with CrawlerRunConfig unexpected keyword 'extract_links' -- survey script falls back to static URL list only; no keyword-driven discovery
 
 ## Archived
