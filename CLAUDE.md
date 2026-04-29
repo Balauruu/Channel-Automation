@@ -37,7 +37,7 @@ Dark mysteries documentary video production pipeline.
 ## Architecture Rules
 
 - Shared behavioral protocols are injected via the agent-protocols skill in each agent's skills: field.
-- Before editing anything in `.claude/agents/` or `.claude/skills/`, invoke the `pipeline-design` skill (audit framework + 7 anti-patterns).
+- Before editing anything in `.claude/agents/` or `.claude/skills/`, invoke the `pipeline-design` skill (audit framework + anti-pattern checklist).
 
 ### Task Classification
 Before writing any code, classify the task:

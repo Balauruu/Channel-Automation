@@ -133,14 +133,6 @@ A topic is saturated when additional coverage yields diminishing returns:
 | Comment fatigue | Medium | "Not another video about X" sentiment in comments |
 | No new angles available | High | All publicly available sources already covered by existing videos |
 
-### Seasonal Patterns in Mystery/True-Crime
-
-| Period | Pattern | Opportunity |
-|--------|---------|-------------|
-| October | Horror-adjacent, cult, and supernatural topics spike | Release darker content 2-3 weeks before Halloween |
-| January | Post-holiday binge-watching. True crime series perform well. | Longer-form, multi-part content for binge consumption |
-| Summer | Lighter engagement overall. Short-form outperforms long-form. | Shorter videos, more accessible topics |
-| Anniversary windows | Renewed interest when case anniversaries approach | Track key case dates, prepare content 2-4 weeks ahead |
 
 ### Competitor Convergence Analysis
 
