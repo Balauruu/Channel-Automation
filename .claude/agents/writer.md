@@ -6,6 +6,7 @@ description: >-
   compelling, source-anchored scripts. Invoke when research is complete
   and a script draft is needed.
 model: sonnet
+effort: high
 memory: project
 color: green
 skills:

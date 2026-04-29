@@ -12,6 +12,7 @@ tools:
   - Grep
   - Glob
 model: sonnet
+effort: high
 memory: project
 color: pink
 skills:

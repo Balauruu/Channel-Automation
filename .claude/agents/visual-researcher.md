@@ -7,6 +7,7 @@ description: >-
   to begin.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
+effort: high
 memory: project
 color: cyan
 skills:

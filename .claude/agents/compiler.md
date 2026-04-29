@@ -6,6 +6,7 @@ description: >-
   Invoke when all assets are processed and the video is ready for editing.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
+effort: high
 memory: project
 color: cyan
 skills:
