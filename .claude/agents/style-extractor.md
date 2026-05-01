@@ -11,7 +11,7 @@ tools:
   - Edit
   - Grep
   - Glob
-model: sonnet
+model: opus
 effort: high
 memory: project
 color: pink

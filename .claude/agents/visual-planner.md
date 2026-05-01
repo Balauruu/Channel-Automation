@@ -6,7 +6,7 @@ description: >-
   asset requirements. Invoke when visual research is complete and a shotlist
   is needed.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: opus
 effort: high
 memory: project
 color: purple

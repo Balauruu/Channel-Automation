@@ -6,7 +6,7 @@ description: >-
   library. Invoke when assets need organization, deduplication, or library
   management.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: opus
 effort: high
 memory: project
 color: orange

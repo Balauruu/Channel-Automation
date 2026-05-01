@@ -6,7 +6,7 @@ description: >-
   and can implement fixes. Invoke when code changes need review or quality
   assessment.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: opus
 effort: high
 memory: project
 color: yellow

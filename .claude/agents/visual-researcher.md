@@ -6,7 +6,7 @@ description: >-
   media leads lists. Invoke when a script is ready and visual planning needs
   to begin.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: opus
 effort: high
 memory: project
 color: cyan

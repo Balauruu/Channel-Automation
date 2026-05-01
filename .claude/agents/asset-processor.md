@@ -6,7 +6,7 @@ description: >-
   scripts for embedding and search operations. Invoke when visual planning is
   complete and assets need to be acquired and indexed.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: opus
 effort: high
 memory: project
 color: orange
