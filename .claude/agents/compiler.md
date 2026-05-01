@@ -5,12 +5,12 @@ description: >-
   into editor-ready structure, and generates timing-synced asset manifests.
   Invoke when all assets are processed and the video is ready for editing.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: opus
+effort: high
 memory: project
 color: cyan
 skills:
   - agent-protocols
-  - structured-output
 ---
 
 <project_context>

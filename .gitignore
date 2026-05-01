@@ -15,26 +15,26 @@ __pycache__/
 # Node modules
 node_modules/
 
-# ── GSD planning scaffolding ──────────────────────────────────────────────────
-# .planning/ is tracked in git (commit_docs: true)
-
 # ── Channel identity & working data (local, user-configured) ─────────────────
 channel/
 
 # ── Local-only settings ───────────────────────────────────────────────────────
 .claude/settings.local.json
 .env
+.compound-engineering/*.local.yaml
 
 # ── Git worktrees (ephemeral agent isolation dirs) ────────────────────────────
 .claude/worktrees/
 
-# ── Tests — ignore local ad-hoc .js scripts at the tests/ root, but track ────
-# ── versioned suites (smoke-test-*) and structured subdirectories (fixtures/).
+# ── Scratch (ephemeral agent working data) ────────────────────────────────────
+.claude/scratch/
+
+# ── Tests — ignore local ad-hoc .js scripts at the tests/ root ───────────────
 .claude/tests/*.js
-!.claude/tests/smoke-test-observe.js
-!.claude/tests/smoke-test-evolve.js
-!.claude/tests/eval-observer.js
-!.claude/tests/eval-evolve.js
 
 # ── Docs (specs, plans, roadmap — local working docs) ────────────────────────
 docs/
+
+# ── Karpathy-auto-researcher experiment lab (untracked, local-only) ──────────
+.lab/
+run.log

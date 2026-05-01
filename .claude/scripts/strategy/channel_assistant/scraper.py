@@ -10,7 +10,7 @@ import logging
 import random
 import subprocess
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from .models import Channel, Video
@@ -216,28 +216,52 @@ def scrape_channel(
     return channel, videos
 
 
-def scrape_all_channels(registry: Registry, db: Database) -> dict:
-    """Scrape all channels in the registry.
+def _last_scraped_dt(db: Database, name: str) -> datetime | None:
+    """Find the most recent scrape timestamp for a channel by name."""
+    for db_ch in db.get_all_channels():
+        if db_ch.name.lower() == name.lower() and db_ch.scraped_at:
+            try:
+                return datetime.fromisoformat(db_ch.scraped_at.replace("Z", "+00:00"))
+            except (ValueError, TypeError):
+                return None
+    return None
+
+
+def scrape_all_channels(
+    registry: Registry, db: Database, freshness_days: int = 7
+) -> dict:
+    """Scrape registered channels, skipping any scraped within last *freshness_days*.
 
     Args:
-        registry: Competitor registry instance.
+        registry: Competitor registry.
         db: Database instance.
+        freshness_days: Skip channels scraped within this many days. 0 disables the gate.
 
     Returns:
-        Summary dict with keys: succeeded, failed, total_new, total_updated.
+        Summary dict with keys: succeeded, failed, skipped, total_new, total_updated.
     """
     channels = registry.list_channels()
     total = len(channels)
-    succeeded = []
-    failed = []
+    succeeded: list[str] = []
+    failed: list[dict] = []
+    skipped: list[str] = []
     total_new = 0
     total_updated = 0
 
-    print(f"Scraping {total} channels...")
+    cutoff = datetime.now(timezone.utc) - timedelta(days=freshness_days)
+    print(f"Scraping {total} channels (skipping any scraped after {cutoff.strftime('%Y-%m-%d')})...")
 
     for i, ch_entry in enumerate(channels):
         name = ch_entry.get("name", "Unknown")
         url = ch_entry.get("url", "")
+
+        if freshness_days > 0:
+            last = _last_scraped_dt(db, name)
+            if last and last >= cutoff:
+                age_days = (datetime.now(timezone.utc) - last).days
+                print(f"○ {name}: skipped (scraped {age_days}d ago)")
+                skipped.append(name)
+                continue
 
         try:
             channel, videos = scrape_channel(url)
@@ -285,14 +309,18 @@ def scrape_all_channels(registry: Registry, db: Database) -> dict:
 
     # Summary
     failed_count = len(failed)
+    skipped_count = len(skipped)
+    summary_parts = [f"{len(succeeded)} scraped"]
+    if skipped_count:
+        summary_parts.append(f"{skipped_count} skipped (fresh)")
     if failed_count:
-        print(f"\nDone. {failed_count} channel(s) failed (cached data used).")
-    else:
-        print(f"\nDone. All {total} channels scraped successfully.")
+        summary_parts.append(f"{failed_count} failed (cached data used)")
+    print(f"\nDone. {', '.join(summary_parts)}.")
 
     return {
         "succeeded": succeeded,
         "failed": failed,
+        "skipped": skipped,
         "total_new": total_new,
         "total_updated": total_updated,
     }

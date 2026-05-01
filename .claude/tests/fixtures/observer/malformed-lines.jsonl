@@ -1,6 +1,0 @@
-{"ts":"2026-04-18T12-00-00-000Z","epoch_ms":1776543600000,"event":"dispatch","session_id":"sess-mal-001","agent_id":"researcher-mal001","agent_type":"researcher","project":"test-project","prompt":"Test dispatch for malformed fixture.","cwd":"D:/Youtube/projects/test-project"}
-{broken json
-
-{"ts":"2026-04-18T12-00-05-000Z","epoch_ms":1776543605000,"event":"tool_pre","session_id":"sess-mal-001","agent_id":"researcher-mal001","tool":"Read","tool_use_id":"tu_mal_001","project":"test-project","input":"{\"file_path\":\"test.md\"}"}
-null
-{"ts":"2026-04-18T12-00-10-000Z","epoch_ms":1776543610000,"event":"complete","session_id":"sess-mal-001","agent_id":"researcher-mal001","agent_type":"researcher","project":"test-project","outcome":"completed","tool_calls":1,"tool_fails":0,"permission_denials":0,"total_output_tokens":500,"durations":{}}

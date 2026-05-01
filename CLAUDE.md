@@ -34,10 +34,32 @@ Dark mysteries documentary video production pipeline.
 | @code-reviewer | Meta | Code quality review and fixes |
 | @compiler | Media | Edit sheet compilation for DaVinci Resolve |
 
+## Production Pipeline Sequence
+
+New video production follows this handoff chain. Each step depends on the prior step's output. The orchestrator must run them in order — do not skip ahead.
+
+```
+@strategy (topics)  →  user picks topic  →  @strategy (project init)
+      ↓
+@researcher  →  Research.md, entity_index.json
+      ↓
+@writer  →  Script draft in projects/<slug>/script/
+      ↓
+@visual-researcher  →  Visual brief + media leads
+      ↓
+@visual-planner  →  Shotlist + asset requirements
+      ↓
+@asset-processor  →  Downloaded assets, CLIP embeddings
+      ↓
+@compiler  →  Edit sheet for DaVinci Resolve
+```
+
+Parallel branches: `@style-extractor` runs independently (channel voice calibration). `@asset-curator` runs after asset-processor for library promotion.
+
 ## Architecture Rules
 
 - Shared behavioral protocols are injected via the agent-protocols skill in each agent's skills: field.
-- Before editing anything in `.claude/agents/` or `.claude/skills/`, invoke the `pipeline-design` skill (audit framework + 7 anti-patterns).
+- Before editing anything in `.claude/agents/` or `.claude/skills/`, invoke the `pipeline-design` skill (audit framework + anti-pattern checklist).
 
 ### Task Classification
 Before writing any code, classify the task:

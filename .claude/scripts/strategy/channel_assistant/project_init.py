@@ -1,173 +1,124 @@
 """Deterministic functions for project directory creation and metadata writing.
 
-All functions use stdlib only (pathlib, re, datetime).
+All functions use stdlib only (pathlib, re, json, datetime).
 LLM reasoning (title variant generation, description writing) is performed
-externally by Claude. This module handles: directory scaffold, metadata.md
-write, and past_topics.md dedup loop closure.
+externally by Claude. This module handles: directory scaffold,
+metadata.json write, and past_topics.md dedup loop closure.
 """
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
+_PROJECT_SUBDIRS = ("research", "script", "visuals", "assets")
 
 
-def _next_project_number(projects_dir: Path) -> int:
-    """Return the next sequential project number.
+def _slugify(title: str) -> str:
+    """Lowercase, hyphenated slug safe for directory names on Windows.
 
-    Scans *projects_dir* for directories matching the ``N. *`` pattern,
-    finds the highest N, and returns N+1. Returns 1 if the directory is
-    empty or does not exist.
+    Drops non-alphanumeric characters except hyphens, collapses runs of
+    whitespace and punctuation into single hyphens.
     """
-    if not projects_dir.exists():
-        return 1
-    pattern = re.compile(r"^(\d+)\.")
-    numbers: list[int] = []
-    for entry in projects_dir.iterdir():
-        if entry.is_dir():
-            m = pattern.match(entry.name)
-            if m:
-                numbers.append(int(m.group(1)))
-    return max(numbers, default=0) + 1
-
-
-def _sanitize_dir_name(title: str) -> str:
-    """Remove characters forbidden on Windows NTFS from a directory name.
-
-    Forbidden characters: ``< > : " / \\ | ? *``
-    Strips leading/trailing whitespace from the result.
-    """
-    return re.sub(r'[<>:"/\\|?*]', "", title).strip()
+    lowered = title.lower()
+    cleaned = re.sub(r"[^a-z0-9]+", "-", lowered)
+    return cleaned.strip("-")
 
 
 def _create_scaffold(project_dir: Path) -> None:
-    """Create the three standard subdirectories inside *project_dir*.
-
-    Creates ``research/``, ``assets/``, and ``script/`` using
-    ``mkdir(parents=True, exist_ok=True)`` — safe to call on an existing
-    directory.
-    """
-    for subdir in ("research", "assets", "script"):
+    """Create the four standard subdirectories inside *project_dir*."""
+    for subdir in _PROJECT_SUBDIRS:
         (project_dir / subdir).mkdir(parents=True, exist_ok=True)
 
 
-def _append_past_topic(path: Path, title: str, hook: str) -> None:
-    """Append a new entry to *path* in the canonical past_topics.md format.
-
-    Canonical format: ``- **Title** | YYYY-MM-DD | one-line summary``
-
-    Creates the file if it does not exist.
-    """
-    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    line = f"- **{title}** | {date_str} | {hook}\n"
-    # Open in append mode; creates file if missing
-    with path.open("a", encoding="utf-8") as f:
-        f.write(line)
-
-
-def _write_metadata(
+def _append_past_topic(
     path: Path,
     title: str,
-    variants: list[dict],
-    description: str,
-    brief_markdown: str,
+    pillar: str,
+    project_dir: str,
 ) -> None:
-    """Write metadata.md to *path*.
+    """Append a row to the past_topics.md table.
 
-    Schema:
-    - H1 title + created date
-    - Title Variants table (with RECOMMENDED label on flagged variant)
-    - YouTube Description section
-    - Topic Brief section (raw markdown copy)
+    Canonical table format::
 
-    ``variants`` is a list of dicts with keys:
-        ``title`` (str), ``hook_type`` (str), ``recommended`` (bool),
-        ``notes`` (str, optional).
+        | Topic | Primary Pillar | Selected | Project |
+        |-------|----------------|----------|---------|
+        | <title> | <pillar> | YYYY-MM-DD | projects/<slug>/ |
+
+    Creates the file (with header) if it does not exist.
     """
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    lines: list[str] = [
-        f"# {title}",
-        "",
-        f"*Created: {timestamp}*",
-        "",
-        "## Title Variants",
-        "",
-        "| # | Title | Hook Type | Notes |",
-        "|---|-------|-----------|-------|",
-    ]
-    for i, v in enumerate(variants, start=1):
-        notes = ""
-        if v.get("recommended"):
-            notes = "**RECOMMENDED**"
-            if v.get("notes"):
-                notes = f"{notes} — {v['notes']}"
-        elif v.get("notes"):
-            notes = v["notes"]
-        lines.append(f"| {i} | {v['title']} | {v['hook_type']} | {notes} |")
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    row = f"| {title} | {pillar} | {date_str} | {project_dir} |\n"
 
-    lines.extend([
-        "",
-        "## YouTube Description",
-        "",
-        description,
-        "",
-        "## Topic Brief",
-        "",
-        brief_markdown,
-    ])
-    path.write_text("\n".join(lines), encoding="utf-8")
+    if not path.exists() or not path.read_text(encoding="utf-8").strip():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        header = (
+            "# Past Topics\n\n"
+            "Topics that have been selected for production. Used by the "
+            "strategy agent for near-duplicate detection during future "
+            "topic generation runs.\n\n"
+            "## Selected Topics\n\n"
+            "| Topic | Primary Pillar | Selected | Project |\n"
+            "|-------|----------------|----------|---------|\n"
+        )
+        path.write_text(header + row, encoding="utf-8")
+        return
+
+    with path.open("a", encoding="utf-8") as f:
+        f.write(row)
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
+def _write_metadata(path: Path, payload: dict) -> None:
+    """Write *payload* to *path* as pretty-printed JSON (UTF-8, LF)."""
+    path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
 
 def init_project(
     root: Path,
+    *,
     title: str,
-    hook: str,
+    slug: str | None = None,
+    primary_pillar: str,
+    secondary_pillar: str | None,
+    scores: dict,
+    estimated_runtime_min: int,
     title_variants: list[dict],
     description: str,
-    brief_markdown: str,
 ) -> Path:
-    """Create project directory scaffold and write metadata.md.
+    """Create the project directory and write metadata.json.
 
     Steps:
-    1. Scan ``projects/`` for the next sequential number.
-    2. Sanitize *title* for filesystem safety (Windows NTFS).
-    3. Create ``projects/N. Title/`` plus ``research/``, ``assets/``,
-       ``script/`` subdirectories.
-    4. Write ``metadata.md`` into the project directory.
-    5. Append the selected topic to ``channel/past_topics.md``
-       to close the dedup loop for future topic generation runs.
+    1. Derive *slug* from *title* if not supplied.
+    2. Create ``projects/<slug>/`` plus ``research/``, ``script/``,
+       ``visuals/``, ``assets/`` subdirectories.
+    3. Write ``metadata.json`` per the schema in the strategy agent body.
+    4. Append the selected topic to ``channel/past_topics.md``.
 
     Args:
-        root: Project root directory (contains AGENTS.md).
-        title: Topic title, used verbatim in metadata.md and (sanitized)
-               as the directory name.
-        hook: One-line topic hook; appended to past_topics.md.
-        title_variants: List of variant dicts — see ``_write_metadata``
-                        for the dict schema.
+        root: Project root (directory containing ``CLAUDE.md``).
+        title: Selected topic title.
+        slug: Optional pre-computed slug. Derived from *title* if absent.
+        primary_pillar: Primary content pillar name.
+        secondary_pillar: Optional secondary pillar name.
+        scores: Dict with keys ``obscurity``, ``complexity``,
+            ``shock_factor``, ``verifiability``, ``pillar_fit`` (each
+            int 1-10). ``total`` is computed.
+        estimated_runtime_min: Estimated runtime in minutes.
+        title_variants: List of variant dicts with keys ``title``,
+            ``hook_type``, ``recommended`` (bool), and optionally
+            ``recommendation_reason``.
         description: 2-3 sentence YouTube description.
-        brief_markdown: Raw markdown of the selected topic brief from
-                        ``topic_briefs.md``.
 
     Returns:
-        The created project directory as a ``pathlib.Path``.
-
-    Side effect:
-        Appends the selected topic to
-        ``channel/past_topics.md``.
+        The created project directory.
     """
-    # Warn about title variants that exceed the 70-char channel convention
     for v in title_variants:
         if len(v.get("title", "")) > 70:
             print(
@@ -176,21 +127,49 @@ def init_project(
                 file=sys.stderr,
             )
 
-    projects_dir = root / "projects"
-    n = _next_project_number(projects_dir)
-    safe_title = _sanitize_dir_name(title)
-    project_dir = projects_dir / f"{n}. {safe_title}"
+    project_slug = slug or _slugify(title)
+    if not project_slug:
+        raise ValueError(f"Could not derive non-empty slug from title: {title!r}")
 
-    # Create scaffold (also creates projects/ via parents=True)
+    project_dir = root / "projects" / project_slug
     _create_scaffold(project_dir)
 
-    # Write metadata.md
-    metadata_path = project_dir / "metadata.md"
-    _write_metadata(metadata_path, title, title_variants, description, brief_markdown)
+    total = sum(int(scores.get(k, 0)) for k in (
+        "obscurity", "complexity", "shock_factor", "verifiability", "pillar_fit"
+    ))
+    payload = {
+        "title": title,
+        "slug": project_slug,
+        "date_selected": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "scores": {
+            "obscurity": int(scores.get("obscurity", 0)),
+            "complexity": int(scores.get("complexity", 0)),
+            "shock_factor": int(scores.get("shock_factor", 0)),
+            "verifiability": int(scores.get("verifiability", 0)),
+            "pillar_fit": int(scores.get("pillar_fit", 0)),
+            "total": total,
+        },
+        "pillars": {
+            "primary": primary_pillar,
+            "secondary": secondary_pillar,
+        },
+        "production": {
+            "estimated_runtime_min": int(estimated_runtime_min),
+        },
+        "youtube": {
+            "title_variants": title_variants,
+            "description": description,
+        },
+    }
+    _write_metadata(project_dir / "metadata.json", payload)
 
-    # Append to past_topics.md
     past_topics_path = root / "channel" / "past_topics.md"
-    _append_past_topic(past_topics_path, title, hook)
+    _append_past_topic(
+        past_topics_path,
+        title=title,
+        pillar=primary_pillar,
+        project_dir=f"projects/{project_slug}/",
+    )
 
     return project_dir
 
@@ -207,72 +186,49 @@ def load_project_inputs(root: Path, topic_number: int) -> dict:
         topic_number: 1-based index of the selected topic brief.
 
     Returns:
-        A dict with:
-            ``"brief_markdown"`` — raw markdown of the selected brief
-            section (from ``## N. Title`` through the next ``## N+1.`` or
-            end-of-file).
-            ``"title_patterns"`` — the Title Patterns section from
-            ``analysis.md``, or an empty string if the file is absent.
+        ``{"brief_markdown": str, "title_patterns": str}``.
 
     Raises:
-        FileNotFoundError: if ``topic_briefs.md`` does not exist.
+        FileNotFoundError: if topics.md does not exist.
+        ValueError: if *topic_number* is not present in topics.md.
     """
-    briefs_path = root / "strategy" / "topic_briefs.md"
-    analysis_path = root / "strategy" / "competitors" / "analysis.md"
+    briefs_path = root / "channel" / "strategy" / "topics.md"
+    analysis_path = root / "channel" / "strategy" / "analysis.md"
 
     if not briefs_path.exists():
         raise FileNotFoundError(
-            f"Topic briefs not found: {briefs_path}. Run 'topics' first to generate topic_briefs.md"
+            f"Topic briefs not found: {briefs_path}. Run 'topics' first to generate it."
         )
 
-    # -----------------------------------------------------------------------
-    # Extract brief section for the selected topic number
-    # -----------------------------------------------------------------------
     text = briefs_path.read_text(encoding="utf-8")
-    # Match "## N. " heading lines
-    section_pattern = re.compile(r"^## \d+\.", re.MULTILINE)
-    sections = list(section_pattern.finditer(text))
+    section_pattern = re.compile(r"^## (\d+)\..*$", re.MULTILINE)
+    matches = list(section_pattern.finditer(text))
 
     brief_markdown = ""
-    for idx, match in enumerate(sections):
-        # Check if this section header starts with the requested number
-        section_start = match.start()
-        header_line = text[section_start:text.find("\n", section_start)]
-        # e.g., "## 2. Topic Title"
-        num_match = re.match(r"^## (\d+)\.", header_line)
-        if num_match and int(num_match.group(1)) == topic_number:
-            # Extract from this heading to the next section or end of file
-            if idx + 1 < len(sections):
-                section_end = sections[idx + 1].start()
-            else:
-                section_end = len(text)
-            brief_markdown = text[section_start:section_end].strip()
-            break
+    available: list[int] = []
+    for idx, m in enumerate(matches):
+        n = int(m.group(1))
+        available.append(n)
+        if n == topic_number:
+            start = m.start()
+            end = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+            brief_markdown = text[start:end].strip()
 
     if not brief_markdown:
-        available = [
-            int(re.match(r"^## (\d+)\.", text[m.start():text.find("\n", m.start())]).group(1))
-            for m in sections
-            if re.match(r"^## (\d+)\.", text[m.start():text.find("\n", m.start())])
-        ]
         raise ValueError(
-            f"Topic #{topic_number} not found in {briefs_path}. "
-            f"Available: {available}"
+            f"Topic #{topic_number} not found in {briefs_path}. Available: {available}"
         )
 
-    # -----------------------------------------------------------------------
-    # Extract Title Patterns section from analysis.md
-    # -----------------------------------------------------------------------
     title_patterns = ""
     if analysis_path.exists():
         analysis_text = analysis_path.read_text(encoding="utf-8")
-        patterns_match = re.search(
+        m = re.search(
             r"(## Title Patterns\b.*?)(?=\n## |\Z)",
             analysis_text,
             re.DOTALL,
         )
-        if patterns_match:
-            title_patterns = patterns_match.group(1).strip()
+        if m:
+            title_patterns = m.group(1).strip()
 
     return {
         "brief_markdown": brief_markdown,
