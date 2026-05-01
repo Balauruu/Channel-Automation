@@ -1,21 +1,20 @@
 """Project directory resolution and URL construction for the researcher skill.
 
 Provides:
-- _get_project_root: Walk up from __file__ to find AGENTS.md project root marker.
+- _get_project_root: Walk up from __file__ to find CLAUDE.md project root marker.
 - find_project_dir: Case-insensitive substring match against projects/ subdirectories.
 - resolve_output_dir: Return/create output directory (project research/ or scratch).
 - make_ddg_url: Build a DuckDuckGo HTML endpoint URL for a query string.
-- build_survey_urls: Return initial URL list for a topic (Wikipedia only; DDG handled in cli.py).
 """
 import urllib.parse
 from pathlib import Path
 
 
 def _get_project_root() -> Path:
-    """Walk up from this file looking for AGENTS.md as the project root marker.
+    """Walk up from this file looking for CLAUDE.md as the project root marker.
 
     Returns:
-        Project root Path. Falls back to cwd if AGENTS.md not found.
+        Project root Path. Falls back to cwd if CLAUDE.md not found.
     """
     current = Path(__file__).resolve()
     for parent in current.parents:
@@ -95,20 +94,3 @@ def make_ddg_url(query: str) -> str:
     """
     encoded = urllib.parse.quote_plus(query)
     return f"https://html.duckduckgo.com/html/?q={encoded}"
-
-
-def build_survey_urls(topic: str) -> list[str]:
-    """Build initial URL list for a survey run.
-
-    Returns Wikipedia page URL only. DDG URL expansion is handled in
-    cmd_survey after link extraction.
-
-    Args:
-        topic: Topic string (e.g. "Jonestown Massacre").
-
-    Returns:
-        List of URLs to fetch in survey pass (Wikipedia URL only).
-    """
-    wiki_query = urllib.parse.quote(topic.replace(" ", "_"))
-    wikipedia_url = f"https://en.wikipedia.org/wiki/{wiki_query}"
-    return [wikipedia_url]

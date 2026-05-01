@@ -19,20 +19,6 @@ TIER_1_DOMAINS: frozenset[str] = frozenset({
     "publicdomainreview.org",
 })
 
-TIER_2_DOMAINS: frozenset[str] = frozenset({
-    "britannica.com",
-    "bbc.com",
-    "theguardian.com",
-    "nytimes.com",
-    "reuters.com",
-    "apnews.com",
-    "html.duckduckgo.com",
-    "duckduckgo.com",
-    # reddit.com reclassified from Tier 3 to Tier 2 — Phase 8 decision
-    "reddit.com",
-    "old.reddit.com",
-})
-
 TIER_3_DOMAINS: frozenset[str] = frozenset({
     "facebook.com",
     "twitter.com",

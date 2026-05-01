@@ -16,6 +16,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+def _load_glob(sources_dir: Path, pattern: str) -> list[dict]:
+    """Load and parse JSON files matching pattern, sorted by filename. Skip parse errors."""
+    out: list[dict] = []
+    for src_file in sorted(sources_dir.glob(pattern)):
+        try:
+            out.append(json.loads(src_file.read_text(encoding="utf-8")))
+        except Exception:  # noqa: BLE001
+            pass
+    return out
+
+
 def load_source_files(output_dir: Path) -> tuple[list[dict], list[dict], list[dict]]:
     """Load all source JSON files from output_dir/sources/.
 
@@ -30,32 +41,11 @@ def load_source_files(output_dir: Path) -> tuple[list[dict], list[dict], list[di
         filename. Any list may be empty.
     """
     sources_dir = output_dir / "sources"
-    pass1: list[dict] = []
-    pass2: list[dict] = []
-    pass3: list[dict] = []
-
-    for src_file in sorted(sources_dir.glob("src_*.json")):
-        try:
-            data = json.loads(src_file.read_text(encoding="utf-8"))
-            pass1.append(data)
-        except Exception:  # noqa: BLE001
-            pass
-
-    for src_file in sorted(sources_dir.glob("pass2_*.json")):
-        try:
-            data = json.loads(src_file.read_text(encoding="utf-8"))
-            pass2.append(data)
-        except Exception:  # noqa: BLE001
-            pass
-
-    for src_file in sorted(sources_dir.glob("pass3_*.json")):
-        try:
-            data = json.loads(src_file.read_text(encoding="utf-8"))
-            pass3.append(data)
-        except Exception:  # noqa: BLE001
-            pass
-
-    return pass1, pass2, pass3
+    return (
+        _load_glob(sources_dir, "src_*.json"),
+        _load_glob(sources_dir, "pass2_*.json"),
+        _load_glob(sources_dir, "pass3_*.json"),
+    )
 
 
 def build_synthesis_input(
@@ -69,7 +59,6 @@ def build_synthesis_input(
 
     Sources with fetch_status != "ok" or empty content are listed in a
     "Skipped/failed sources" section at the top, not rendered as full sections.
-    Sources with evaluation_notes are included if present.
 
     Args:
         topic: The research topic string.
@@ -82,13 +71,9 @@ def build_synthesis_input(
         Formatted markdown string.
     """
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    all_sources = (
-        [("Pass 1", s) for s in pass1]
-        + [("Pass 2", s) for s in pass2]
-        + [("Pass 3", s) for s in pass3]
-    )
+    passes = [("Pass 1", pass1), ("Pass 2", pass2), ("Pass 3", pass3)]
+    all_sources = [(label, s) for label, srcs in passes for s in srcs]
 
-    # Partition into good and skipped
     good: list[tuple[str, dict]] = []
     skipped: list[tuple[str, dict]] = []
 
@@ -98,19 +83,15 @@ def build_synthesis_input(
         else:
             skipped.append((pass_label, src))
 
-    total_sources = len(good)
-
-    lines: list[str] = []
-
-    # Header
-    lines.append("# Synthesis Input")
-    lines.append("")
-    lines.append(f"**Topic:** {topic}")
-    lines.append(f"**Generated:** {timestamp}")
-    lines.append(f"**Total sources (usable):** {total_sources}")
-    lines.append(f"**Pass 1 sources:** {len(pass1)}")
-    lines.append(f"**Pass 2 sources:** {len(pass2)}")
-    lines.append(f"**Pass 3 sources:** {len(pass3)}")
+    lines: list[str] = [
+        "# Synthesis Input",
+        "",
+        f"**Topic:** {topic}",
+        f"**Generated:** {timestamp}",
+        f"**Total sources (usable):** {len(good)}",
+    ]
+    for label, srcs in passes:
+        lines.append(f"**{label} sources:** {len(srcs)}")
     lines.append(f"**Output directory:** {output_dir}")
 
     # Include iteration metadata if manifest exists
@@ -160,7 +141,6 @@ def build_synthesis_input(
         tier = src.get("tier", "")
         word_count = src.get("word_count", 0)
         content = src.get("content", "")
-        evaluation_notes = src.get("evaluation_notes", "")
 
         lines.append(f"### [{pass_label}] {domain}")
         lines.append("")
@@ -168,8 +148,6 @@ def build_synthesis_input(
         lines.append(f"- **Domain:** {domain}")
         lines.append(f"- **Tier:** {tier}")
         lines.append(f"- **Words:** {word_count}")
-        if evaluation_notes:
-            lines.append(f"- **Evaluation notes:** {evaluation_notes}")
         lines.append("")
         lines.append(content)
         lines.append("")

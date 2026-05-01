@@ -19,7 +19,6 @@ from researcher.tiers import classify_domain, TIER_RETRY_MAP
 
 logger = logging.getLogger(__name__)
 
-# SCRP-02: minimum content threshold. Raise to 500 if 200 proves noisy in Phase 8.
 MIN_CONTENT_CHARS: int = 200
 
 
@@ -44,15 +43,6 @@ async def _fetch_once(url: str) -> tuple[bool, str, str]:
         text = result.markdown.raw_markdown or ""
         return True, text, ""
     return False, "", result.error_message or "unknown error"
-
-
-def fetch_url(url: str) -> tuple[bool, str, str]:
-    """Sync wrapper around _fetch_once. Runs the async fetch in a new event loop.
-
-    Returns:
-        (success, markdown_text, error_message)
-    """
-    return asyncio.run(_fetch_once(url))
 
 
 def fetch_with_retry(
@@ -97,7 +87,7 @@ def fetch_with_retry(
 
     last_error = ""
     for attempt in range(1, effective_attempts + 1):
-        ok, text, err = fetch_url(url)
+        ok, text, err = asyncio.run(_fetch_once(url))
         if ok and len(text) >= MIN_CONTENT_CHARS:
             return {
                 "success": True,

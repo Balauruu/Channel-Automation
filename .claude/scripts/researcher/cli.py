@@ -7,10 +7,10 @@ Subcommands:
     status  — Show current iteration state and convergence metrics.
 
 Usage:
-    PYTHONPATH=.claude/scripts/editorial python -m researcher survey "Jonestown Massacre"
-    PYTHONPATH=.claude/scripts/editorial python -m researcher deepen "Jonestown Massacre"
-    PYTHONPATH=.claude/scripts/editorial python -m researcher write "Jonestown Massacre"
-    PYTHONPATH=.claude/scripts/editorial python -m researcher status "Jonestown Massacre"
+    PYTHONPATH=.claude/scripts python -m researcher survey "Jonestown Massacre"
+    PYTHONPATH=.claude/scripts python -m researcher deepen "Jonestown Massacre"
+    PYTHONPATH=.claude/scripts python -m researcher write "Jonestown Massacre"
+    PYTHONPATH=.claude/scripts python -m researcher status "Jonestown Massacre"
 """
 import argparse
 import asyncio
@@ -19,13 +19,12 @@ import logging
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, quote, urlparse
 
 from researcher.fetcher import fetch_with_retry
 from researcher.tiers import TIER_3_DOMAINS, classify_domain
 from researcher.url_builder import (
     _get_project_root,
-    build_survey_urls,
     make_ddg_url,
     resolve_output_dir,
 )
@@ -271,8 +270,7 @@ def cmd_survey(topic: str) -> None:
     if manifest_path.exists():
         manifest_path.unlink()
 
-    # Get Wikipedia URL
-    wikipedia_url = build_survey_urls(topic)[0]
+    wikipedia_url = f"https://en.wikipedia.org/wiki/{quote(topic.replace(' ', '_'))}"
 
     # Fetch DDG HTML and extract result URLs
     ddg_urls: list[str] = []
@@ -477,12 +475,15 @@ def cmd_status(topic: str) -> None:
             print(f"  [{g.get('iteration', '?')}] {g.get('gate', '?')}: {g.get('result', '?')}")
 
     # Gaps
-    gaps = manifest.get("gap_register", [])
-    open_gaps = [g for g in gaps if g.get("status") != "resolved"]
+    gaps = manifest.get("gap_register") or []
+    open_gaps = [g for g in gaps if not (isinstance(g, dict) and g.get("status") == "resolved")]
     if gaps:
         print(f"Gaps: {len(gaps)} total, {len(open_gaps)} open")
         for g in open_gaps:
-            print(f"  - {g.get('gap', '?')} ({g.get('status', '?')})")
+            if isinstance(g, str):
+                print(f"  - {g}")
+            else:
+                print(f"  - {g.get('gap', '?')} ({g.get('status', '?')})")
 
 
 def main() -> None:
