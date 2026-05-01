@@ -1,43 +1,26 @@
-"""Deterministic helper functions for the topic generation workflow.
+"""Deterministic helpers for the topic generation workflow.
 
-All functions use stdlib only (pathlib, re, difflib, datetime).
-LLM reasoning (topic ideation, scoring) is performed externally by Claude.
-This module handles: loading inputs, duplicate checking, writing output files.
+LLM reasoning (ideation, scoring) is performed externally by Claude via
+parallel subagent dispatch. This module handles: past-topic dedup,
+writing the briefs markdown file, and rendering chat cards.
 """
 
 from __future__ import annotations
 
-import re
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
 
 
-# ---------------------------------------------------------------------------
-# Helpers (shared with cli.py)
-# ---------------------------------------------------------------------------
-
-
-def _extract_section(content: str, header: str) -> str:
-    """Extract text between '## Header' and next '## ' heading or EOF.
-
-    Returns empty string if header not found.
-    """
-    pattern = re.compile(
-        r"^## " + re.escape(header) + r"\s*\n(.*?)(?=^## |\Z)",
-        re.DOTALL | re.MULTILINE,
-    )
-    match = pattern.search(content)
-    if match:
-        return match.group(1).strip()
-    return ""
-
-
 def _load_past_topics(path: Path) -> list[str]:
     """Read past_topics.md and return a list of title strings.
 
-    Canonical line format: ``- **Title** | YYYY-MM-DD | one-line summary``
-    Also handles: ``**Title** | ...`` (no leading dash).
+    Canonical format: a markdown table with columns
+    ``| Topic | Primary Pillar | Selected | Project |``. The first
+    cell of each data row is the topic title.
+
+    Skips header rows, separator rows (``|---|---|...``), and any
+    line that is not a table data row.
 
     Returns an empty list if the file is missing or empty.
     """
@@ -49,12 +32,19 @@ def _load_past_topics(path: Path) -> list[str]:
         return []
 
     titles: list[str] = []
-    # Match **Title** anywhere in a line (handles both "- **T**" and "**T**" prefixes)
-    pattern = re.compile(r"\*\*(.+?)\*\*")
     for line in text.splitlines():
-        match = pattern.search(line)
-        if match:
-            titles.append(match.group(1))
+        stripped = line.strip()
+        if not stripped.startswith("|") or not stripped.endswith("|"):
+            continue
+        cells = [c.strip() for c in stripped.strip("|").split("|")]
+        if not cells:
+            continue
+        first = cells[0]
+        if not first or first.lower() == "topic":
+            continue
+        if set(first.replace(" ", "")) <= {"-", ":"}:
+            continue  # separator row
+        titles.append(first)
 
     return titles
 
@@ -92,46 +82,32 @@ def check_duplicates(
     return None
 
 
-def load_topic_inputs(root: Path) -> dict:
-    """Load all inputs needed for the topic generation workflow.
+def load_past_topics(root: Path) -> list[str]:
+    """Public entry: return the list of selected past-topic titles.
 
-    Returns:
-        {
-            "analysis": str,           # contents of channel/strategy/analysis.md
-            "channel_dna": str,        # contents of channel/channel.md
-            "past_topics": list[str],  # titles from channel/past_topics.md
-            "trends": str,             # ## Trending Topics section from analysis.md (empty if absent)
-            "content_gaps": str,       # ## Content Gaps section from analysis.md (empty if absent)
-        }
-
-    Raises FileNotFoundError for missing analysis.md or channel.md.
-    Returns empty list for missing past_topics.md.
-    Returns empty strings for trends/content_gaps if trends has not been run yet.
+    Returns an empty list if ``channel/past_topics.md`` does not exist.
     """
-    analysis_path = root / "channel" / "strategy" / "analysis.md"
-    channel_dna_path = root / "channel" / "channel.md"
-    past_topics_path = root / "channel" / "past_topics.md"
+    return _load_past_topics(root / "channel" / "past_topics.md")
 
-    if not analysis_path.exists():
-        raise FileNotFoundError(f"Analysis file not found: {analysis_path}")
-    if not channel_dna_path.exists():
-        raise FileNotFoundError(f"Channel DNA file not found: {channel_dna_path}")
 
-    analysis = analysis_path.read_text(encoding="utf-8")
-    channel_dna = channel_dna_path.read_text(encoding="utf-8")
-    past_topics = _load_past_topics(past_topics_path)
+def rank_briefs(briefs: list[dict]) -> list[dict]:
+    """Rank briefs by total score desc with anchored tiebreakers.
 
-    # Extract trend sections from analysis.md (empty strings if not yet present)
-    trends_section = _extract_section(analysis, "Trending Topics")
-    gaps_section = _extract_section(analysis, "Content Gaps")
-
-    return {
-        "analysis": analysis,
-        "channel_dna": channel_dna,
-        "past_topics": past_topics,
-        "trends": trends_section,
-        "content_gaps": gaps_section,
-    }
+    Tiebreaker order (per agent body): shock_factor > obscurity > verifiability.
+    Returns a new list; does not mutate the input.
+    """
+    def key(b: dict) -> tuple:
+        s = b["scores"]
+        total = sum(int(s.get(k, 0)) for k in (
+            "obscurity", "complexity", "shock_factor", "verifiability", "pillar_fit"
+        ))
+        return (
+            -total,
+            -int(s.get("shock_factor", 0)),
+            -int(s.get("obscurity", 0)),
+            -int(s.get("verifiability", 0)),
+        )
+    return sorted(briefs, key=key)
 
 
 def write_topic_briefs(briefs: list[dict], output_path: Path) -> None:
