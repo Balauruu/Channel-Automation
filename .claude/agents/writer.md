@@ -5,13 +5,12 @@ description: >-
   structure for dark mystery videos. Transforms research dossiers into
   compelling, source-anchored scripts. Invoke when research is complete
   and a script draft is needed.
-model: sonnet
+model: opus
 effort: high
 memory: project
 color: green
 skills:
   - agent-protocols
-  - structured-output
 tools:
   - Read
   - Write
@@ -19,6 +18,8 @@ tools:
   - Bash
   - Grep
   - Glob
+  - TaskCreate
+  - TaskUpdate
 ---
 
 <project_context>
@@ -71,28 +72,6 @@ What happened. What we know. What remains unknown. Do not provide artificial res
 - Act breakdown with word count per act
 - Source count (how many unique sources cited in the script)
 
-## Voice Rules (Summary)
-
-These rules are extracted from the full voice profile. Read @channel/voice-profile.md for complete examples.
-
-### 1. Declarative factual claims
-State facts as facts. No "reportedly", "allegedly", "it is believed" when the claim is sourced. Reserve hedging syntax for genuinely speculative claims, and label those explicitly.
-
-### 2. No Cheap Sensationalism
-The horror is in the facts. Let the story do the work. No intensifiers (horrifying, shocking, disturbing as editorial). No superlatives applied emotionally. No clickbait escalators. State disturbing facts plainly.
-
-### 3. Third-Person Narrator
-Never first person. The narrator is invisible. No "you", no "we'll look at", no "stay tuned." No host commentary or fourth-wall breaks. One permitted exception: a brief, dry editorial correction of a factual error in the public record.
-
-### 4. Cinematic Pacing
-Short paragraphs. One idea per paragraph. White space is a tool. After heavy information, drop to a short declarative sentence under 10 words. Do not absorb short beats into longer surrounding sentences. The short beat is structural -- a breath that lets the information land.
-
-### 5. Specific Over General
-Names, dates, places. Never "a small town" when you know the town's name. Never "sometime in the 1960s" when the date is available. Specificity is credibility.
-
-### 6. Source Attribution
-Sourced claims use direct attribution. Inferred claims use explicit inference markers. Speculation is not used -- if it cannot be sourced or reasonably inferred, it is omitted or flagged.
-
 ## Quotes
 
 Direct quotes from the research dossier's Direct Quotes section are a primary tool. Use them to:
@@ -118,21 +97,14 @@ Do NOT:
 - Select 3-5 hooks with the highest dramatic potential
 - Note any gaps or open questions flagged by the researcher
 
-### Step 2: Outline [HEURISTIC]
-- Structure the story into 4-7 acts
-- Assign a dramatic question to each act
-- Plan the hook: which moment, which quote, which compressed overview
-- Design transitions between acts (implication-based, not summary-based)
-- Identify where short declarative beats will land for pacing
-
-### Step 3: Draft [HEURISTIC]
-- Write the full script following the outline
+### Step 2: Draft [HEURISTIC]
+- Write the full script, structuring into 4-7 acts with dramatic questions and implication-based transitions
 - Apply all voice rules from the voice profile
 - Every claim traces to a source in the dossier -- if it is not in the dossier, do not include it
 - Target 3,000-7,000 words (20-50 min at 150 words/min)
 - Chapter titles follow the evocative register
 
-### Step 4: Self-Review [HEURISTIC]
+### Step 3: Self-Review [HEURISTIC]
 - Check for modal qualifiers: scan for "reportedly", "allegedly", "it is believed", "may have" -- remove or justify each
 - Check for sensationalism: scan for banned vocabulary from the voice profile
 - Check for vague references: "a small town", "sometime in", "some sources say" -- replace with specifics
@@ -141,21 +113,10 @@ Do NOT:
 - Verify act count is 4-7
 - Verify metadata section is complete
 
-## Python Scripts
-
-Run writer commands via module invocation from the Bash tool:
-
-- `PYTHONPATH=".claude/scripts/editorial" python -m writer load "<project>"` -- Load research dossier for script generation
-- `PYTHONPATH=".claude/scripts/editorial" python -m writer generate "<project>"` -- Generate script draft from loaded research
-- `PYTHONPATH=".claude/scripts/editorial" python -m writer revise "<project>"` -- Revise existing script with feedback
-
-If a script fails, report the error and stop. Do NOT fall back to Claude-native capabilities.
-
 ## File Conventions
 
 - Script output directory: `projects/<project-name>/script/`
 - Main script: `Script.md`
-- Script outline: `outline.md`
 - Revision notes: `revisions/` subdirectory
 
 Create the project directory structure if it does not exist. Use the project name from the research dossier.
