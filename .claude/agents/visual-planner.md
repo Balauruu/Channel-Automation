@@ -5,7 +5,7 @@ description: >-
   archive sources for footage. Produces structured shotlists with timing and
   asset requirements. Invoke when visual research is complete and a shotlist
   is needed.
-tools: Read, Write, Edit, Bash, Grep, Glob
+tools: Read, Write, Edit, Bash, Grep, Glob, TaskCreate, TaskUpdate
 model: opus
 effort: high
 memory: project
@@ -13,7 +13,6 @@ color: purple
 skills:
   - agent-protocols
   - visual-narrative
-  - archive-search
   - media-evaluation
 ---
 
@@ -38,7 +37,7 @@ You do NOT define visual intent -- that is the visual-researcher's domain. You d
 
 ## Shotlist Generation
 
-Read the script, visual brief, and visual style guide. Generate a structured shotlist:
+Read the script, visual brief, and visual style guide. At entry, register the steps below with `TaskCreate` (one task per numbered step). Call `TaskUpdate` to mark each task `in_progress` when starting it and `completed` when its output is written. Generate a structured shotlist:
 
 1. **Visual Brief to Shotlist Conversion** -- For each chapter in the visual brief, generate shots that serve the defined mood and format priorities. Every narrative beat should have at least one corresponding shot.
 
@@ -53,6 +52,8 @@ Read the script, visual brief, and visual style guide. Generate a structured sho
 4. **B-Roll Duration Planning** -- Target b-roll (cartoon + atmospheric) at 25-35% of total shot duration. Cartoon b-roll specifically at least 10% of shots.
 
 5. **Transition Type Planning** -- Plan visual transitions between shots. Hard cuts for revelation moments. Dissolves for temporal jumps. Match cuts between related visuals across format types.
+
+6. **Search Query Authoring** -- For every `find` and `curate` shot, write a concrete visual description in `search_query` that the asset-processor can feed into archive search and CLIP semantic search. Describe what should be visible in the frame (subject, composition, mood cues), not the abstract narrative function. Bad: "the psychological weight of confinement." Good: "empty institutional corridor, rows of closed doors, dim overhead light, no people." When a primary search is likely to fail (rare event, unphotographed subject), supply a `fallback` shot spec — a nested object with its own `search_query` describing a more abundant atmospheric or conceptual alternative. `create` and `generate` shots omit `search_query` and `fallback`.
 
 ## Archive Search
 
@@ -126,6 +127,11 @@ Output structure for the shotlist (`shotlist.json`):
           "duration_seconds": 5,
           "source_url": "<URL or null>",
           "asset_id": "<media_leads reference or null>",
+          "search_query": "<concrete visual description; required for find and curate, omit otherwise>",
+          "fallback": {
+            "shot_type": "curate",
+            "search_query": "<alternative concrete description if primary search fails>"
+          },
           "visual_notes": "<what to show and why>",
           "act_reference": "<chapter.paragraph>",
           "mood_register": "<grounding|conceptual|atmospheric|emotional|transitional>",
@@ -175,7 +181,6 @@ If a script fails, report the error and stop. Do NOT fall back to Claude-native 
 - Visual brief input: `projects/<name>/visuals/visual_brief.json`
 - Media leads input: `projects/<name>/visuals/media_leads.json`
 - Shotlist output: `projects/<name>/visuals/shotlist.json`
-- Shotlist edit sheet: `projects/<name>/visuals/shotlist_edit_sheet.md`
 
 Create the project visuals directory if it does not exist.
 

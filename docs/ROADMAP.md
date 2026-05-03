@@ -53,7 +53,15 @@ Use the `pipeline-design` skill to audit each agent and each global skill one at
 
 After each audit, append a line to `.claude/skills/pipeline-design/insights.md` with new anti-patterns discovered.
 
-### Entry 2 — Crawl4ai conda migration
+### Entry 2 — Strip duplicated `<project_context>` blocks from agent bodies
+
+Every agent under `.claude/agents/` carries a 3-line `<project_context>` block at the top instructing the agent to read `./CLAUDE.md`. The `agent-protocols` skill (which all agents already load) issues the same instruction in its "Project Context" section. This is anti-pattern #6 (skill boilerplate replicated in agent bodies).
+
+Affected files (10): `writer.md`, `compiler.md`, `asset-curator.md`, `asset-processor.md`, `visual-planner.md`, `code-reviewer.md`, `researcher.md`, `strategy.md`, `style-extractor.md`, `visual-researcher.md`.
+
+Fix: in a single sweep, delete the `<project_context>...</project_context>` block (and its trailing blank line) from each agent body. Verify each agent's first non-frontmatter line becomes its `# <Agent Name>` heading or `## Identity` section. No procedural change — `agent-protocols` already covers the behavior.
+
+### Entry 3 — Crawl4ai conda migration
 
 The venv at `C:/Users/iorda/venvs/crawl4ai/` was created with `python -m venv` (per its `pyvenv.cfg`), not `conda create`. This violates the global CLAUDE.md rule ("Always use conda. Never use plain python -m venv."). Migrate:
 

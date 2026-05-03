@@ -4,7 +4,6 @@
 - Visual brief input: projects/*/visuals/visual_brief.json
 - Media leads input: projects/*/visuals/media_leads.json
 - Shotlist output: projects/*/visuals/shotlist.json
-- Shotlist edit sheet: projects/*/visuals/shotlist_edit_sheet.md
 - Visual style guide: channel/VISUAL_STYLE_GUIDE.md
 - IA search script: media/ia_search.py
 
