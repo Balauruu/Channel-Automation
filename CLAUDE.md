@@ -29,7 +29,6 @@ Dark mysteries documentary video production pipeline.
 | @visual-planner | Media | Shotlist generation and b-roll curation |
 | @asset-processor | Media | CLIP embeddings, asset downloads, semantic search |
 | @asset-curator | Media | Global video library management |
-| @code-reviewer | Meta | Code quality review and fixes |
 | @compiler | Media | Edit sheet compilation for DaVinci Resolve |
 
 ## Production Pipeline Sequence

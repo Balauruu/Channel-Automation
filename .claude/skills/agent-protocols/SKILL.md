@@ -100,7 +100,6 @@ If the insight does not match one of the triggers above, do not send it.
 | asset-processor | visual-planner | asset-curator, compiler |
 | asset-curator | asset-processor | -- |
 | compiler | writer, asset-processor | -- |
-| code-reviewer | -- | any agent (via inbox) |
 
 Signal to your downstream neighbors when you discover something that would change how they work. Signal upstream when you discover something that would improve what they send you.
 
