@@ -8,15 +8,13 @@ Dark mysteries documentary video production pipeline.
 
 - `channel/` -- Channel identity (voice, style, visual guide)
 - `.claude/agents/` -- Agent definitions
-- `.claude/skills/` -- Shared skills (agent-protocols)
-- `.claude/agent-memory/` -- Per-agent persistent memory (universal, cross-project)
-- `.claude/hooks/` -- SubagentStop hook (check-memory-limit.js)
-- `.claude/scripts/` -- Python scripts (strategy/, editorial/, media/ subdirs)
-- `.claude/rules/` -- Modular on-demand rules (git-workflow, etc.). Read when relevant; not auto-loaded.
+- `.claude/skills/` -- Skills (5 shared + 8 agent-task-specific)
+- `.claude/agent-memory/` -- Per-agent persistent memory
+- `.claude/hooks/` -- SubagentStop hook that warns when an agent's MEMORY.md exceeds 200 lines
+- `.claude/scripts/` -- Python scripts (`strategy/`, `researcher/`, `media/`, `memory/`)
+- `.claude/rules/` -- Project-specific on-demand rules. Read when relevant; not auto-loaded.
 - `data/` -- SQLite databases (channel_assistant.db, asset_catalog.db)
 - `docs/` -- plans & specs
-- `channel/strategy/` -- Strategy outputs (competitors.json, analysis, topics)
-- `channel/voice-analysis/` -- Style-extractor workspace (reconstructed scripts)
 - `projects/` -- Per-documentary outputs
 
 ## Agent Reference
@@ -65,6 +63,9 @@ Parallel branches: `@style-extractor` runs independently (channel voice calibrat
 Before writing any code, classify the task:
 - **[HEURISTIC]** — requires judgment, narrative design, or evaluation → solve via prompts/skills, write no code
 - **[DETERMINISTIC]** — requires structured data manipulation, scraping, or rendering → write code
+
+### No Inter-Agent Parallel Execution
+There is no orchestration layer between agents. Do not propose, plan, or attempt running multiple agents in parallel (e.g., "while @researcher runs, we can start @visual-researcher"). All agent dispatches are sequential and user-initiated — the pipeline sequence above is a handoff chain, not a concurrency diagram.
 
 ## Billing
 
