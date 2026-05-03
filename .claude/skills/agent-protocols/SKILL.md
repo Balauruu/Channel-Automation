@@ -116,6 +116,7 @@ At the beginning of each run, after processing your inbox, review your MEMORY.md
 4. **Key Files are exempt** -- Structural references, not learned knowledge. Only update when paths change
 5. **Open Questions are exempt** -- Require human resolution, not agent curation
 6. **Skip if small** -- If fewer than ~15 entries total across Decisions, Patterns, and Observations, skip curation
+7. **Promote to spec** -- If an entry has proven useful across 2+ projects, mark it with `(promote)`. Pipeline-design audits move promoted entries into the agent body and remove them from MEMORY.md.
 
 ### Archived Section
 
