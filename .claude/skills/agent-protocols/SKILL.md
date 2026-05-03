@@ -126,7 +126,9 @@ At the beginning of each run, after processing your inbox, review your MEMORY.md
 
 ## Skill Insights
 
-When using a skill (e.g., crawl4ai-scraping), you may append general insights to its `insights.md` file. Same scope boundary applies -- general insights only, no project-specific findings.
+When using a skill, read its `insights.md` before starting work. Apply any relevant entries to your approach.
+
+When you discover a general insight about using a skill, append it to that skill's `insights.md`. Same pre-write gate applies -- pass all three gates before writing.
 
 ## Project Context
 
