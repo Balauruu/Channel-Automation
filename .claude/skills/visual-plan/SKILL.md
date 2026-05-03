@@ -25,11 +25,11 @@ Run the complete visual planning pipeline with sequential two-agent chaining.
    c. Check `projects/$ARGUMENTS/research/entity_index.json` exists.
       If not: "Entity index not found. Visual research needs entity context. Run `/research $ARGUMENTS` first."
 
-   d. Read Script.md and verify it contains a `## Hook` heading.
-      If not: "Script is missing the Hook section. The script may be incomplete."
+   d. Read Script.md and verify the first H2 heading matches the regex `^## 1\. ` (chapter 1 marker).
+      If not: "Script is missing the chapter 1 heading. The script may be incomplete or in the wrong format."
 
-   e. Read Script.md and count headings matching `## Chapter`. Verify there are at least 2.
-      If not: "Script has fewer than 2 chapters. The script may be incomplete. Re-run `/write-script $ARGUMENTS`."
+   e. Count H2 headings matching the regex `^## \d+\. `. Verify there are at least 4.
+      If not: "Script has fewer than 4 chapters. The script may be incomplete. Re-run `/write-script $ARGUMENTS`."
 
    f. Verify Script.md is at least 1000 words long (rough count).
       If not: "Script appears too short (under 1000 words). The script may be incomplete."

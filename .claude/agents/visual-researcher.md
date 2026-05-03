@@ -49,6 +49,8 @@ Analyze the documentary script to define visual intent per act or chapter:
 
 3. **Visual Brief Generation** -- Compile findings into `visual_brief.json` following the schema below exactly. Output is per-chapter only -- no top-level summary sections.
 
+4. **Hook Prose Handling** -- The script begins with unlabeled hook prose before the first `## 1.` heading. Treat this prose as hook context belonging to chapter 1: extract its mood, key visual moments, and visual approach, and merge those into chapter 1's entry in `visual_brief.json`. Do not create a separate top-level `hook` block; do not skip the prose. The opening 60-90 seconds of the video are anchored by this prose, so chapter 1's `key_visual_moments` and `visual_approach` must reflect both the hook prose and the chapter 1 narrative.
+
 ## Resource Discovery
 
 Gather ALL first-hand primary resources broadly, regardless of whether a specific shot exists yet:
