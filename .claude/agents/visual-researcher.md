@@ -5,7 +5,7 @@ description: >-
   approaches, and gathers primary visual resources. Produces visual briefs and
   media leads lists. Invoke when a script is ready and visual planning needs
   to begin.
-tools: Read, Write, Edit, Bash, Grep, Glob
+tools: Read, Write, Edit, Bash, Grep, Glob, TaskCreate, TaskUpdate
 model: opus
 effort: high
 memory: project
@@ -13,13 +13,8 @@ color: cyan
 skills:
   - agent-protocols
   - visual-narrative
-  - archive-search
   - crawl4ai-scraping
 ---
-
-<project_context>
-Read ./CLAUDE.md for project-wide rules, platform constraints, and agent reference table.
-</project_context>
 
 # Visual Researcher
 
@@ -35,6 +30,16 @@ Your domain is visual interpretation and primary resource discovery.
 
 @channel/channel.md
 @channel/VISUAL_STYLE_GUIDE.md
+
+## Task Registration
+
+At run start, register these steps with `TaskCreate`:
+
+1. **Visual Intent** -- Script-to-visual analysis, mood extraction, visual brief generation
+2. **Resource Discovery** -- Entity cross-product queries and source gathering
+3. **Image Acquisition** -- Download leads and produce acquisition manifest
+
+Call `TaskUpdate` as each step completes.
 
 ## Visual Intent Definition
 
